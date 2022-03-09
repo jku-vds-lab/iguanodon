@@ -82,13 +82,16 @@ export abstract class designChoiceEncoding extends designChoiceBase {
 }
 
 // add design choice: sample data -> "transform": [{"sample" : 200}] , https://vega.github.io/vega-lite/docs/sample.html
-export class sampleData extends designChoiceEncoding {
+export class sampleData extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
-    this.value = null;
+  maxItems: number;
+
+  constructor(maxItems: number) {
+    super('sample_data');
+    this.value = false;
     this.stage = VisPiplineStage.dataTransform;
     this.label = 'Sample Data (25%)';
+    this.maxItems = maxItems;
   }
 
   // updateVegaSpec(visualization: VisualizationBase, apply: boolean): VisualizationSpec {
@@ -100,13 +103,14 @@ export class sampleData extends designChoiceEncoding {
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
     // console.log('Type: change x scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('sample data: ', { before: vegaSpec.transform[0].sample, after: this.value });
-      if (this.value !== null) {
-        vegaSpec.transform[0].sample = this.value;
-      }
+      // if (this.value) {
+      //   vegaSpec.transform[0].sample = this.value;
+      // }
+      vegaSpec.transform[0].sample = this.value === true ? Math.round(this.maxItems / 4) : this.maxItems;
       //}
     }
 
@@ -120,8 +124,8 @@ export class sampleData extends designChoiceEncoding {
 // add design choice: x-axis [attribute]
 export class xAxisEncoding extends designChoiceEncoding {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('x_axis_encoding');
     this.value = null;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'x-Axis Encoding';
@@ -136,7 +140,7 @@ export class xAxisEncoding extends designChoiceEncoding {
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
     // console.log('Type: change x scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('x-axis encoding: ', { before: vegaSpec.encoding.x.field, after: this.value });
@@ -154,8 +158,8 @@ export class xAxisEncoding extends designChoiceEncoding {
 // add design choice: y-axis [attribute]
 export class yAxisEncoding extends designChoiceEncoding {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('y_axis_encoding');
     this.value = null;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'y-Axis Encoding';
@@ -170,7 +174,7 @@ export class yAxisEncoding extends designChoiceEncoding {
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
     // console.log('Type: change x scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('y-axis encoding: ', { before: vegaSpec.encoding.y.field, after: this.value });
@@ -187,8 +191,8 @@ export class yAxisEncoding extends designChoiceEncoding {
 // add design choice: color [attribute]
 export class colorEncoding extends designChoiceEncoding {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('color_encoding');
     this.value = null;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'Color Encoding';
@@ -203,15 +207,16 @@ export class colorEncoding extends designChoiceEncoding {
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
     // console.log('Type: change x scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('color encoding: ', { before: vegaSpec.encoding.color.field, after: this.value });
       if (this.value !== null) {
-        vegaSpec.encoding.color = { field: '' };
+        // vegaSpec.encoding.color = { field: '' };
         vegaSpec.encoding.color.field = this.value;
       } else {
-        delete vegaSpec.encoding.color;
+        // delete vegaSpec.encoding.color;
+        vegaSpec.encoding.color.field = '';
       }
       //}
     }
@@ -223,8 +228,8 @@ export class colorEncoding extends designChoiceEncoding {
 // add design choice: sequential/nominal color scale
 export class nominalColorScale extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('nominal_color_scale');
     this.value = false;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'Nominal Color Scale';
@@ -239,11 +244,11 @@ export class nominalColorScale extends designChoiceOption {
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
     // console.log('Type: change x scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('nominal color scale: ', { before: vegaSpec.encoding.color.type, after: this.value === true ? 'nominal' : 'ordinal' });
-      vegaSpec.encoding.color = { type: '' };
+      // vegaSpec.encoding.color = { type: '' };
       vegaSpec.encoding.color.type = this.value === true ? 'nominal' : 'ordinal';
       //}
     }
@@ -256,8 +261,8 @@ export class nominalColorScale extends designChoiceOption {
 // add design choice: lower opacity for mark
 export class lowerOpacityMark extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('lower_mark_opacity');
     this.value = false;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'Lower Opacity for Marks';
@@ -275,8 +280,8 @@ export class lowerOpacityMark extends designChoiceOption {
     if (type === VisType.Scatter) {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
-      // console.log('lower opacity mark: ', { before: vegaSpec.mark.opacity, after: this.value === true ? 0.6 : 1 });
-      vegaSpec.mark.opacity = this.value === true ? 0.6 : 1;
+      // console.log('lower opacity mark: ', { before: vegaSpec.mark.opacity, after: this.value === true ? 0.7 : 1 });
+      vegaSpec.mark.opacity = this.value === true ? 0.7 : 1;
       //}
     }
 
@@ -291,8 +296,8 @@ export class lowerOpacityMark extends designChoiceOption {
 // add design choice: SP: decrease mark size
 export class decreseMarkSize extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('decrese_mark_size');
     this.value = false;
     this.stage = VisPiplineStage.visualMapping;
     this.label = 'Decreased Mark Size';
@@ -323,8 +328,8 @@ export class decreseMarkSize extends designChoiceOption {
 // add design choice: start with 0 on x-axis
 export class startWith0XAxis extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('zeor_x_axis');
     this.value = false;
     this.stage = VisPiplineStage.viewTransform;
     this.label = 'Start x-Axis with 0';
@@ -354,8 +359,8 @@ export class startWith0XAxis extends designChoiceOption {
 // add design choice: start with 0 on y-axis
 export class startWith0YAxis extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('zeor_y_axis');
     this.value = false;
     this.stage = VisPiplineStage.viewTransform;
     this.label = 'Start y-Axis with 0';
@@ -370,7 +375,7 @@ export class startWith0YAxis extends designChoiceOption {
     // console.log('VegaSpec.encoding: change y scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change y scale: ', vegaSpec.encoding.y.scale.zero);
     // console.log('Type: change y scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.y && vegaSpec.encoding.y.scale && vegaSpec.encoding.y.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('change y scale: ', { before: vegaSpec.encoding.y.scale.zero, after: this.value });
@@ -385,8 +390,8 @@ export class startWith0YAxis extends designChoiceOption {
 // add design choice: background color/image
 export class addBackgroundColor extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('background_color');
     this.value = false;
     this.stage = VisPiplineStage.viewTransform;
     this.label = 'Add Background Color';
@@ -401,7 +406,7 @@ export class addBackgroundColor extends designChoiceOption {
     // console.log('VegaSpec.encoding: change y scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change y scale: ', vegaSpec.encoding.y.scale.zero);
     // console.log('Type: change y scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.y && vegaSpec.encoding.y.scale && vegaSpec.encoding.y.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('add background color: ', { before: vegaSpec.background, after: this.value === true ? '#d4d4d4' : '#FFFFFF' });
@@ -417,8 +422,8 @@ export class addBackgroundColor extends designChoiceOption {
 // add design choice: SP: show legend
 export class addLegend extends designChoiceOption {
 
-  constructor(id: string) {
-    super(id);
+  constructor() {
+    super('legend');
     this.value = false;
     this.stage = VisPiplineStage.viewTransform;
     this.label = 'Add Legend';
@@ -433,7 +438,7 @@ export class addLegend extends designChoiceOption {
     // console.log('VegaSpec.encoding: change y scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change y scale: ', vegaSpec.encoding.y.scale.zero);
     // console.log('Type: change y scale: ', type);
-    if (type === VisType.Scatter) {
+    if (type === VisType.Scatter || type === VisType.Line) {
       //if (vegaSpec.encoding && vegaSpec.encoding.y && vegaSpec.encoding.y.scale && vegaSpec.encoding.y.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('add Legend: ', { before: vegaSpec.config.legend.disable, after: !this.value });

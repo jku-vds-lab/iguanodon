@@ -1,3 +1,4 @@
+import ColumnTable from "arquero/dist/types/table/column-table";
 
 /**
  * Deep copy function for TypeScript.
@@ -92,4 +93,40 @@ export function getUniqueRandomValuesFromArray(arr: any[], numbElements: number)
   }
 
   return res;
+}
+
+
+
+export function isDate(data) {
+  return (new Date(data).toString() !== "Invalid Date");
+}
+
+export function getType(data, column) {
+  for (const d of data) {
+    const value = d[column];
+    if (value == null) continue;
+    if (typeof value === "number") return "continuous";
+    if (value instanceof Date) return "date";
+    if (isDate(value)) return "date";
+    return "categorical";
+  }
+}
+
+export function getColumnTypesFromJSON(data) {
+  return Object.keys(data[0] || {}).map((d) => {
+    return {
+      label: d,
+      type: getType(data, d)
+    };
+  });
+}
+
+export function getColumnTypesFromArqueroTable(table: ColumnTable) {
+  const data = table.objects();
+  return Object.keys(data[0] || {}).map((d) => {
+    return {
+      label: d,
+      type: getType(data, d)
+    };
+  });
 }

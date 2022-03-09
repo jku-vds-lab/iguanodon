@@ -1,25 +1,31 @@
 import { DesignChoiceType, VisPiplineStage } from "./designChoices";
+import { ObjectiveState } from "./Objective";
 import { getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
-import { Scatterplot, VisualizationBase } from "./visualizations";
+import { lowLevelObjective, VisType, VisualizationBase } from "./visualizations";
+
 
 export class Strip {
   // visualizations: VisualizationBase[];
-  dataset;
-  private _visHistory: { pos: number, visualization: VisualizationBase }[];
+  // dataset;
+  private _visHistory: { pos: number, score: number, visualization: VisualizationBase }[];
   $visStrip: HTMLDivElement;
   $visMultiPreview: HTMLDivElement;
   $visHoverPreview: HTMLDivElement;
   $visDetailPreview: HTMLDivElement;
   $visPipeline: HTMLDivElement;
   $detailsStrip: HTMLDivElement;
+  $objectivesContainer: HTMLDivElement;
+  $objectiveIndicator: HTMLDivElement;
+  $scoreStrip: HTMLDivElement;
   private _numberOfPreview = 6;
   private _preview: { pos: number, visualization: VisualizationBase }[];
-  private _pipelineDesignChoiceOrder: string[];
-  axisAttributes: string[];
+  private _pipelineDesignChoiceOrder: string[]; // save the order of the design choices for the current strip
+  xAxisAttributes: string[];
+  yAxisAttributes: string[];
   colorAttributes: string[];
 
-  constructor(dataset: any, initalVisualization: VisualizationBase, visStrip: HTMLDivElement, visMulti: HTMLDivElement) {
-    this.dataset = dataset;
+  constructor(initalVisualization: VisualizationBase, visStrip: HTMLDivElement, visMulti: HTMLDivElement) {
+    // this.dataset = dataset;
     this._visHistory = [];
     this._pipelineDesignChoiceOrder = [];
     this.$visStrip = visStrip;
@@ -28,11 +34,24 @@ export class Strip {
     this.$visDetailPreview = document.getElementById('detail-preview') as HTMLDivElement;
     this.$visPipeline = document.getElementById('vis-pipeline') as HTMLDivElement;
     this.$detailsStrip = document.getElementById('details-strip') as HTMLDivElement;
+    this.$objectivesContainer = document.getElementById('objectives') as HTMLDivElement;
+    this.$objectiveIndicator = document.getElementById('objective-indicator-svg') as HTMLDivElement;
+    this.$scoreStrip = document.getElementById('score-strip') as HTMLDivElement;
+
 
 
     // TODO remvoe hard coded attribute encoding options
-    this.axisAttributes = ['Miles_per_Gallon', 'Displacement', 'Horsepower', 'Weight_in_lbs', 'Acceleration'];
-    this.colorAttributes = ['Origin', 'Cylinders', 'Acceleration', null];
+    if (initalVisualization.type === VisType.Scatter) {
+      this.xAxisAttributes = ['Miles_per_Gallon', 'Displacement', 'Horsepower', 'Weight_in_lbs', 'Acceleration'];
+      this.yAxisAttributes = ['Miles_per_Gallon', 'Displacement', 'Horsepower', 'Weight_in_lbs', 'Acceleration'];
+      this.colorAttributes = ['Origin', 'Cylinders', 'Acceleration', null];
+    } else if (initalVisualization.type === VisType.Line) {
+      this.xAxisAttributes = ['date'];
+      this.yAxisAttributes = ['price'];
+      this.colorAttributes = ['symbol'];
+    } else if (initalVisualization.type === VisType.Bar) {
+
+    }
 
 
     // setup all preview elements
@@ -44,14 +63,186 @@ export class Strip {
     }
 
     this.setupVisPipeline(initalVisualization);
+    this.setUpObjectivesList(initalVisualization);
     this.addVisualization(initalVisualization);
+    // this.setupObjecticeIdication();
   }
 
   scrollToEnd() {
     const strip = document.getElementById('strip');
     const scrollWidth = strip.scrollWidth;
     // console.log('scrollWidth: ', scrollWidth);
-    strip.scrollLeft = scrollWidth;
+    // strip.scrollLeft = scrollWidth;
+    strip.scrollTo({
+      top: 0,
+      left: scrollWidth,
+      behavior: 'smooth'
+    });
+  }
+
+  setUpObjectivesList(visualization: VisualizationBase) {
+    // TODO remove the next 2 lines
+    // get high-level objectives
+    // const highObjs = visualization.objectives.filter((elem) => elem.isHighLevel === true);
+
+    // add high-level elements
+    for (const hob of visualization.highLevelObjectives) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = hob.label;
+      tempDiv.classList.add('objective-item', 'high-level-objective');
+      tempDiv.dataset.objId = `${hob.id}`;
+      this.$objectivesContainer.appendChild(tempDiv);
+
+
+      // add low-level elements
+      for (const lob of hob.lowLevelObjectives) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = lob.label;
+        tempDiv.classList.add('objective-item', 'low-level-objective');
+        tempDiv.dataset.objId = `${lob.id}`;
+        this.$objectivesContainer.appendChild(tempDiv);
+
+
+        for (const dc of lob.designChoices) {
+          this.highlightPipelineOption(tempDiv, dc.id);
+        }
+        // hover
+        tempDiv.addEventListener('mouseenter', (event) => {
+          // add highlight
+          // dimensions of svg container
+          const indicatorDim = this.$objectiveIndicator.getBoundingClientRect();
+          const leftSpace = indicatorDim.left;
+          const topSpace = indicatorDim.top;
+          const elementSpace = 3;
+          // console.log('svg dim: ', { indicatorDim, leftSpace, topSpace });
+          const svgElement: SVGElement = this.$objectiveIndicator.querySelector('#svg-objective');
+          // dimensions of the objective
+          const dim = tempDiv.getBoundingClientRect();
+          // console.log('dim: ', dim);
+
+          // coordinates for objective
+          const xObj = indicatorDim.width;
+          const yObj = dim.top + (dim.height / 2) - topSpace;
+
+          const positions = this._visHistory.map((elem) => elem.pos);
+          const lastPos = positions.length === 0 ? 0 : (Math.max(...positions));
+          // get details container for lastPos
+          const lastCntr = this.$detailsStrip.querySelector(`[data-pos='${lastPos}']`);
+          // get design choice containers
+          for (const dc of lob.designChoices) {
+            // cntrDesC.classList.add('highlighted');
+            const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`).children[0];
+            const dimDc = cntrDesC.getBoundingClientRect();
+            // console.log('dimDc: ', dimDc);
+            // coordinates for the design choice
+            const xDc = dimDc.right - leftSpace + elementSpace;
+            const yDC = dimDc.top + (dimDc.height / 2) - topSpace;
+
+            // coordinates for path control points
+            const cx1 = (xObj - xDc) / 2 + xDc;
+            const cy1 = yDC;
+            const cx2 = (xObj - xDc) / 2 + xDc;
+            const cy2 = yObj;
+            const d = 'M ' + xDc + ' ' + yDC +
+              ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + xObj + ' ' + yObj;
+
+            // add path
+            const currPath: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            // currPath.setAttribute('id', 'path-' + ceParent.id + '-to-' + ceChild.id);
+            // currPath.setAttribute('class', 'svg-path');
+            currPath.classList.add('obj-dc-path');
+            currPath.setAttribute('d', d);
+            currPath.setAttribute('stroke-width', '5px');
+            svgElement.appendChild(currPath);
+
+          }
+
+        });
+        tempDiv.addEventListener('mouseleave', (event) => {
+          // remove highlight
+          const svgElement: SVGElement = this.$objectiveIndicator.querySelector('#svg-objective');
+          const positions = this._visHistory.map((elem) => elem.pos);
+          const lastPos = positions.length === 0 ? 0 : (Math.max(...positions));
+          // get details container for lastPos
+          const lastCntr = this.$detailsStrip.querySelector(`[data-pos='${lastPos}']`);
+          // get design choices container
+          for (const dc of lob.designChoices) {
+            const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`);
+            // cntrDesC.classList.remove('highlighted');
+            const paths = svgElement.querySelectorAll('.obj-dc-path');
+            paths.forEach((elem) => {
+              svgElement.removeChild(elem);
+            })
+
+          }
+        });
+      }
+    }
+
+  }
+
+  // setupObjecticeIdication() {
+  //   const svgElement: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  //   svgElement.setAttribute('id', 'svg-objective');
+  //   this.$objectiveIndicator.appendChild(svgElement);
+  // }
+
+  addObjectiveIdication(obj: lowLevelObjective, designChoiceId: string, startPos: number, endPos: number, betterScore: boolean) {
+    // get current dimensions
+    // const stripDimensions = this.$detailsStrip.getBoundingClientRect();
+    const indicatorDim = this.$objectiveIndicator.getBoundingClientRect();
+    const leftSpace = indicatorDim.left;
+    const topSpace = indicatorDim.top;
+    const elementSpace = 3;
+    console.log('indicators: ', indicatorDim);
+    const svgElement: SVGElement = this.$objectiveIndicator.querySelector('#svg-objective');
+    const htmlElement = this.$detailsStrip.querySelector('#wrapper-indicator-html');
+    // update current dimensions
+    // svgElement.setAttribute('width', '' + stripDimensions.width);
+    // svgElement.setAttribute('height', '' + stripDimensions.height);
+
+    // get details container for startPos
+    const startCntr = this.$detailsStrip.querySelector(`[data-pos='${startPos}']`);
+    // get design choice container
+    const startDesC = startCntr.querySelector(`[data-design-choice-id='${designChoiceId}']`).children[0];
+    const dimStartDesC = startDesC.getBoundingClientRect();
+    console.log('starCntr', { startDesC, dimStartDesC });
+    // get details container for endPos
+    const endCntr = this.$detailsStrip.querySelector(`[data-pos='${endPos}']`);
+    // get design choice container
+    const endDesC = endCntr.querySelector(`[data-design-choice-id='${designChoiceId}']`).children[0];
+    const dimEndDesC = endDesC.getBoundingClientRect();
+    console.log('endDesC', { endDesC, dimEndDesC });
+
+    // draw line between the two design choices
+    console.log('svg-line: ', { start: startDesC, end: endDesC });
+    const currLine: SVGLineElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x1 = dimStartDesC.right - leftSpace + elementSpace;
+    const x2 = dimEndDesC.left - leftSpace - elementSpace;
+    const y1 = dimStartDesC.top + (dimStartDesC.height / 2) - topSpace;
+    const y2 = dimEndDesC.top + (dimEndDesC.height / 2) - topSpace;
+    console.log('strip dim: ', document.getElementById('strip').getBoundingClientRect())
+
+    const scoreClass = betterScore ? 'better' : 'worse';
+    currLine.classList.add(scoreClass);
+    currLine.setAttribute('x1', `${x1}`);
+    currLine.setAttribute('y1', `${y1}`);
+    currLine.setAttribute('x2', `${x2}`);
+    currLine.setAttribute('y2', `${y2}`);
+    console.log('svg line: ', currLine);
+    svgElement.appendChild(currLine);
+
+    if (obj) {
+      const divLabel = document.createElement('div');
+      divLabel.classList.add('objective-detail-info', scoreClass);
+      divLabel.innerHTML = `${obj.label}`;
+      const divTop = y1 - 25;
+      const divLeft = (x1 + (x2 - x1) / 2) - 75;
+      divLabel.style.top = `${divTop}px`;
+      divLabel.style.left = `${divLeft}px`;
+      htmlElement.appendChild(divLabel);
+    }
+
   }
 
   addVisualization(visualization: VisualizationBase, isHoverPreview: boolean = false) {
@@ -61,23 +252,124 @@ export class Strip {
       this.$visHoverPreview.appendChild(visItem);
       visualization.showVisualization(visItem);
 
-      const detailItem = document.createElement('div');
+      // const detailItem = document.createElement('div');
       this.addPipelineState(this.$visDetailPreview, visualization);
     } else {
+      // create container for new visualization
       const visItem = document.createElement('div');
       visItem.classList.add('vis-item');
+      // add vis container to vis strip
       this.$visStrip.appendChild(visItem);
+      // add visualization to container
       visualization.showVisualization(visItem);
 
+      // get new position index
       const positions = this._visHistory.map((elem) => elem.pos);
       const newPos = positions.length === 0 ? 0 : (Math.max(...positions) + 1)
 
-      this._visHistory.push({ pos: newPos, visualization })
+      // set HTML dataset attribute pos
+      visItem.dataset.pos = `${newPos}`;
+
+      // create container for visualization pipeline state (design choices)
       const stateItem = document.createElement('div');
       stateItem.classList.add('detail-item');
+      // set HTML dataset attribute pos
+      stateItem.dataset.pos = `${newPos}`;
+      // add container item to deatils strip
       this.$detailsStrip.appendChild(stateItem);
+      // add the design choice configurations to the new pipeline container
       this.addPipelineState(stateItem, visualization);
+      // update the small multiples for the new visualization
       this.updateMulitPreview(visualization);
+
+      // update score function
+      // get all objective and their correctness
+      // const visObjectives = visualization.objectives;
+
+
+      const corrObjectives = visualization.getObjectivesState();
+
+      // for (const ob of visObjectives) {
+      //   if (!ob.isHighLevel) {
+      //     corrObjectives.push(ob.isCorrect());
+      //   }
+      // }
+      console.log('correctness of objecties: ', corrObjectives);
+      let maxDesC = 0;
+      let amountCorrDesC = 0;
+      for (const cob of corrObjectives) {
+        maxDesC = maxDesC + cob.numDesignChoices;
+        // highlight objective correctness
+        const objClass = cob.state === ObjectiveState.correct ? 'correct' : (cob.state === ObjectiveState.partial ? 'partial' : 'wrong');
+        const objElem = this.$objectivesContainer.querySelector(`[data-obj-id=${cob.id}]`);
+        if (objElem) {
+          // remove old classes
+          objElem.classList.remove('correct', 'partial', 'wrong');
+          // add new class
+          objElem.classList.add(objClass);
+        }
+
+        // get number of correct design choices
+        amountCorrDesC = amountCorrDesC + cob.corrDesignChoices;
+
+      }
+      const score = Math.round((amountCorrDesC / maxDesC) * 10000) / 100;
+      console.log('Correcness Score: ', { maxDesC, amountCorrDesC, score });
+
+      // create container for visualization pipeline state (design choices)
+      const scoreItem = document.createElement('div');
+      scoreItem.innerHTML = '' + score;
+      scoreItem.classList.add('score-item');
+      this.$scoreStrip.append(scoreItem);
+
+      // save current visualization in history with new position index
+      this._visHistory.push({ pos: newPos, score, visualization })
+
+
+      // get the changes in the design choices 
+      console.log('visHistory: ', this._visHistory);
+      const histLeg = this._visHistory.length;
+      if (histLeg >= 2) {
+        const oldState = this._visHistory[histLeg - 2];
+        const oldVis = oldState.visualization;
+        const oldVisState = oldVis.getStateOfDesignChoices();
+        const oldScore = oldState.score;
+
+        const newState = this._visHistory[histLeg - 1];
+        const newVis = newState.visualization;
+        const newVisState = newVis.getStateOfDesignChoices();
+        const newScore = newState.score;
+        console.log('New and old Visualization States: ', { oldVisState, newVisState });
+
+        const diffArr = [];
+        for (const oldDesC of oldVisState) {
+          const newDesC = newVisState.filter((elem) => elem.dcId === oldDesC.dcId)[0];
+          if (newDesC) {
+            const oldValue = oldDesC.value;
+            const newValue = newDesC.value;
+            if (oldValue !== newValue) {
+              diffArr.push({
+                dcId: oldDesC.dcId,
+                type: oldDesC.type,
+                oldValue,
+                newValue
+              });
+            }
+          }
+        }
+        const betterScore = (newScore - oldScore) >= 0 ? true : false;
+        console.log('Diff in Vis States: ', diffArr);
+        const hlObj = visualization.getLHLObjctivesBasedOnDesignChoice(diffArr[0].dcId)
+        console.log('Objectives: ', hlObj);
+        this.addObjectiveIdication(hlObj.lowLevel, diffArr[0].dcId, newPos - 1, newPos, betterScore);
+
+
+
+
+      }
+
+
+      // scroll to the end of the script
       this.scrollToEnd();
     }
 
@@ -85,9 +377,14 @@ export class Strip {
 
   async updateMulitPreview(visualization: VisualizationBase) {
     const numbDesignChoices = visualization.designChoices.length;
+    console.log('update Previews from design choices: ', visualization.designChoices);
     const divPreviews = Array.from(this.$visMultiPreview.getElementsByClassName('vis-mult-item')) as HTMLDivElement[];
 
+    console.log('update Previews');
+    console.log('params: ', numbDesignChoices,)
+    // get random array with indices of the design choices
     const designChoiceSelection = getUniqueRandomValuesFrom0toN(visualization.designChoices.length, divPreviews.length);
+    console.log('params: ', { numbDesignChoices, designChoiceSelection });
     // for (const divElem of divPreviews) {
     divPreviews.forEach(async (divElem, i) => {
       // console.log('preview element: ', divElem);
@@ -97,51 +394,63 @@ export class Strip {
         //const preVis = deepCopy(visualization);
         const visCntr = document.createElement('div');
         divElem.appendChild(visCntr);
-        const preVis = new Scatterplot(`preview-${i}`);
-        preVis.baseDesignChoicesOnVisualization(visualization);
+
+        // const preVis = new Scatterplot(`preview-${i}`);
+        // preVis.baseDesignChoicesOnVisualization(visualization);
+
+        const preVis = visualization.getCopyofVisualization(`preview-${i}`)
         // preVis.id = `preview-${i}`;
         // console.log('copy: ', preVis);
         const selctionId = designChoiceSelection[i];
         const desC = preVis.designChoices[selctionId];
+        console.log('preview: ', { i, preVis });
+
         if (desC.type === DesignChoiceType.option) {
+          console.log('design choice: ', { i, id: desC.id, old: desC.value.toString(), new: (!desC.value).toString() });
           desC.value = !desC.value;
         } else {
           // color, x, y - encodings
-          if (desC.id === 'y_axis_encoding' || desC.id === 'x_axis_encoding') {
-            const newValue = getUniqueRandomValuesFromArray(this.axisAttributes, 1)[0];
+          if (desC.id === 'x_axis_encoding') {
+            const newValue = getUniqueRandomValuesFromArray(this.xAxisAttributes, 1)[0];
+            // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
+            desC.value = newValue;
+          } else if (desC.id === 'y_axis_encoding') {
+            const newValue = getUniqueRandomValuesFromArray(this.yAxisAttributes, 1)[0];
+            // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
             desC.value = newValue;
           } else if (desC.id === 'color_encoding') {
             const newValue = getUniqueRandomValuesFromArray(this.colorAttributes, 1)[0];
+            // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
             desC.value = newValue;
           }
 
         }
         //const previewVegaSpec = desC.updateVegaSpec(preVis)
-
         //this._visHistory.push({ pos: i, visualization: preVis })
 
-        // hover
-        visCntr.addEventListener('mouseenter', (event) => {
-          // add preview
-          this.addVisualization(preVis, true);
-        });
-        visCntr.addEventListener('mouseleave', (event) => {
-          // remove preview
-          this.$visHoverPreview.innerHTML = '';
-          this.$visDetailPreview.innerHTML = '';
-          // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
-          // hoverPreview.parentNode.removeChild(hoverPreview);
-        });
-        // click
-        visCntr.addEventListener('click', (event) => {
-          // remove preview
-          // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
-          // hoverPreview.parentNode.removeChild(hoverPreview);
-          this.$visHoverPreview.innerHTML = '';
-          this.$visDetailPreview.innerHTML = '';
-          // add visualization to history
-          this.addVisualization(preVis);
-        });
+        this.addPreviewActions(visCntr, preVis);
+        // // hover
+        // visCntr.addEventListener('mouseenter', (event) => {
+        //   // add preview
+        //   this.addVisualization(preVis, true);
+        // });
+        // visCntr.addEventListener('mouseleave', (event) => {
+        //   // remove preview
+        //   this.$visHoverPreview.innerHTML = '';
+        //   this.$visDetailPreview.innerHTML = '';
+        //   // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+        //   // hoverPreview.parentNode.removeChild(hoverPreview);
+        // });
+        // // click
+        // visCntr.addEventListener('click', (event) => {
+        //   // remove preview
+        //   // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+        //   // hoverPreview.parentNode.removeChild(hoverPreview);
+        //   this.$visHoverPreview.innerHTML = '';
+        //   this.$visDetailPreview.innerHTML = '';
+        //   // add visualization to history
+        //   this.addVisualization(preVis);
+        // });
 
         try {
           // add visualization as small multiple
@@ -151,7 +460,7 @@ export class Strip {
           // FIXME add error catch
         }
       } else {
-        this._visHistory.push({ pos: i, visualization: null })
+        this._visHistory.push({ pos: i, score: 0, visualization: null })
 
       }
     });
@@ -174,9 +483,91 @@ export class Strip {
     // }
   }
 
+  addPreviewActions(actionElem: HTMLElement, previewVis: VisualizationBase) {
+    // hover
+    actionElem.addEventListener('mouseenter', (event) => {
+      // add preview
+      this.addVisualization(previewVis, true);
+    });
+    actionElem.addEventListener('mouseleave', (event) => {
+      // remove preview
+      this.$visHoverPreview.innerHTML = '';
+      this.$visDetailPreview.innerHTML = '';
+      // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+      // hoverPreview.parentNode.removeChild(hoverPreview);
+    });
+
+    // click
+    actionElem.addEventListener('click', (event) => {
+      // remove preview
+      // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+      // hoverPreview.parentNode.removeChild(hoverPreview);
+      this.$visHoverPreview.innerHTML = '';
+      this.$visDetailPreview.innerHTML = '';
+      // add visualization to history
+      this.addVisualization(previewVis);
+    });
+  }
+
+  addPreviewActionsBasedOnDesignChoice(actionElem: HTMLElement, previewVis: VisualizationBase) {
+
+    // hover
+    actionElem.addEventListener('mouseenter', (event) => {
+
+      // get current pos
+      const detailItem = actionElem.parentElement.parentElement;
+      // get new position index
+      const positions = this._visHistory.map((elem) => elem.pos);
+      const lastPos = positions.length === 0 ? 0 : (Math.max(...positions))
+      console.log('Hover add preview: ', { actionElem, detailItem, lastPos, currPos: detailItem.dataset.pos })
+      // check if current position === last position
+      if (detailItem.dataset.pos === `${lastPos}`) {
+        // add preview
+        this.addVisualization(previewVis, true);
+      }
+    });
+    actionElem.addEventListener('mouseleave', (event) => {
+      // get current pos
+      const detailItem = actionElem.parentElement.parentElement;
+      // get new position index
+      const positions = this._visHistory.map((elem) => elem.pos);
+      const lastPos = positions.length === 0 ? 0 : (Math.max(...positions))
+      console.log('Hover remove preview: ', { actionElem, detailItem, lastPos, currPos: detailItem.dataset.pos })
+      // check if current position === last position
+      if (detailItem.dataset.pos === `${lastPos}`) {
+        // remove preview
+        this.$visHoverPreview.innerHTML = '';
+        this.$visDetailPreview.innerHTML = '';
+        // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+        // hoverPreview.parentNode.removeChild(hoverPreview);
+      }
+    });
+
+    // click
+    actionElem.addEventListener('click', (event) => {
+      event.preventDefault();
+      // get current pos
+      const detailItem = actionElem.parentElement.parentElement;
+      // get new position index
+      const positions = this._visHistory.map((elem) => elem.pos);
+      const lastPos = positions.length === 0 ? 0 : (Math.max(...positions))
+      console.log('Click preview: ', { actionElem, detailItem, lastPos, currPos: detailItem.dataset.pos })
+      // check if current position === last position
+      if (detailItem.dataset.pos === `${lastPos}`) {
+        // remove preview
+        // const hoverPreview = this.$visStrip.getElementsByClassName('hover-preview')[0];
+        // hoverPreview.parentNode.removeChild(hoverPreview);
+        this.$visHoverPreview.innerHTML = '';
+        this.$visDetailPreview.innerHTML = '';
+        // add visualization to history
+        this.addVisualization(previewVis);
+      }
+    });
+
+
+  }
+
   addPipelineState(container: HTMLDivElement, visualization: VisualizationBase) {
-
-
     for (const desChOrderId of this._pipelineDesignChoiceOrder) {
       const pipItem = document.createElement('div');
       pipItem.classList.add('pipeline-item');
@@ -186,28 +577,63 @@ export class Strip {
       // console.log('add pipeline stage: ', { desC, desChOrderId, designChoices: visualization.designChoices });
       if (desC) {
         pipItem.classList.add('pipeline-stage-item');
+        // set HTML dataset attribute
+        pipItem.dataset.designChoiceId = desC.id
+
         if (desC.type === DesignChoiceType.option) {
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.checked = desC.value as boolean;
-          cb.disabled = true;
+          // cb.disabled = true;
           pipItem.appendChild(cb);
+          this.highlightPipelineOption(cb, desC.id);
+          const preVis = visualization.getCopyofVisualization(`preview-cb`);
+          const preVisDesC = preVis.getDesignChoicesBasedOnId([desC.id])[0];
+          preVisDesC.value = !preVisDesC.value;
+          this.addPreviewActionsBasedOnDesignChoice(cb, preVis);
+
         } else {
-          if (desC.id === 'sample_data') {
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            // TODO check logic
-            cb.checked = desC.value === this.dataset.lenght;
-            cb.disabled = true;
-            pipItem.appendChild(cb);
-          } else {
-            pipItem.innerHTML = `${desC.value}`;
-          }
+          const div = document.createElement('div');
+          div.innerHTML = `${desC.value}`;
+          pipItem.appendChild(div);
+          this.highlightPipelineOption(div, desC.id);
+          // if (desC.id === 'sample_data') {
+          //   const cb = document.createElement('input');
+          //   cb.type = 'checkbox';
+          //   // TODO check logic
+          //   cb.checked = desC.value === this.dataset.lenght;
+          //   cb.disabled = true;
+          //   pipItem.appendChild(cb);
+          // } else {
+          //   pipItem.innerHTML = `${desC.value}`;
+          // }
         }
+
+
       }
     }
+  }
 
+  highlightPipelineOption(elem: HTMLElement, designChoiceId: string) {
+    // hover
+    elem.addEventListener('mouseenter', (event) => {
+      // add highlight to vis stage option
+      this.addVisPipelineOptionHighlight(designChoiceId);
+    });
+    elem.addEventListener('mouseleave', (event) => {
+      // remove highlight to vis stage option
+      this.removeVisPipelineOptionHighlight(designChoiceId);
+    });
+  }
 
+  addVisPipelineOptionHighlight(designChoiceId: string) {
+    const option = this.$visPipeline.querySelector(`[data-design-choice-id=${designChoiceId}]`);
+    option.classList.add('highlighted');
+  }
+
+  removeVisPipelineOptionHighlight(designChoiceId: string) {
+    const option = this.$visPipeline.querySelector(`[data-design-choice-id=${designChoiceId}]`);
+    option.classList.remove('highlighted');
   }
 
   setupVisPipeline(visualization: VisualizationBase) {
@@ -224,6 +650,7 @@ export class Strip {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;
       tempDiv.classList.add('data-transform', 'pipeline-item', 'pipeline-stage-item');
+      tempDiv.dataset.designChoiceId = desC.id
       this.$visPipeline.appendChild(tempDiv);
       this._pipelineDesignChoiceOrder.push(desC.id);
     }
@@ -241,6 +668,7 @@ export class Strip {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;
       tempDiv.classList.add('visual-map', 'pipeline-item', 'pipeline-stage-item');
+      tempDiv.dataset.designChoiceId = desC.id
       this.$visPipeline.appendChild(tempDiv);
       this._pipelineDesignChoiceOrder.push(desC.id);
     }
@@ -258,6 +686,7 @@ export class Strip {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;
       tempDiv.classList.add('view-transform', 'pipeline-item', 'pipeline-stage-item');
+      tempDiv.dataset.designChoiceId = desC.id
       this.$visPipeline.appendChild(tempDiv);
       this._pipelineDesignChoiceOrder.push(desC.id);
     }

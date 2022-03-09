@@ -1,38 +1,85 @@
-$header-color: rgb(0, 0, 0); // Sass variable: https://sass-lang.com/guide
-$app-background-color: #ffffff;
-$header-half-height: 1em; 
+$color-header: rgb(0, 0, 0); // Sass variable: https://sass-lang.com/guide
+$color-app-background: #ffffff;
+// $header-half-height: 1em; 
+$height-header: 2em; 
+// $score-strip-half-height: 1em;
+
+
+// possible colors
+// $color-background-dark: #2A2E32;
+// $color-background-light: #FFFFFF;
+// $color-bg-action-element: #31363B; // e.g button 
+// $color-font-action-element: #FFFFFF; // e.g button 
+// $color-border-action-element: #FFFFFF; // e.g button 
+// $color-pink: #E93A9A;
+// $color-orange: #E9643A;
+// $color-red: #E93D58;
+// $color-green: #3DD425;
+// $color-turquoise: #00D3B8;
+// $color-blue: #3DAEE9;
+// $color-pruple: #926EE4;
+
+$height-score-strip: 2em;
+$color-correct: green;
+$color-partial: orange;
+$color-wrong: red;
+$color-default: black;
+
+$color-vis-pipeline-dt: #66C2A5;
+$color-vis-pipeline-vm: #E78AC3;
+$color-vis-pipeline-vt: #8DA0CB;
+
+ 
 
 #body {
   margin:0;
-  background: $app-background-color;
+  background: $color-app-background;
+  height: 100vh;
 }
 
 #content {
   display: grid;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   grid-template-columns: 20em 2fr 1fr;
-  grid-template-rows: calc(2*$header-half-height) 1fr 1fr; 
+  grid-template-rows: 2em 1fr 2em 1fr; 
   grid-template-areas: 
-    'sidebar header header'
-    'sidebar strip vis-multiples'
+    'sidebar-menu header header'
+    'sidebar-menu strip vis-multiples'
+    'sidebar-score strip multiples-score'
     'vis-pipeline strip objectives';
 }
 #app-header {
   grid-area: header;
 }
 
-#sidebar {
-  grid-area: sidebar;
+
+.btn-vis-type {
+  height: 3em;
+  // background-color: $color-bg-action-element;
+  // color: $color-font-action-element;
+  // border: 1px $color-border-action-element solid;
+  // border-radius: 5px;
+  padding: 0.5em;
+  margin: 0.2em;
+}
+
+.sidebar-content {
   border-right: 1px black solid;
   background-color: lightgray;
 }
 
+#sidebar {
+  grid-area: sidebar-menu;
+}
+
+#sidebar-score {
+  grid-area: sidebar-score;
+}
+
 #vis-pipeline {
   grid-area: vis-pipeline;
-  border-right: 1px black solid;
-  background-color: lightgray;
-  padding: 1em 0;
+  padding: 1em 0 0 0; // 1em space to to the element above and 1em space for the half-hight of the score strip
 
   .pipeline-item {
     text-align: center;
@@ -42,35 +89,39 @@ $header-half-height: 1em;
   .pipeline-stage-item {
     color: white;
     font-weight: bold;
+
+    &.highlighted {
+      text-decoration: underline currentColor solid 2px;
+    }
   }
 }
 
-
-
 .data-transform {
-  background-color: #66C2A5;
+  background-color: $color-vis-pipeline-dt;
 }
 .visual-map {
-  background-color: #E78AC3;
+  background-color: $color-vis-pipeline-vm;
 }
 .view-transform {
-  background-color: #8DA0CB;
+  background-color: $color-vis-pipeline-vt;
 }
 
 
 
 //  VIS STRIP
-
+// grid: 1 column, 3 rows
 #strip {
   grid-area: strip;
   display: grid;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1fr $height-score-strip 1fr;
   grid-template-areas: 
     'vis-strip'
+    'score-strip'
     'details-strip';
 }
 
@@ -78,7 +129,7 @@ $header-half-height: 1em;
   grid-area: vis-strip;
   display: flex;
   justify-content: space-between;
-  max-height: calc(50vh - $header-half-height);
+  max-height: calc(50vh - $height-header/2 - $height-score-strip/2);
   // overflow: auto;
 
   .vis-item {
@@ -104,10 +155,10 @@ $header-half-height: 1em;
 #vis-multiples {
   grid-area: vis-multiples;
   display: grid;
-  width: 450px;
-  height: 400px;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr; 
+  overflow: hidden;
+  padding: 0 1em 1em 1em;
 }
 
 .vis-mult-item {
@@ -117,6 +168,36 @@ $header-half-height: 1em;
   > div {
     height: 100%;
     width: 100%;
+  }
+}
+
+#score-strip {
+  grid-area: score-strip;
+  display: flex;
+  justify-content: space-between;
+  // max-height: $score-strip-height;
+  // overflow: auto;
+
+  .score-item {
+    // flex-grow: 0;
+    flex-shrink: 0;
+    width: 450px;
+    margin: 0 2em;
+    text-align: center;
+    font-weight: bold;
+    line-height: $height-score-strip; // -> vertically aligns text in the middle
+  }
+}
+
+#score-preview {
+  order: 99; // for flex layout to be always the last element
+  height: 100%;
+  width: 100%;
+
+  > div {
+    // height: 100%;
+    // width: 100%;
+    padding: 0;
   }
 }
 
@@ -136,10 +217,11 @@ $header-half-height: 1em;
 // }
 
 #details-strip {
+  position: relative;
   grid-area: details-strip;
   display: flex;
   justify-content: space-between;
-  max-height: calc(50vh - $header-half-height);
+  max-height: calc(50vh - $height-header/2 - $height-score-strip/2);
   // overflow: auto;
 
   .detail-item {
@@ -157,6 +239,11 @@ $header-half-height: 1em;
     
     .pipeline-stage-item {
       font-weight: bold;
+
+      >div {
+        width: max-content;
+        margin: auto;
+      }
     }
 
   }
@@ -175,13 +262,120 @@ $header-half-height: 1em;
   }
 }
 
+
+
+// container with a list of all objectives
 #objectives {
   grid-area: objectives;
   // display: grid;
-  width: 450px;
-  height: 400px;
+  // width: 450px;
+  // height: 400px;
+  padding: 1em 0 0 0;
   // grid-template-columns: 1fr 1fr;
   // grid-template-rows: 1fr 1fr 1fr; 
+
+  .objective-item {
+    height: 1.5em;
+    margin: 0.25em 0;
+  }
+
+  .high-level-objective {
+    font-weight: bold;
+    margin-top: 0.5em;
+  }
+
+  .low-level-objective {
+    padding-left: 1em;
+    border-left: 0.25em solid $color-app-background;
+
+    &.correct {
+      border-left-color: $color-correct !important;
+    }
+
+    &.partial {
+      border-left-color: $color-partial !important;
+    }
+
+    &.wrong {
+      border-left-color: $color-wrong !important;
+    }
+  }
+
 }
 
+// container for design choice change -> connecting line
+// HTML div element
+// objective-indicator-svg and objective-indicator-html are on top of each other
+#objective-indicator-svg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+// svg container
+// HTML svg element
+#svg-objective {
+  width: 100%;
+  height: 100%;
+
+  line {
+    stroke: $color-default;
+    stroke-width: 3px;
+
+    &.better {
+      stroke: $color-correct !important;
+    }
+
+    &.worse {
+      stroke: $color-wrong !important;
+    }
+  }
+
+  .obj-dc-path {
+    stroke-width: 3px;
+    stroke: $color-default;
+    fill: none;
+  }
+}
+
+// container for design choice change -> objective label
+// objective-indicator-svg and objective-indicator-html are on top of each other
+#objective-indicator-html {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+// wrapper needed for absolute positioning
+#wrapper-indicator-html {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  // includes the absolute positioned div container for the objective label
+  .objective-detail-info {
+    position: absolute;
+    height: 50px;
+    width: 150px;
+    text-align: center;
+    border: 1px solid $color-default;
+    background: $color-app-background;
+
+    &.better {
+      border-color: $color-correct !important;
+      color: $color-correct !important;
+    }
+
+    &.worse {
+      border-color: $color-wrong !important;
+      color: $color-wrong !important;
+    }
+  }
+}
 

@@ -98,17 +98,25 @@ export function getUniqueRandomValuesFromArray(arr: any[], numbElements: number)
 
 
 export function isDate(data) {
-  return (new Date(data).toString() !== "Invalid Date");
+  return (new Date(data).toString() !== 'Invalid Date');
 }
 
 export function getType(data, column) {
   for (const d of data) {
     const value = d[column];
-    if (value == null) continue;
-    if (typeof value === "number") return "continuous";
-    if (value instanceof Date) return "date";
-    if (isDate(value)) return "date";
-    return "categorical";
+    if (value == null) {
+      continue;
+    }
+    if (typeof value === 'number') {
+      return 'continuous';
+    }
+    if (value instanceof Date) {
+      return 'date';
+    }
+    if (isDate(value)) {
+      return 'date';
+    }
+    return 'categorical';
   }
 }
 
@@ -129,4 +137,132 @@ export function getColumnTypesFromArqueroTable(table: ColumnTable) {
       type: getType(data, d)
     };
   });
+}
+
+export function convexHull(points: { x: number, y: number }[]) {
+  if (points.length < 3) return points;
+
+  let hull = [];
+  let tmp;
+
+  // Find leftmost point
+  tmp = points[0];
+  for (const p of points) if (p.x < tmp.x) tmp = p;
+
+  hull[0] = tmp;
+
+  let endpoint, secondlast;
+  let min_angle, new_end;
+
+  endpoint = hull[0];
+  secondlast = { x: endpoint.x, y: endpoint.y + 10 };
+
+  do {
+    min_angle = Math.PI; // Initial value. Any angle must be lower that 2PI
+    for (const p of points) {
+      tmp = polarAngle(secondlast, endpoint, p);
+
+      if (tmp <= min_angle) {
+        new_end = p;
+        min_angle = tmp;
+      }
+    }
+
+    if (new_end != hull[0]) {
+      hull.push(new_end);
+      secondlast = endpoint;
+      endpoint = new_end;
+    }
+  } while (new_end != hull[0]);
+
+  return hull;
+}
+
+export function polarAngle(a, b, c) {
+  let x = (a.x - b.x) * (c.x - b.x) + (a.y - b.y) * (c.y - b.y);
+  let y = (a.x - b.x) * (c.y - b.y) - (c.x - b.x) * (a.y - b.y);
+  return Math.atan2(y, x);
+}
+
+export function caculateAreaPolygone(points: { x: number, y: number }[]) {
+  // https://en.wikipedia.org/wiki/Shoelace_formula
+  const numbPoints = points.length;
+  let doubleArea = 0;
+
+  for (let i = 0; i < numbPoints; i++) {
+    const p = points[i];
+
+    let np = points[0];
+    if (i < numbPoints - 1) {
+      np = points[i + 1];
+    }
+
+    const tempArea = p.x * np.y - np.x * p.y;
+    doubleArea = doubleArea + tempArea;
+
+  }
+  return doubleArea / 2;
+}
+
+export function calculatePointsOverlap(points: { idx: number, x: number, y: number, r: number, width: number, height: number }[]): { overlapArea: number, overlapPoints: number } {
+  let overlapArea = 0;
+  let overlapPoints = 0;
+  const overlapPointsArr: number[] = [];
+
+  for (let i = 0; i < points.length; i++) {
+    // no calculation for last point
+    if (i < points.length - 1) {
+      const p = points[i];
+      const xMin = p.x - p.width;
+      const xMax = p.x + p.width;
+      const yMin = p.y - p.height;
+      const yMax = p.y + p.height;
+
+      const pointToCompare = points.slice(i + 1)
+
+      const neighbours = pointToCompare.filter((elem) => {
+        return elem.x > xMin && elem.x < xMax && elem.y > yMin && elem.y < yMax;
+      });
+
+      let currPointOverlapArea = 0;
+      for (const np of neighbours) {
+        currPointOverlapArea = currPointOverlapArea + calculateOverlapBetween2Points(p, np);
+        overlapPointsArr.push(p.idx, np.idx);
+      }
+
+      overlapArea = overlapArea + currPointOverlapArea;
+    }
+
+  }
+
+
+  // only get uniqe points
+  const uniquePoints = overlapPointsArr.filter((val, ind, arr) => arr.indexOf(val) === ind);
+  overlapPoints = uniquePoints.length;
+  // console.log('unique overlapPointsArr: ', uniquePoints.length);
+
+  return {
+    overlapPoints,
+    overlapArea
+  };
+}
+
+export function calculateOverlapBetween2Points(pA: { x: number, y: number, r: number }, pB: { x: number, y: number, r: number }): number {
+  const d = Math.hypot(pB.x - pA.x, pB.y - pA.y);
+
+  if (d < pA.r + pB.r) {
+
+    const a = pA.r * pA.r
+    const b = pB.r * pB.r
+
+    const x = (a - b + d * d) / (2 * d)
+    const z = x * x
+    const y = Math.sqrt(a - z)
+
+    if (d <= Math.abs(pB.r - pA.r)) {
+      return Math.PI * Math.min(a, b)
+    }
+    return a * Math.asin(y / pA.r) + b * Math.asin(y / pB.r) - y * (x + Math.sqrt(z + b - a))
+  }
+  return 0
 }

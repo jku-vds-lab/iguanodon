@@ -2,6 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import embed, { VisualizationSpec } from "vega-embed";
 import { designChoiceBase, DesignChoiceType } from "./designChoices";
 import { ObjectiveState } from "./Objective";
+import { deepCopy } from "./util";
 
 /**
  * Enumeration for the visualization type, e.g. scatterplot.
@@ -56,7 +57,7 @@ export abstract class VisualizationBase {
     // this.setupObjectives();
   }
 
-  async showVisualization(container: HTMLDivElement) {
+  async showVisualization(container: HTMLDivElement, isSmallMultiple: boolean = false) {
     // for (const desC of this.designChoices) {
     //   this.vegaSpec = desC.updateVegaSpec(this);
     // }
@@ -65,7 +66,14 @@ export abstract class VisualizationBase {
     // console.log('plot vega vis: ', this.id, this.vegaSpec);
     try {
       this.visContainer = container;
-      await embed(container, this.vegaSpec, { "actions": false });
+      // await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
+      if (isSmallMultiple) {
+        const smVegaSpec = this.updateVegaSpecForSmallMultiple(deepCopy(this.vegaSpec));
+
+        await embed(container, smVegaSpec, { actions: false });
+      } else {
+        await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
+      }
     } catch {
       // FIXME add error catch
     }
@@ -174,6 +182,7 @@ export abstract class VisualizationBase {
   abstract setupDesignChoices();
   abstract setupObjectives();
 
+  abstract updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec): VisualizationSpec;
   abstract checkStateOfObjective(id: string): { state: ObjectiveState, corrDesignChoices: number };
 }
 

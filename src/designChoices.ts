@@ -281,7 +281,7 @@ export class lowerOpacityMark extends designChoiceOption {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('lower opacity mark: ', { before: vegaSpec.mark.opacity, after: this.value === true ? 0.7 : 1 });
-      vegaSpec.mark.opacity = this.value === true ? 0.7 : 1;
+      vegaSpec.mark.opacity = this.value === true ? 0.4 : 1;
       //}
     }
 

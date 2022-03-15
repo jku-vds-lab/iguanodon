@@ -1,4 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
+import { VisualizationSpec } from "vega-embed";
 import { addBackgroundColor, addLegend, colorEncoding, nominalColorScale, sampleData, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { VisType, VisualizationBase } from "./visualizations";
@@ -84,6 +85,11 @@ export class Linechart extends VisualizationBase {
         }
       }
     };
+  }
+
+  updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec) {
+    const smVegaSpec = vSpec as any;
+    return smVegaSpec;
   }
 
   setupDesignChoices() {

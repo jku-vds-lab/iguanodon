@@ -7,7 +7,7 @@ import { Scatterplot } from './Scatterplot';
 import { Strip } from './Strip';
 import './style.scss'; // import styles as described https://github.com/webpack-contrib/sass-loader
 import { getColumnTypesFromArqueroTable } from './util';
-import { VisualizationBase } from './visualizations';
+import { VisType, VisualizationBase } from './visualizations';
 
 var TITLE = 'Iguanodon'
 
@@ -26,10 +26,20 @@ const objectivesCntr = document.getElementById('objectives') as HTMLDivElement;
 const dataset = getDataCars();
 
 
-function clearStrips() {
+function clearSelectedVisualization() {
+  // clear endcoding selections
+  const sidebar = document.getElementById('sidebar') as HTMLDivElement;
+  const sidebarEncoding = document.getElementById('sidebar-encoding-cntr') as HTMLDivElement;
+  if (sidebar && sidebarEncoding) {
+    sidebar.removeChild(sidebarEncoding);
+  }
+
+  clearStripElements();
+}
+
+function clearStripElements() {
   // clear Visualization pipeline
   visPipeline.innerHTML = '';
-
 
   // clear small Multiples
   visMutli.innerHTML = '';
@@ -74,16 +84,244 @@ function clearStrips() {
 }
 
 
-function initScatterplot() {
+function addEncondingSelections(visType: VisType) {
+  const sidebar = document.getElementById('sidebar') as HTMLDivElement;
+  const selectionCntr = document.createElement('div');
+  selectionCntr.id = 'sidebar-encoding-cntr';
+  selectionCntr.dataset.visType = '' + visType;
+  sidebar.appendChild(selectionCntr);
+
+  if (visType === VisType.Scatter) {
+    const dataset = getDataCars();
+    const aqDataset = aq.from(dataset);
+    const dataAttrTypes = getColumnTypesFromArqueroTable(aqDataset);
+    // remove PK column -> name
+    const availAttrTypes = dataAttrTypes.filter((elem) => elem.label !== 'Name');
+    console.log('colTypesTable: ', dataAttrTypes);
+    const numAttr = dataAttrTypes.filter((elem) => elem.type === 'continuous');
+    // const catAttr = dataAttrTypes.filter((elem) => elem.type === 'categorical');
+
+    // add x encoding
+    const xEncoding = createSelectWithLabel('x-Axis', visType, numAttr)
+    selectionCntr.appendChild(xEncoding)
+    // add y encoding
+    const yEncoding = createSelectWithLabel('y-Axis', visType, numAttr)
+    selectionCntr.appendChild(yEncoding)
+    // add color encoding
+    // TODO remove name categorical attribute
+    const colorEncoding = createSelectWithLabel('Color', visType, dataAttrTypes)
+    selectionCntr.appendChild(colorEncoding)
+
+
+  } else if (visType === VisType.Line) {
+
+    // // add x encoding
+    // const xEncoding = createSelectWithLabel('x-Axis', visType, numAttr)
+    // selectionCntr.appendChild(xEncoding)
+    // // add y encoding
+    // const yEncoding = createSelectWithLabel('y-Axis', visType, numAttr)
+    // selectionCntr.appendChild(yEncoding)
+    // // add color encoding
+    // const colorEncoding = createSelectWithLabel('Color', visType, numAttr)
+    // selectionCntr.appendChild(colorEncoding)
+
+  } else if (visType === VisType.Bar) {
+
+    // // add x encoding
+    // const xEncoding = createSelectWithLabel('x-Axis', visType, numAttr)
+    // selectionCntr.appendChild(xEncoding)
+    // // add y encoding
+    // const yEncoding = createSelectWithLabel('y-Axis', visType, numAttr)
+    // selectionCntr.appendChild(yEncoding)
+    // // add color encoding
+    // const colorEncoding = createSelectWithLabel('Color', visType, numAttr)
+    // selectionCntr.appendChild(colorEncoding)
+
+  }
+
+  // TODO replace the selects
+  // replaceSelectWithDivAndList();
+}
+
+
+
+// function replaceSelectWithDivAndList() {
+//   // get container with the selectes
+//   const selectionCntr = document.querySelector('#sidebar-encoding-cntr') as HTMLDivElement;
+
+//   const allSelects = selectionCntr.querySelectorAll('select');
+//   allSelects.forEach((value, idx, elements) => {
+//     // current select element
+//     const currSelect = elements[idx];
+//     // options of select
+//     const children = Array.from(currSelect.children) as HTMLOptionElement[];
+//     // get all options for select
+//     const numbOptions = children.length;
+
+
+//     // add css class to hide select
+//     currSelect.classList.add('select-hidden');
+
+//     // add div as wrapper of current select
+//     const parent = currSelect.parentNode;
+//     const wrapper = document.createElement('div');
+//     wrapper.classList.add('select-modified');
+//     // set wrapper as child (instead of select)
+//     parent.replaceChild(wrapper, currSelect);
+//     // add select as child of wrapper
+//     wrapper.appendChild(currSelect);
+
+
+//     // add div as alternative to the select 
+//     const altSelect = document.createElement('div');
+//     altSelect.classList.add('select-styled');
+//     // set inital value to the first value of options
+//     altSelect.innerHTML = children[0].text;
+//     altSelect.dataset.value = children[0].value;
+//     // add new div to wrapper
+//     wrapper.appendChild(altSelect);
+
+
+
+//     // TODO replace list with div and fley layout
+//     // add list as alternative to the options
+//     const list = document.createElement('ul');
+//     list.classList.add('select-options', 'list-hidden');
+//     // add list to wrapper
+//     wrapper.appendChild(list);
+
+//     // add list items to the list based on the select options
+//     for (const op of children) {
+//       const listElem = document.createElement('li');
+//       listElem.dataset.value = op.value;
+//       listElem.innerHTML = op.text;
+//       list.appendChild(listElem);
+
+//       listElem.addEventListener('click', (event) => {
+//         event.stopPropagation();
+//         altSelect.classList.remove('active');
+//         altSelect.innerHTML = listElem.innerHTML;
+//         altSelect.dataset.value = listElem.dataset.value;
+//         list.classList.add('list-hidden');
+//       });
+//     }
+
+//     // add event listener for the altDiv
+//     altSelect.addEventListener('click', (event) => {
+//       event.stopPropagation();
+//       // toggle active
+//       altSelect.classList.toggle('active');
+//       // show list based on class
+//       const isActive = altSelect.classList.contains('active');
+//       list.classList.toggle('list-hidden', !isActive);
+
+//     });
+
+//     document.addEventListener('click', (event) => {
+//       altSelect.classList.remove('active');
+//       list.classList.add('list-hidden');
+//     });
+
+//   });
+
+// }
+
+
+function createSelectWithLabel(lable: string, visType: VisType, options: { label: string }[], withEmptyOption: boolean = true): HTMLDivElement {
+  const lowCaseLabel = lable.toLowerCase();
+  // encoding div
+  const currEncoding = document.createElement('div');
+  currEncoding.classList.add('encoding');
+
+  // label
+  const currLabel = document.createElement('div');
+  currLabel.classList.add('label-encoding');
+  // currLabel.htmlFor = `${lowCaseLabel}-encoding`;
+  currLabel.innerHTML = lable;
+  currEncoding.appendChild(currLabel);
+
+  // select
+  const currSelect = document.createElement('Select');
+  currSelect.id = `${lowCaseLabel}-encoding`;
+  currSelect.classList.add('select-encoding');
+  currSelect.addEventListener('change', (event) => {
+    handleSelectChange(visType);
+  });
+  currEncoding.appendChild(currSelect);
+
+  // add empty option to encoding
+  if (withEmptyOption) {
+    const emptyOpt = document.createElement('option');
+    emptyOpt.value = 'null';
+    emptyOpt.innerHTML = 'None';
+    // emptyOpt.classList.add('none-opt');
+    currSelect.appendChild(emptyOpt);
+  }
+
+  // add options to encoding
+  for (const op of options) {
+    const currOpt = document.createElement('option');
+    currOpt.value = op.label;
+    currOpt.innerHTML = op.label;
+    currSelect.appendChild(currOpt);
+  }
+
+  return currEncoding;
+}
+
+function handleSelectChange(visType: VisType) {
+  console.log('Check me out: ', visType);
+  const sidebar = document.getElementById('sidebar') as HTMLDivElement;
+  // const selectionCntr = document.querySelector('#sidebar-encoding-cntr') as HTMLDivElement;
+  // const visType = Number(selectionCntr.dataset.visType) as VisType;
+
+  if (visType === VisType.Scatter) {
+    // check if x and y encoding not null
+    const xEnc = sidebar.querySelector('#x-axis-encoding') as HTMLSelectElement;
+    const valX = xEnc.value;
+
+    const yEnc = sidebar.querySelector('#y-axis-encoding') as HTMLSelectElement;
+    const valY = yEnc.value;
+
+    const colorEnc = sidebar.querySelector('#color-encoding') as HTMLSelectElement;
+    const valColor = colorEnc.value;
+
+    // const xEnc = sidebar.querySelector('#x-axis-encoding') as HTMLElement;
+    // const valX = xEnc.dataset.value;
+
+    // const yEnc = sidebar.querySelector('#y-axis-encoding') as HTMLElement;
+    // const valY = yEnc.dataset.value;
+
+    // const colorEnc = sidebar.querySelector('#color-encoding') as HTMLElement;
+    // const valColor = colorEnc.dataset.value;
+
+    console.log('selected encodings: ', { valX, valY, valColor });
+
+    if (valX !== 'null' && valY !== 'null') {
+      clearStripElements();
+      initScatterplot(valX, valY, valColor);
+    }
+
+
+  } else if (visType === VisType.Line) {
+
+
+  } else if (visType === VisType.Bar) {
+
+  }
+}
+
+function initScatterplot(xEnc: string, yEnc: string, colotEnc: string) {
   const dataset = getDataCars();
   const aqDataset = aq.from(dataset);
   // const colNames = aqDataset.columnNames();
   // console.log('columnNames: ', colNames);
 
-  const colTypesTable = getColumnTypesFromArqueroTable(aqDataset);
-  console.log('colTypesTable: ', colTypesTable);
+  // addEncondingSelections(VisType.Scatter);
+  // const colTypesTable = getColumnTypesFromArqueroTable(aqDataset);
+  // console.log('colTypesTable: ', colTypesTable);
 
-  const scatterplot = new Scatterplot('scatter0', aqDataset, 'Weight_in_lbs', 'Horsepower', 'Origin');
+  const scatterplot = new Scatterplot('scatter0', aqDataset, xEnc, yEnc, colotEnc);
   console.log('Start vis: ', scatterplot);
   const strip = new Strip(scatterplot, visStrip, visMutli);
   // strip.addVisualization(scatterplot);
@@ -117,10 +355,11 @@ function initBarchart() {
 }
 
 function handleVisTypeClick(type: string) {
-  clearStrips();
+  clearSelectedVisualization();
   if (type === 'scatter') {
     console.log('Visualization type: scatter')
-    initScatterplot();
+    addEncondingSelections(VisType.Scatter);
+    // initScatterplot();
   } else if (type === 'line') {
     console.log('Visualization type: line')
     initLinechart();

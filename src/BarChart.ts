@@ -1,4 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
+import { VisualizationSpec } from "vega-embed";
 import { getDataCars } from "./dataCars";
 import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
@@ -85,6 +86,11 @@ export class Barchart extends VisualizationBase {
         }
       }
     };
+  }
+
+  updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec) {
+    const smVegaSpec = vSpec as any;
+    return smVegaSpec;
   }
 
   setupDesignChoices() {

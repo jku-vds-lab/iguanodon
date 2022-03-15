@@ -96,18 +96,42 @@ export class Strip {
 
       // add low-level elements
       for (const lob of hob.lowLevelObjectives) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = lob.label;
-        tempDiv.classList.add('objective-item', 'low-level-objective');
-        tempDiv.dataset.objId = `${lob.id}`;
-        this.$objectivesContainer.appendChild(tempDiv);
+        const tmpLowObj = document.createElement('div');
+        tmpLowObj.classList.add('objective-item', 'low-level-objective');
+        tmpLowObj.dataset.objId = `${lob.id}`;
+        // // indicator
+        // const tmpLowObjInd = document.createElement('div');
+        // tmpLowObjInd.classList.add('obj-item-ind');
+        // // label 
+        // const tmpLowObjLabel = document.createElement('div');
+        // tmpLowObjLabel.classList.add('obj-item-label');
+        // tmpLowObjLabel.innerHTML = lob.label;
+        // // descirption
+        // const tmpLowObjDescr = document.createElement('div');
+        // tmpLowObjDescr.classList.add('obj-item-descr');
+        // tmpLowObjDescr.innerHTML = lob.description;
+
+
+        // tmpLowObj.appendChild(tmpLowObjInd);
+        // tmpLowObj.appendChild(tmpLowObjLabel);
+        // tmpLowObj.appendChild(tmpLowObjDescr);
+
+        // create details element
+        const tmpLowDetails = document.createElement('details');
+        // create details element content
+        tmpLowDetails.innerHTML = `
+        <summary>${lob.label}</summary>
+        <p>${lob.description}</p>
+        `;
+        tmpLowObj.appendChild(tmpLowDetails);
+        this.$objectivesContainer.appendChild(tmpLowObj);
 
 
         for (const dc of lob.designChoices) {
-          this.highlightPipelineOption(tempDiv, dc.id);
+          this.highlightPipelineOption(tmpLowObj, dc.id);
         }
         // hover
-        tempDiv.addEventListener('mouseenter', (event) => {
+        tmpLowObj.addEventListener('mouseenter', (event) => {
           // add highlight
           // dimensions of svg container
           const indicatorDim = this.$objectiveIndicator.getBoundingClientRect();
@@ -117,12 +141,18 @@ export class Strip {
           // console.log('svg dim: ', { indicatorDim, leftSpace, topSpace });
           const svgElement: SVGElement = this.$objectiveIndicator.querySelector('#svg-objective');
           // dimensions of the objective
-          const dim = tempDiv.getBoundingClientRect();
+          const dim = tmpLowObj.getBoundingClientRect();
           // console.log('dim: ', dim);
+
+
+          const labelSize = window.getComputedStyle(tmpLowObj).getPropertyValue('font-size');
 
           // coordinates for objective
           const xObj = indicatorDim.width;
-          const yObj = dim.top + (dim.height / 2) - topSpace;
+          const yObjTopSpace = (Number(labelSize.substring(0, labelSize.length - 2)) * 1.5) / 2;
+          const yObj = dim.top + yObjTopSpace - topSpace;
+          // const yObj = dim.top + (dim.height / 2) - topSpace;
+          // console.log('y distances: ', { original: (dim.height / 2), dynamic: yObjTopSpace });
 
           const positions = this._visHistory.map((elem) => elem.pos);
           const lastPos = positions.length === 0 ? 0 : (Math.max(...positions));
@@ -131,7 +161,7 @@ export class Strip {
           // get design choice containers
           for (const dc of lob.designChoices) {
             // cntrDesC.classList.add('highlighted');
-            const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`).children[0];
+            const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`).children[0] as HTMLDivElement;
             const dimDc = cntrDesC.getBoundingClientRect();
             // console.log('dimDc: ', dimDc);
             // coordinates for the design choice
@@ -158,7 +188,7 @@ export class Strip {
           }
 
         });
-        tempDiv.addEventListener('mouseleave', (event) => {
+        tmpLowObj.addEventListener('mouseleave', (event) => {
           // remove highlight
           const svgElement: SVGElement = this.$objectiveIndicator.querySelector('#svg-objective');
           const positions = this._visHistory.map((elem) => elem.pos);
@@ -245,7 +275,7 @@ export class Strip {
 
   }
 
-  addVisualization(visualization: VisualizationBase, isHoverPreview: boolean = false) {
+  async addVisualization(visualization: VisualizationBase, isHoverPreview: boolean = false) {
     if (isHoverPreview) {
       const visItem = document.createElement('div');
       // visItem.classList.add('vis-item');
@@ -261,7 +291,7 @@ export class Strip {
       // add vis container to vis strip
       this.$visStrip.appendChild(visItem);
       // add visualization to container
-      visualization.showVisualization(visItem);
+      await visualization.showVisualization(visItem);
 
       // get new position index
       const positions = this._visHistory.map((elem) => elem.pos);
@@ -377,14 +407,14 @@ export class Strip {
 
   async updateMulitPreview(visualization: VisualizationBase) {
     const numbDesignChoices = visualization.designChoices.length;
-    console.log('update Previews from design choices: ', visualization.designChoices);
+    // console.log('update Previews from design choices: ', visualization.designChoices);
     const divPreviews = Array.from(this.$visMultiPreview.getElementsByClassName('vis-mult-item')) as HTMLDivElement[];
 
-    console.log('update Previews');
-    console.log('params: ', numbDesignChoices,)
+    // console.log('update Previews');
+    // console.log('params: ', numbDesignChoices,)
     // get random array with indices of the design choices
     const designChoiceSelection = getUniqueRandomValuesFrom0toN(visualization.designChoices.length, divPreviews.length);
-    console.log('params: ', { numbDesignChoices, designChoiceSelection });
+    // console.log('params: ', { numbDesignChoices, designChoiceSelection });
     // for (const divElem of divPreviews) {
     divPreviews.forEach(async (divElem, i) => {
       // console.log('preview element: ', divElem);
@@ -392,7 +422,15 @@ export class Strip {
 
       if (i < numbDesignChoices) {
         //const preVis = deepCopy(visualization);
+        const visCntrLabel = document.createElement('div');
+        visCntrLabel.classList.add('small-multiple-label');
+        divElem.appendChild(visCntrLabel);
+
+        // const visCntrWrapper = document.createElement('div');
+        // visCntrWrapper.classList.add('small-multiple-vis-wrapper');
+        // divElem.appendChild(visCntrWrapper);
         const visCntr = document.createElement('div');
+        visCntr.classList.add('small-multiple-vis');
         divElem.appendChild(visCntr);
 
         // const preVis = new Scatterplot(`preview-${i}`);
@@ -403,23 +441,33 @@ export class Strip {
         // console.log('copy: ', preVis);
         const selctionId = designChoiceSelection[i];
         const desC = preVis.designChoices[selctionId];
-        console.log('preview: ', { i, preVis });
+        // console.log('preview: ', { i, preVis });
 
         if (desC.type === DesignChoiceType.option) {
-          console.log('design choice: ', { i, id: desC.id, old: desC.value.toString(), new: (!desC.value).toString() });
+          // console.log('design choice: ', { i, id: desC.id, old: desC.value.toString(), new: (!desC.value).toString() });
           desC.value = !desC.value;
+          visCntrLabel.innerHTML = desC.label;
         } else {
           // color, x, y - encodings
           if (desC.id === 'x_axis_encoding') {
-            const newValue = getUniqueRandomValuesFromArray(this.xAxisAttributes, 1)[0];
+            const xEncoding = desC.value as string;
+            // remove current value from possible values
+            const xAttr = this.xAxisAttributes.filter((elem) => elem !== xEncoding);
+            const newValue = getUniqueRandomValuesFromArray(xAttr, 1)[0];
             // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
             desC.value = newValue;
           } else if (desC.id === 'y_axis_encoding') {
-            const newValue = getUniqueRandomValuesFromArray(this.yAxisAttributes, 1)[0];
+            const yEncoding = desC.value as string;
+            // remove current value from possible values
+            const yAttr = this.xAxisAttributes.filter((elem) => elem !== yEncoding);
+            const newValue = getUniqueRandomValuesFromArray(yAttr, 1)[0];
             // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
             desC.value = newValue;
           } else if (desC.id === 'color_encoding') {
-            const newValue = getUniqueRandomValuesFromArray(this.colorAttributes, 1)[0];
+            const colorEncoding = desC.value as string;
+            // remove current value from possible values
+            const colorAttr = this.xAxisAttributes.filter((elem) => elem !== colorEncoding);
+            const newValue = getUniqueRandomValuesFromArray(colorAttr, 1)[0];
             // console.log('design choice: ', { i, id: desC.id, old: desC.value === null || undefined ? 'null' : desC.value.toString(), new: newValue === null ? 'null' : newValue.toString() });
             desC.value = newValue;
           }
@@ -454,7 +502,7 @@ export class Strip {
 
         try {
           // add visualization as small multiple
-          preVis.showVisualization(visCntr);
+          preVis.showVisualization(visCntr, true);
           // await embed(divElem, previewVegaSpec, { "actions": false });
         } catch {
           // FIXME add error catch
@@ -551,7 +599,7 @@ export class Strip {
       // get new position index
       const positions = this._visHistory.map((elem) => elem.pos);
       const lastPos = positions.length === 0 ? 0 : (Math.max(...positions))
-      console.log('Click preview: ', { actionElem, detailItem, lastPos, currPos: detailItem.dataset.pos })
+      // console.log('Click preview: ', { actionElem, detailItem, lastPos, currPos: detailItem.dataset.pos })
       // check if current position === last position
       if (detailItem.dataset.pos === `${lastPos}`) {
         // remove preview

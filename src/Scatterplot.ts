@@ -1,6 +1,10 @@
+import * as aq from 'arquero';
+import { op } from "arquero";
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import { VisualizationSpec } from 'vega-embed';
+import { addBackgroundColor, addLegend, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis } from "./designChoices";
 import { ObjectiveState } from "./Objective";
+import { caculateAreaPolygone, calculatePointsOverlap, convexHull } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
 
 
@@ -15,7 +19,10 @@ export class Scatterplot extends VisualizationBase {
     this.type = VisType.Scatter;
     this.xEncoding = xEncoding;
     this.yEncoding = yEncoding;
-    this.colorEncoding = colorEncoding === null ? '' : colorEncoding;
+    this.colorEncoding = colorEncoding;
+    if (colorEncoding === null || colorEncoding === 'null') {
+      this.colorEncoding = '';
+    }
 
     this.setupVegaSpecification();
     this.setupDesignChoices();
@@ -85,6 +92,13 @@ export class Scatterplot extends VisualizationBase {
     };
   }
 
+  updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec) {
+    const smVegaSpec = vSpec as any;
+    smVegaSpec.encoding.x.title = null;
+    smVegaSpec.encoding.y.title = null;
+    return smVegaSpec;
+  }
+
   setupDesignChoices() {
     // TODO add not yet implemented design choices
     this.designChoices = [];
@@ -108,23 +122,24 @@ export class Scatterplot extends VisualizationBase {
     // samData.value = (this.vegaSpec as any).transform[0].sample;
     this.designChoices.push(samData);
 
-    // x-axis encoding
-    const xAxisEnc = new xAxisEncoding();
-    xAxisEnc.value = this.xEncoding;
-    // xAxisEnc.value = 'Weight_in_lbs';
-    this.designChoices.push(xAxisEnc);
+    // TODO remove/comment out encodings
+    // // x-axis encoding
+    // const xAxisEnc = new xAxisEncoding();
+    // xAxisEnc.value = this.xEncoding;
+    // // xAxisEnc.value = 'Weight_in_lbs';
+    // this.designChoices.push(xAxisEnc);
 
-    // y-axis encoding
-    const yAxisEnc = new yAxisEncoding();
-    yAxisEnc.value = this.yEncoding;
-    // yAxisEnc.value = 'Horsepower';
-    this.designChoices.push(yAxisEnc);
+    // // y-axis encoding
+    // const yAxisEnc = new yAxisEncoding();
+    // yAxisEnc.value = this.yEncoding;
+    // // yAxisEnc.value = 'Horsepower';
+    // this.designChoices.push(yAxisEnc);
 
-    // y-axis encoding
-    const colorEnc = new colorEncoding();
-    colorEnc.value = this.colorEncoding;
-    // colorEnc.value = 'Origin';
-    this.designChoices.push(colorEnc);
+    // // y-axis encoding
+    // const colorEnc = new colorEncoding();
+    // colorEnc.value = this.colorEncoding;
+    // // colorEnc.value = 'Origin';
+    // this.designChoices.push(colorEnc);
 
   }
 
@@ -232,7 +247,7 @@ export class Scatterplot extends VisualizationBase {
     const reduceOP = {
       id: 'reduceOP',
       label: 'Reduce Overplotting',
-      description: '',
+      description: 'Reduce Overplotting: Description', //TODO add description
       designChoices: this.getDesignChoicesBasedOnId(['sample_data', 'lower_mark_opacity', 'decrese_mark_size']),
       state: null,
       corrDesignChoices: 0
@@ -249,7 +264,7 @@ export class Scatterplot extends VisualizationBase {
     const avoidNZAD = {
       id: 'avoidNZAD',
       label: 'Avoid Non-Zero Axis Distortions',
-      description: '',
+      description: 'Avoid Non-Zero Axis Distortions: Description', //TODO add description
       designChoices: this.getDesignChoicesBasedOnId(['zeor_x_axis', 'zeor_y_axis']),
       state: null,
       corrDesignChoices: 0
@@ -264,7 +279,7 @@ export class Scatterplot extends VisualizationBase {
     const addLegend = {
       id: 'addLegend',
       label: 'Show Legend',
-      description: '',
+      description: 'Show Legend: Description', //TODO add description
       designChoices: this.getDesignChoicesBasedOnId(['legend']),
       state: null,
       corrDesignChoices: 0
@@ -280,7 +295,7 @@ export class Scatterplot extends VisualizationBase {
     const rightColorEnc = {
       id: 'rightColorEnc',
       label: 'Use Right Visual Color Encoding',
-      description: '',
+      description: 'Use Right Visual Color Encoding: Description', //TODO add description
       designChoices: this.getDesignChoicesBasedOnId(['nominal_color_scale']),
       state: null,
       corrDesignChoices: 0
@@ -302,7 +317,7 @@ export class Scatterplot extends VisualizationBase {
     const avoidDisEm = {
       id: 'avoidDisEm',
       label: 'Avoid Distracting Embellishments',
-      description: '',
+      description: 'Avoid Distracting Embellishments: Description', //TODO add description
       designChoices: this.getDesignChoicesBasedOnId(['background_color']),
       state: null,
       corrDesignChoices: 0
@@ -396,8 +411,90 @@ export class Scatterplot extends VisualizationBase {
   // }
 
   private checkReduceOverplotting(): { state: ObjectiveState, corrDesignChoices: number } {
-    console.log('check reduce overplotting objective')
-    console.log('this: ', this);
+    // console.log('Overplotting -> Visualization container: ', { cntr: this.visContainer, children: this.visContainer.childNodes });
+
+    // get svg element that has all points
+    // const svgElement = this.visContainer.querySelector('.marks');
+    // const svgElement = this.visContainer.childNodes[0];
+    // console.log('svg container: ', svgElement);
+    // 'g' element with the classes=.mark-symbol.role-mark.marks
+    const groupWithAllMarks = this.visContainer.querySelector('.mark-symbol.role-mark.marks') as SVGGElement;
+    // console.log('all marks container: ', groupWithAllMarks);
+    // console.log('all marks container BBboc: ', groupWithAllMarks.getBBox());
+    const bBoxSVGGElement = groupWithAllMarks.getBBox();
+    const areaContainingMarks = bBoxSVGGElement.height * bBoxSVGGElement.width;
+
+    const marks = groupWithAllMarks.querySelectorAll('path');
+    // console.log('all marks: ', marks);
+
+    let idx = 0;
+    const markObjects = Array.from(marks).map((elem) => {
+      const tempMarkInfo = elem.getBBox() as any;
+      const tmpXYCoord = elem.getAttribute('transform');
+      const tmpCoord = tmpXYCoord.substring(10, tmpXYCoord.length - 1).split(',');
+      tempMarkInfo.x = Number(tmpCoord[0]);
+      tempMarkInfo.y = Number(tmpCoord[1]);
+      tempMarkInfo.r = Number(tempMarkInfo.width / 2);
+      tempMarkInfo.mark = elem;
+      tempMarkInfo.idx = idx;
+      idx++;
+      return tempMarkInfo;
+    });
+
+
+    let areaAllMarks = 0;
+    // check if there are marks
+    if (marks.length > 0) {
+      const mark = marks[0];
+      const markInfo = mark.getBBox();
+      const markDiameter = markInfo.width;
+      // const markXYCoord = mark.getAttribute('transform');
+      // const markCoord = markXYCoord.substring(10, markXYCoord.length - 1).split(',');
+      // markInfo.x = Number(markCoord[0]);
+      // markInfo.y = Number(markCoord[1]);
+      // console.log('first mark Info: ', { mark, markInfo });
+
+      // const xMin = markInfo.x - markInfo.width / 2;
+      // const xMax = markInfo.x + markInfo.width / 2;
+      // const yMin = markInfo.y - markInfo.height / 2;
+      // const yMax = markInfo.y + markInfo.height / 2;
+
+      // // get all circles overlapping current one
+      // const neighMarks = Array.from(marks).filter((elem) => {
+      //   const tempMarkInfo = elem.getBBox();
+      //   const tmpXYCoord = elem.getAttribute('transform');
+      //   const tmpCoord = tmpXYCoord.substring(10, tmpXYCoord.length - 1).split(',');
+      //   tempMarkInfo.x = Number(tmpCoord[0]);
+      //   tempMarkInfo.y = Number(tmpCoord[1]);
+
+      //   return (tempMarkInfo.x > xMin && tempMarkInfo.x < xMax) && (tempMarkInfo.y > yMin && tempMarkInfo.y < yMax);
+      // });
+      // console.log('neighbours: ', neighMarks);
+
+      const areaOneMark = Math.PI * (Math.pow(markDiameter, 2) / 4)
+      areaAllMarks = areaOneMark * marks.length;
+      // console.log('Areas: ', { areaOneMark, areaAllMarks, areaContainingMarks });
+    }
+
+
+    const hullmarks = convexHull(markObjects);
+    // console.log('hull points info: ', hullmarks);
+    // console.log('hull points: ', hullmarks.map((elem) => elem.mark));
+    const hullArea = caculateAreaPolygone(hullmarks);
+    // console.log('hull Area: ', hullArea);
+
+    console.time("overlapp Calc");
+    const areaOverlap = calculatePointsOverlap(markObjects);
+    // console.log('point area overlap: ', areaOverlap);
+    console.timeEnd("overlapp Calc");
+
+    console.log('________');
+    console.log('Overplotting points:', { points: marks.length, overlapPoints: areaOverlap.overlapPoints, ratio: areaOverlap.overlapPoints / marks.length });
+    console.log('Overplotting Vis Area:', { pointsArea: areaAllMarks, areaContainingMarks, ratio: areaAllMarks / areaContainingMarks });
+    console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
+    console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: areaOverlap.overlapArea / areaAllMarks });
+
+
 
     const objetive = this.getLowLevelObjectiveById('reduceOP');
 
@@ -417,6 +514,38 @@ export class Scatterplot extends VisualizationBase {
   private checkAvoidNonZeroAxis(): { state: ObjectiveState, corrDesignChoices: number } {
     const objetive = this.getLowLevelObjectiveById('avoidNZAD');
 
+    // get min and may values of data
+    // const xMin = Math.min(...this.dataset.array(this.xEncoding) as number[]);
+    // const xMax = Math.max(...this.dataset.array(this.xEncoding) as number[]);
+
+    // const yMin = Math.min(...this.dataset.array(this.yEncoding) as number[]);
+    // const yMax = Math.max(...this.dataset.array(this.yEncoding) as number[]);
+
+
+    const minMax = aq.table({ x: this.dataset.array(this.xEncoding), y: this.dataset.array(this.yEncoding) })
+      .rollup({
+        xMin: d => op.min(d.x),
+        xMax: d => op.max(d.x),
+        yMin: d => op.min(d.y),
+        yMax: d => op.max(d.y)
+      }).objects()[0];
+
+
+
+    console.log('________');
+    // console.log('Axis min/max: ', { xMin, xMax, yMin, yMax });
+    console.log('Axis min/max: ', minMax);
+    const xdiff = Math.abs(minMax.xMax - minMax.xMin);
+    const ydiff = Math.abs(minMax.yMax - minMax.yMin);
+
+    // according to DRACO rules: http://vizrec.bernhardpointner.com/recommender
+    // Prefer not to use zero when the difference between min and max is larger than distance to 0.
+    // no show 0 -> max-min > min
+    // show 0 -> max-min < min
+    const xShow0 = minMax.xmin >= 0 && xdiff < minMax.xmin;
+    const yShow0 = minMax.ymin >= 0 && ydiff < minMax.ymin;
+    console.log('Axis prefered state: ', { xdiff, xShow0, ydiff, yShow0 });
+
     const amount = objetive.designChoices.length;
 
     const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
@@ -433,6 +562,7 @@ export class Scatterplot extends VisualizationBase {
   private checkShowLegend(): { state: ObjectiveState, corrDesignChoices: number } {
     const objetive = this.getLowLevelObjectiveById('addLegend');
 
+    // TODO check if color encoding is used
     const amount = objetive.designChoices.length;
 
     const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
@@ -454,6 +584,8 @@ export class Scatterplot extends VisualizationBase {
 
   private checkRightColorEncding(): { state: ObjectiveState, corrDesignChoices: number } {
     const objetive = this.getLowLevelObjectiveById('rightColorEnc');
+
+    // TODO check attribtue type and the color type
 
     const amount = objetive.designChoices.length;
 

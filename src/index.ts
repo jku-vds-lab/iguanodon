@@ -98,7 +98,7 @@ function addEncondingSelections(visType: VisType) {
     // remove PK column -> name
     const availAttrTypes = dataAttrTypes.filter((elem) => elem.label !== 'Name');
     console.log('colTypesTable: ', dataAttrTypes);
-    const numAttr = dataAttrTypes.filter((elem) => elem.type === 'continuous');
+    const numAttr = availAttrTypes.filter((elem) => elem.type === 'continuous');
     // const catAttr = dataAttrTypes.filter((elem) => elem.type === 'categorical');
 
     // add x encoding
@@ -109,7 +109,7 @@ function addEncondingSelections(visType: VisType) {
     selectionCntr.appendChild(yEncoding)
     // add color encoding
     // TODO remove name categorical attribute
-    const colorEncoding = createSelectWithLabel('Color', visType, dataAttrTypes)
+    const colorEncoding = createSelectWithLabel('Color', visType, availAttrTypes)
     selectionCntr.appendChild(colorEncoding)
 
 
@@ -362,7 +362,7 @@ function handleVisTypeClick(type: string) {
     // initScatterplot();
   } else if (type === 'line') {
     console.log('Visualization type: line')
-    initLinechart();
+    // initLinechart();
   } else if (type === 'bar') {
     console.log('Visualization type: bar')
   }

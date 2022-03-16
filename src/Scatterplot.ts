@@ -4,7 +4,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
 import { addBackgroundColor, addLegend, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { caculateAreaPolygone, calculatePointsOverlap, convexHull } from "./util";
+import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
 
 
@@ -485,6 +485,7 @@ export class Scatterplot extends VisualizationBase {
 
     console.time("overlapp Calc");
     const areaOverlap = calculatePointsOverlap(markObjects);
+    const percentageOverlap = areaOverlap.overlapArea / areaAllMarks;
     // console.log('point area overlap: ', areaOverlap);
     console.timeEnd("overlapp Calc");
 
@@ -492,11 +493,56 @@ export class Scatterplot extends VisualizationBase {
     console.log('Overplotting points:', { points: marks.length, overlapPoints: areaOverlap.overlapPoints, ratio: areaOverlap.overlapPoints / marks.length });
     console.log('Overplotting Vis Area:', { pointsArea: areaAllMarks, areaContainingMarks, ratio: areaAllMarks / areaContainingMarks });
     console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
-    console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: areaOverlap.overlapArea / areaAllMarks });
+    console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: percentageOverlap });
 
-
-
+    // get objective
     const objetive = this.getLowLevelObjectiveById('reduceOP');
+    /*
+
+    // get deign choice of objective: 'sample_data', 'lower_mark_opacity', 'decrese_mark_size'
+    const desCSampleState = objetive.designChoices.filter((elem) => elem.id === 'sample_data')[0].value;
+    const desCLowOpacityState = objetive.designChoices.filter((elem) => elem.id === 'lower_mark_opacity')[0].value;
+    const desCYDecMarkSizeState = objetive.designChoices.filter((elem) => elem.id === 'decrese_mark_size')[0].value;
+    const desCStateCount = Number(desCSampleState) + Number(desCLowOpacityState) + Number(desCYDecMarkSizeState);
+
+    let state = ObjectiveState.correct
+    // set overplotting threshold to >30% (>0.30) of overlap area
+    if(percentageOverlap > 0.3) {
+      // OVERPLOTTING
+      if(desCStateCount === 0) {
+        // no design choices used -> state: wrong
+        state = ObjectiveState.wrong;
+      }
+
+    } else {
+      // NO OVERPLOTTING
+      if(desCStateCount === 0) {
+        // no design choices used -> state: correct
+        state = ObjectiveState.correct;
+
+      } else if (desCStateCount === 1) {
+        // one design choice used
+        if(desCSampleState) {
+          // sample data used -> state: correct
+          state = ObjectiveState.correct;
+        } else if (desCYDecMarkSizeState) {
+          // decreased mark sized used -> state: correct
+          state = ObjectiveState.correct;
+        } else if (desCLowOpacityState) {
+          // lower opacity used -> state: wrong
+          state = ObjectiveState.wrong;
+        }
+        
+      } else if (desCStateCount === 1) {
+        // two design choices used
+        // check the design choices of the previous visualization
+        // if
+      }
+
+    }
+
+    */
+
 
     const amount = objetive.designChoices.length;
 
@@ -546,15 +592,26 @@ export class Scatterplot extends VisualizationBase {
     const yShow0 = minMax.ymin >= 0 && ydiff < minMax.ymin;
     console.log('Axis prefered state: ', { xdiff, xShow0, ydiff, yShow0 });
 
-    const amount = objetive.designChoices.length;
+    // const amount = objetive.designChoices.length;
 
-    const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
-    const numbOfFalse = objetive.designChoices.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
-    const correct = numbOfTrue >= 1;
-    const corrDesignChoices = numbOfTrue;
+
+    const desCXAxisState = objetive.designChoices.filter((elem) => elem.id === 'zeor_x_axis')[0].value;
+    const desCYAxisState = objetive.designChoices.filter((elem) => elem.id === 'zeor_y_axis')[0].value;
+
+    const xCorr = desCXAxisState === xShow0;
+    const yCorr = desCYAxisState === yShow0;
+    const sumCorr = Number(xCorr) + Number(yCorr);
+
+
+    const state = sumCorr === 2 ? ObjectiveState.correct : (sumCorr === 1 ? ObjectiveState.partial : ObjectiveState.wrong);
+    const corrDesignChoices = sumCorr;
+    // const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
+    // const numbOfFalse = objetive.designChoices.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
+    // const correct = numbOfTrue >= 1;
+    // const corrDesignChoices = numbOfTrue;
 
     return {
-      state: numbOfTrue === amount ? ObjectiveState.correct : (numbOfTrue >= 1 ? ObjectiveState.partial : ObjectiveState.wrong),
+      state,
       corrDesignChoices
     };
   }
@@ -568,6 +625,8 @@ export class Scatterplot extends VisualizationBase {
     const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
     const numbOfFalse = objetive.designChoices.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
     const colorEncoding = (this.vegaSpec as any).encoding.color.field;
+
+
 
     let corr = false;
     if (colorEncoding === '') {
@@ -586,26 +645,38 @@ export class Scatterplot extends VisualizationBase {
     const objetive = this.getLowLevelObjectiveById('rightColorEnc');
 
     // TODO check attribtue type and the color type
+    // attribute name for color encoding
+    const colorEnc = (this.vegaSpec as any).encoding.color.field;
+    const desCColorEncState = objetive.designChoices.filter((elem) => elem.id === 'nominal_color_scale')[0].value;
 
-    const amount = objetive.designChoices.length;
+    // const amount = objetive.designChoices.length;
 
-    const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
-    const numbOfFalse = objetive.designChoices.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
-    const colorEncoding = (this.vegaSpec as any).encoding.color.field;
+    // const numbOfTrue = objetive.designChoices.map((elem) => elem.value).filter((elem) => elem === true).length;
+    // const numbOfFalse = objetive.designChoices.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
+    // const colorEncoding = (this.vegaSpec as any).encoding.color.field;
 
 
-    let corr = false;
-    if (colorEncoding === '') {
+    let state = ObjectiveState.wrong;
+    if (colorEnc === '') {
       // if no color encoding -> value does not matter
-      corr = true;
+      // corr = true;
+      state = ObjectiveState.correct;
     } else {
-      // if color encoding -> value has to be true
-      corr = numbOfTrue === 1 ? true : false;
+      // if color encoding -> check if attribute type is categorical, then the value has to be true
+      const types = getColumnTypesFromArqueroTable(this.dataset);
+      const datasetAttr = types.filter((elem) => elem.label === colorEnc)[0];
+      if (datasetAttr.type === 'categorical') {
+        // nominal color scale has to be used
+        state = desCColorEncState ? ObjectiveState.correct : ObjectiveState.wrong;
+      } else {
+        // non nominal color scale has to be used
+        state = desCColorEncState ? ObjectiveState.wrong : ObjectiveState.correct;
+      }
     }
 
     return {
-      state: corr ? ObjectiveState.correct : ObjectiveState.wrong,
-      corrDesignChoices: corr ? objetive.designChoices.length : 0
+      state,
+      corrDesignChoices: state === ObjectiveState.correct ? 1 : 0
     };
   }
 

@@ -74,8 +74,9 @@ export abstract class VisualizationBase {
       } else {
         await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
       }
-    } catch {
-      // FIXME add error catch
+    } catch (error) {
+      // HACK meaning full add error catch
+      console.warn('Problem with promise in visualization > showVisualization(): ', error);
     }
 
   }

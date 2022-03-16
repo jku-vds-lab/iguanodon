@@ -1,5 +1,5 @@
 import { VisualizationSpec } from "vega-embed";
-import { deepCopy } from "./util";
+import { deepCopy, getColumnTypesFromArqueroTable, uniqueFilter } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
 
 /**
@@ -240,6 +240,25 @@ export class nominalColorScale extends designChoiceOption {
     const vegaSpec: any = deepCopy(visualization.vegaSpec);
     const type = visualization.type;
 
+    // type of color encoding when not nominal is used
+    let colorTypeNotNominal = 'ordinal';
+
+    // attribute name for color encoding
+    const colorEnc = vegaSpec.encoding.color.field;
+    if (colorEnc !== '') {
+      const types = getColumnTypesFromArqueroTable(visualization.dataset);
+      const datasetAttr = types.filter((elem) => elem.label === colorEnc)[0];
+      if (datasetAttr.type === 'continuous') {
+        // values of the attribute
+        const data = visualization.dataset.array(colorEnc);
+        const uniqueData = data.filter(uniqueFilter); // get unique values
+        if (uniqueData.length > 10) {
+          colorTypeNotNominal = 'quantitative';
+        }
+      }
+
+    }
+
     // console.log('VegaSpec: change x scale: ', vegaSpec, this.value);
     // console.log('VegaSpec.encoding: change x scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change x scale: ', vegaSpec.encoding.x.scale.zero);
@@ -249,7 +268,7 @@ export class nominalColorScale extends designChoiceOption {
       // FIXME add null check for JSON object property  
       // console.log('nominal color scale: ', { before: vegaSpec.encoding.color.type, after: this.value === true ? 'nominal' : 'ordinal' });
       // vegaSpec.encoding.color = { type: '' };
-      vegaSpec.encoding.color.type = this.value === true ? 'nominal' : 'ordinal';
+      vegaSpec.encoding.color.type = this.value === true ? 'nominal' : colorTypeNotNominal;
       //}
     }
 
@@ -434,6 +453,7 @@ export class addLegend extends designChoiceOption {
     const vegaSpec: any = deepCopy(visualization.vegaSpec);
     const type = visualization.type;
 
+    // TODO force to show a legend even with no color encoding
     // console.log('VegaSpec: change y scale: ', vegaSpec);
     // console.log('VegaSpec.encoding: change y scale: ', vegaSpec.encoding);
     // console.log('VegaSpec-all: change y scale: ', vegaSpec.encoding.y.scale.zero);

@@ -139,6 +139,10 @@ export function getColumnTypesFromArqueroTable(table: ColumnTable) {
   });
 }
 
+export function uniqueFilter(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
 export function convexHull(points: { x: number, y: number }[]) {
   if (points.length < 3) return points;
 
@@ -248,6 +252,7 @@ export function calculatePointsOverlap(points: { idx: number, x: number, y: numb
 }
 
 export function calculateOverlapBetween2Points(pA: { x: number, y: number, r: number }, pB: { x: number, y: number, r: number }): number {
+  // distance between points -> hypot calculates the sqrt(x² + y²)
   const d = Math.hypot(pB.x - pA.x, pB.y - pA.y);
 
   if (d < pA.r + pB.r) {

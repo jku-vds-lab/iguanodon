@@ -290,8 +290,15 @@ export class Strip {
       visItem.classList.add('vis-item');
       // add vis container to vis strip
       this.$visStrip.appendChild(visItem);
-      // add visualization to container
-      await visualization.showVisualization(visItem);
+
+      try {
+        // add visualization to container
+        await visualization.showVisualization(visItem);
+      } catch (error) {
+        // HACK meaning full add error catch
+        console.warn('Problem with promise of adding visualization to history in Strip > addVisualization(): ', error);
+      }
+
 
       // get new position index
       const positions = this._visHistory.map((elem) => elem.pos);

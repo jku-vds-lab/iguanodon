@@ -44,7 +44,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'bundle.[hash].js', // <- ensure unique bundle name
+    filename: 'bundle.[fullhash].js', // <- ensure unique bundle name
     path: path.resolve(__dirname, 'dist'),
   },
   plugins: [

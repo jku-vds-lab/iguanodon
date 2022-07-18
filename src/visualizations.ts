@@ -75,7 +75,7 @@ export abstract class VisualizationBase {
         await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
       }
     } catch (error) {
-      // HACK meaning full add error catch
+      // HACK add meaningful error catch
       console.warn('Problem with promise in visualization > showVisualization(): ', error);
     }
 

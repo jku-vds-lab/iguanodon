@@ -295,7 +295,7 @@ export class Strip {
         // add visualization to container
         await visualization.showVisualization(visItem);
       } catch (error) {
-        // HACK meaning full add error catch
+        // HACK add meaningful error catch
         console.warn('Problem with promise of adding visualization to history in Strip > addVisualization(): ', error);
       }
 

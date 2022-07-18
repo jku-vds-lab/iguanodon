@@ -257,17 +257,20 @@ export function calculateOverlapBetween2Points(pA: { x: number, y: number, r: nu
 
   if (d < pA.r + pB.r) {
 
-    const a = pA.r * pA.r
-    const b = pB.r * pB.r
+    // because r is for both points the same
+    const r = pA.r;
 
-    const x = (a - b + d * d) / (2 * d)
-    const z = x * x
-    const y = Math.sqrt(a - z)
+    // calculate area of circle wedge
+    const aWedge = r * r * Math.acos(d / (2 * r));
 
-    if (d <= Math.abs(pB.r - pA.r)) {
-      return Math.PI * Math.min(a, b)
-    }
-    return a * Math.asin(y / pA.r) + b * Math.asin(y / pB.r) - y * (x + Math.sqrt(z + b - a))
+    // calculate area of triangle in circle wedge
+    const aTri = d / 4 * Math.sqrt(4 * r * r - d * d);
+
+    // calculate area of circle segment = circle wedge - triangle
+    const aSeg = aWedge - aTri;
+
+    // overlapping area is the double of segment, beause of the area from the other circle
+    return 2 * aSeg;
   }
   return 0
 }

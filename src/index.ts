@@ -2,20 +2,30 @@ import * as aq from 'arquero';
 import { Barchart } from './BarChart';
 import { getDataCars } from './dataCars';
 import { getDataStock } from './dataStock';
+import { Investigation } from './Investigation';
 import { Linechart } from './LineChart';
 import { Scatterplot } from './Scatterplot';
 import { Strip } from './Strip';
 import './style.scss'; // import styles as described https://github.com/webpack-contrib/sass-loader
 import { getColumnTypesFromArqueroTable } from './util';
-import { VisType, VisualizationBase } from './visualizations';
+import { VisType } from './visualizations';
 
 var TITLE = 'Iguanodon'
+document.title = TITLE;
 
-// document.title = TITLE;
 // document.getElementById('app-header').textContent = TITLE;
 // console.log('Hello World');
-const visualizations: VisualizationBase[] = [];
-setupSidebarMenu();
+// const visualizations: VisualizationBase[] = [];
+// setupSidebarMenu(); //HACK
+
+// get all relevant HTML DOM elements
+// header
+const $header = document.getElementById('header') as HTMLDivElement;
+// nav
+const $nav = document.getElementById('nav') as HTMLDivElement;
+// main
+const $main = document.getElementById('main') as HTMLDivElement;
+
 
 const visPipeline = document.getElementById('vis-pipeline') as HTMLDivElement;
 const visStrip = document.getElementById('vis-strip') as HTMLDivElement;
@@ -25,6 +35,17 @@ const visMutli = document.getElementById('vis-multiples') as HTMLDivElement;
 const objectivesCntr = document.getElementById('objectives') as HTMLDivElement;
 const dataset = getDataCars();
 
+
+// variable for Free mode vs explanatory mode
+let isFreeMode = false;
+const aqDataset = aq.from(dataset);
+
+const testInvestigation = new Investigation($main, isFreeMode, aqDataset);
+
+function clearInvestigation() {
+  $main.replaceChildren();
+  const investigationTwo = new Investigation($main, isFreeMode, aqDataset);
+}
 
 function clearSelectedVisualization() {
   // clear endcoding selections

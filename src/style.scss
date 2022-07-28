@@ -31,6 +31,9 @@ $color-vis-pipeline-dt: #66C2A5;
 $color-vis-pipeline-vm: #E78AC3;
 $color-vis-pipeline-vt: #8DA0CB;
 
+// new version
+$color-table-grid: $color-default;
+
 // height variables
 $height-header: 2rem; 
 $height-score-strip: 2rem;
@@ -47,6 +50,62 @@ $height-pipeline-stage: 1.5rem;
 
 * {
   box-sizing: border-box;
+}
+
+#main {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr; 
+  grid-template-areas: 
+    'curr-vis preview'
+    'table preview';
+}
+
+#current-vis {
+  grid-area: curr-vis;
+}
+
+#next-vis {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 1;
+  grid-row-end: 2;
+}
+
+#wrapper-preview {
+  grid-area: preview;
+  z-index: 10;
+}
+
+#preview-vis {
+  width: 100%;
+  height: 100%;
+}
+
+#wrapper-table {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  grid-row-start: 2;
+  grid-row-end: 3;
+  display: flex;
+}
+
+#cntr-table {
+  width: 50%;
+  margin-right: auto;
+}
+
+#act-ob-table {
+  // width: 100%;
+  // height: 100%;
+  margin-left: auto;
+  border-collapse: collapse;
+  td, th {
+    border: 1px $color-table-grid solid;
+    padding: 0 0.5rem;
+  }
 }
 
 #content {

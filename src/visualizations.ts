@@ -191,6 +191,10 @@ export abstract class VisualizationBase {
   abstract setupDesignChoices();
   abstract setupObjectives();
 
+  abstract getEncodings(): {encoding: string, value: string}[];
+
+  abstract setEncodings(encodinds: {enc: string, value: string}[]);
+
   abstract updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec): VisualizationSpec;
   abstract checkStateOfObjective(id: string): { state: ObjectiveState, corrDesignChoices: number };
 }

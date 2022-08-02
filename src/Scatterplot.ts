@@ -56,50 +56,109 @@ export class Scatterplot extends VisualizationBase {
     // const dataLen = this.dataset.length;
     const dataLen = this.dataset.numRows();
 
-    this.vegaSpec = {
+    // gerneral 
+    let vegaSpecBuildUp: any = {
       $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
       //data: { url: './assets/cars.json' },
       data: { values: this.dataset.objects() },
       transform: [{ sample: dataLen }],
       width: 'container', //responsive width
       height: 'container', //responsive height
-      background: '#FFFFFF', // background color
-      //width: 360,
-      //height: 300,
-      // mark
-      mark: {
-        type: 'point', // mark type
-        filled: true,
-        size: 30, // mark size
-        opacity: 0.6 //mark opacity
-      },
-      // encodings + start with 0 + color scale
-      encoding: {
-        x: {
-          field: this.xEncoding,
-          // field: 'Weight_in_lbs',
-          type: 'quantitative',
-          scale: { zero: false } // start x-axis with 0
-        },
-        y: {
-          field: this.yEncoding,
-          // field: 'Horsepower',
-          type: 'quantitative',
-          scale: { zero: false } // start y-axis with 0
-        },
-        color: {
-          field: this.colorEncoding,
-          // field: 'Origin',
-          type: 'ordinal'  // define color scale type
-        }
-      },
-      // legend options
-      config: {
-        legend: {
-          disable: true // hide legend
-        }
+      background: '#FFFFFF', // background color}
+    };
+
+    // marks
+    vegaSpecBuildUp.mark = {
+      type: 'point', // mark type
+      filled: true,
+      size: 30, // mark size
+      opacity: 0.6 //mark opacity
+    };
+
+    // encodings 
+    vegaSpecBuildUp.encoding = {};
+    // x
+    if(this.xEncoding) {
+      vegaSpecBuildUp.encoding.x = {
+        field: this.xEncoding,
+        // field: 'Weight_in_lbs',
+        type: 'quantitative',
+        scale: { zero: false } // start x-axis with 0
+      };
+    }
+    // y
+    if(this.yEncoding) {
+      vegaSpecBuildUp.encoding.y = {
+        field: this.yEncoding,
+        // field: 'Horsepower',
+        type: 'quantitative',
+        scale: { zero: false } // start y-axis with 0
+      };
+    }
+
+    // color
+    if(this.yEncoding) {
+      vegaSpecBuildUp.encoding.color = {
+        field: this.colorEncoding,
+        // field: 'Origin',
+        type: 'ordinal'  // define color scale type
+      };
+    }
+
+    // config
+    vegaSpecBuildUp.config = {
+      legend: {
+        disable: true // hide legend
       }
     };
+
+    // console.log('vegaSpecBuildUp: ', vegaSpecBuildUp);
+    this.vegaSpec = vegaSpecBuildUp;
+
+    // this.vegaSpec = {
+    //   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+    //   //data: { url: './assets/cars.json' },
+    //   data: { values: this.dataset.objects() },
+    //   transform: [{ sample: dataLen }],
+    //   width: 'container', //responsive width
+    //   height: 'container', //responsive height
+    //   background: '#FFFFFF', // background color
+    //   //width: 360,
+    //   //height: 300,
+    //   // mark
+    //   mark: {
+    //     type: 'point', // mark type
+    //     filled: true,
+    //     size: 30, // mark size
+    //     opacity: 0.6 //mark opacity
+    //   },
+    //   // encodings + start with 0 + color scale
+    //   encoding: {
+    //     x: {
+    //       field: this.xEncoding,
+    //       // field: 'Weight_in_lbs',
+    //       type: 'quantitative',
+    //       scale: { zero: false } // start x-axis with 0
+    //     },
+    //     y: {
+    //       field: this.yEncoding,
+    //       // field: 'Horsepower',
+    //       type: 'quantitative',
+    //       scale: { zero: false } // start y-axis with 0
+    //     },
+    //     color: {
+    //       field: this.colorEncoding,
+    //       // field: 'Origin',
+    //       type: 'ordinal'  // define color scale type
+    //     }
+    //   },
+    //   // legend options
+    //   config: {
+    //     legend: {
+    //       disable: true // hide legend
+    //     }
+    //   }
+    // };
   }
 
   updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec) {

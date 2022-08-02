@@ -244,11 +244,12 @@ export class nominalColorScale extends designChoiceOption {
     let colorTypeNotNominal = 'ordinal';
 
     // attribute name for color encoding
-    const colorEnc = vegaSpec.encoding.color.field;
-    if (colorEnc !== '') {
+    const colorEnc = vegaSpec?.encoding?.color?.field;
+    if (colorEnc || colorEnc !== '') {
       const types = getColumnTypesFromArqueroTable(visualization.dataset);
       const datasetAttr = types.filter((elem) => elem.label === colorEnc)[0];
-      if (datasetAttr.type === 'continuous') {
+      console.log('Nominal Color Scale: update VegaSpec: ', {colorEnc, datasetAttr});
+      if (datasetAttr?.type === 'continuous') {
         // values of the attribute
         const data = visualization.dataset.array(colorEnc);
         const uniqueData = data.filter(uniqueFilter); // get unique values
@@ -268,7 +269,9 @@ export class nominalColorScale extends designChoiceOption {
       // FIXME add null check for JSON object property  
       // console.log('nominal color scale: ', { before: vegaSpec.encoding.color.type, after: this.value === true ? 'nominal' : 'ordinal' });
       // vegaSpec.encoding.color = { type: '' };
-      vegaSpec.encoding.color.type = this.value === true ? 'nominal' : colorTypeNotNominal;
+      if(vegaSpec?.encoding?.color?.type) {
+        vegaSpec.encoding.color.type = this.value === true ? 'nominal' : colorTypeNotNominal;
+      }
       //}
     }
 
@@ -367,7 +370,9 @@ export class startWith0XAxis extends designChoiceOption {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('change x scale: ', { before: vegaSpec.encoding.x.scale.zero, after: this.value });
-      vegaSpec.encoding.x.scale.zero = this.value;
+      if(vegaSpec?.encoding?.x?.scale?.zero) {
+        vegaSpec.encoding.x.scale.zero = this.value;
+      }
       //}
     }
 
@@ -398,7 +403,9 @@ export class startWith0YAxis extends designChoiceOption {
       //if (vegaSpec.encoding && vegaSpec.encoding.y && vegaSpec.encoding.y.scale && vegaSpec.encoding.y.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('change y scale: ', { before: vegaSpec.encoding.y.scale.zero, after: this.value });
-      vegaSpec.encoding.y.scale.zero = this.value;
+      if(vegaSpec?.encoding?.y?.scale?.zero) {
+        vegaSpec.encoding.y.scale.zero = this.value;
+      }
       //}
     }
 

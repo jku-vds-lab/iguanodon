@@ -1,6 +1,7 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
+import { DesignChoiceType } from "./designChoices";
 import { Scatterplot } from "./Scatterplot";
-import { getColumnTypesFromArqueroTable } from "./util";
+import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
 
 
@@ -24,6 +25,7 @@ export class Investigation {
 
   private _dataColumns: {label: string, type: string}[]
   dataset: ColumnTable;
+  private _numbPreviews: number = 3;
 
   constructor(cntrMain: HTMLDivElement, isFreeMode: boolean, dataset: ColumnTable) {
     
@@ -38,9 +40,7 @@ export class Investigation {
     // setup all elemtens and their containers:
     // current Vis, next Vis, table, previews
     this.setupInterface();
-    // update the encodings in the table
-    this.updateEncodings();
-    this.updateVisualizations();
+    this.setupInitialVisualization();
 
 
     this.addEventListeners();
@@ -80,6 +80,13 @@ export class Investigation {
     this.$previewVis = document.createElement('div');
     this.$previewVis.id = 'preview-vis';
     this.$wrapperPreview.appendChild(this.$previewVis);
+
+    // preview vis containers
+    for(let i=0; i<this._numbPreviews; i++) {
+      const preVisOpt = document.createElement('div');
+      preVisOpt.classList.add('preview-option',`pos-${i+1}`);
+      this.$previewVis.appendChild(preVisOpt);
+    }
 
     // add dom elements to container
     this.$container.appendChild(this.$currVis);
@@ -138,13 +145,40 @@ export class Investigation {
     return $table;
   }
 
+  setupInitialVisualization() {
+    // update the encodings in the table
+    this.updateEncodings();
+    const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
+    const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
+    const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
+    const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
+  
+    // console.log('dataset Investigation: ', this.dataset);
+    // create visualizations dynamically (scatter, line, bar)
+    const scatter = new Scatterplot('init', this.dataset, selectX.value, selectY.value, selectC.value);
+    
+    this.addHistoryColumn();
+    this.updateVisualizations(scatter);
+
+  }
+
   addEventListeners() {
     // vis selection
     const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
     selectVis.addEventListener('change', (ev) => {
       this.addHistoryColumn();
       this.updateEncodings();
-      this.updateVisualizations();
+
+      const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
+      const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
+      const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
+      const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
+    
+      // console.log('dataset Investigation: ', this.dataset);
+      // create visualizations dynamically (scatter, line, bar)
+      const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
+    
+      this.updateVisualizations(scatter);
     });
 
     // encoding selection
@@ -152,7 +186,34 @@ export class Investigation {
     for(const sel of selectEncs) {
       sel.addEventListener('change', (ev) => {
         this.addHistoryColumn();
-        this.updateVisualizations();
+
+
+        // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
+        const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
+        const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
+        const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
+     
+        // console.log('dataset Investigation: ', this.dataset);
+        // create visualizations dynamically (scatter, line, bar)
+        // const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
+        // console.log('-----****------');
+        // console.log('selection Change: ', scatter.designChoices['x_axis_encoding']);
+        // console.log('-----****------');
+
+        const currentState = this._visHistory[this._visHistory.length-1];
+        const currVisualization = currentState.visualization;
+        const newVis = currVisualization.getCopyofVisualization(`vis-${this._visHistory.length}`);
+
+        const encodings = [
+          {enc: 'x', value: selectX.value},
+          {enc: 'y', value: selectY.value},
+          {enc: 'color', value: selectC.value},
+        ];
+        newVis.setEncodings(encodings);
+
+         // update history
+        // this.addHistoryColumn();
+        this.updateVisualizations(newVis);
       });
     }
   }
@@ -192,18 +253,16 @@ export class Investigation {
     // for all charts x and y encodings are used
     if(!xEncRow) {
       // console.log('xEncRow: ',xEncRow);
-      // table data cell
       const elemTd = document.createElement('td');
-      elemTd.appendChild($xSelect);
-      this.addRow(2,'x-axis-encoding','Set X-Axis Encoding', elemTd);
+      elemTd.appendChild($xSelect)
+      this.addRow(2,'x-axis-encoding', ['encoding'],'Set X-Axis Encoding', elemTd);
     }
 
     if(!yEncRow) {
       // console.log('yEncRow: ',yEncRow);
-      // table data cell
       const elemTd = document.createElement('td');
-      elemTd.appendChild($ySelect);
-      this.addRow(3,'y-axis-encoding','Set Y-Axis Encoding', elemTd);
+      elemTd.appendChild($ySelect)
+      this.addRow(3,'y-axis-encoding', ['encoding'],'Set Y-Axis Encoding', elemTd);
     }
 
     
@@ -212,10 +271,9 @@ export class Investigation {
       // add color endoding
       if(!cEncRow) {
         // console.log('cEncRow: ',cEncRow);
-        // table data cell
         const elemTd = document.createElement('td');
-        elemTd.appendChild($colorSelect);
-        this.addRow(4,'color-encoding','Set Color Encoding', elemTd);
+        elemTd.appendChild($colorSelect)
+        this.addRow(4,'color-encoding', ['encoding'],'Set Color Encoding', elemTd);
       }
   
       // this.addRow(2,'x-axis-encoding','Set X-Axis Encoding', $xSelect);
@@ -239,18 +297,11 @@ export class Investigation {
     // }
   }
 
-  async updateVisualizations() {
+  async updateVisualizations(visualization: VisualizationBase) {
     console.log('update Visualization');
-    const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
-    const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
-    const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
-    const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
- 
-    // console.log('dataset Investigation: ', this.dataset);
-    const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
 
     const newStep = this._visHistory.length+1;
-    this._visHistory.push({step: newStep, score: 0, visualization: scatter});
+    this._visHistory.push({step: newStep, score: 0, visualization});
 
     // clear current Vis container
     this.$currVis.textContent = '';
@@ -262,23 +313,204 @@ export class Investigation {
     this.$currVis.appendChild(visItem);
 
     console.log('visHistory: ', this._visHistory);
-    await scatter.showVisualization(visItem);
+    const encodings = visualization.getEncodings();
+    const xEnc = encodings.filter((elem) => elem.encoding === 'x')[0];
+    const yEnc = encodings.filter((elem) => elem.encoding === 'y')[0];
+    console.log('select values: ', {x: xEnc.value, y: yEnc.value});
+    // TODO check for all visualizations
+    if(xEnc.value !== '' && yEnc.value !== '') {
+      this.updateActions();
+    }
+
+    // TODO add loading animation
+    await visualization.showVisualization(visItem);
   }
 
   updateActions() {
+    // remove other preview actions
+    this.removePreviewRows();
+
+    // get design choices state
+    const currentState = this._visHistory[this._visHistory.length-1];
+    const currVisualization = currentState.visualization;
+    // only get action without encodings
+    const currVisActions = currVisualization.getStateOfDesignChoices().filter((elem) => elem.type === DesignChoiceType.option);
+    console.log('update Action: current visualizations: ', currVisualization);
+    console.log('update Action: current actions: ', currVisActions);
+    console.groupCollapsed('action previews')
+    // const actionSelection = getUniqueRandomValuesFrom0toN(currVisActions.length, this._numbPreviews);
+    // console.log('Selected actions for preview: ', actionSelection);
+    
+    // existing actions
+    const existingActions = Array.from(this.$actObTable.querySelectorAll('tr.action'));
+    const existingActionIds = existingActions.map((elem) => elem.id);
+    console.log('Existing actions: ', existingActionIds);
+
+    // new preview actions
+    const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.dcId) === -1);
+    console.log('filtered actions: ', newActions);
+    const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as { dcId: string, label:string, type: DesignChoiceType, value: boolean | string | number }[];
+    console.log('Selected actions for preview: ', actionSelection);
+
+   
+
+    // add previews with table entries
+    const divPreviews = Array.from(this.$previewVis.querySelectorAll('.preview-option')) as HTMLDivElement[];
+    
+
+    // create the preview rows
+    const previews: {cell: HTMLElement, vis: VisualizationBase}[] = [];
+    for(const currASel of actionSelection) {
+      const tdAction = document.createElement('td');
+      tdAction.classList.add('current-state');
+      tdAction.innerText = '?'
+      tdAction.dataset.aid = `${currASel.dcId}`;
+      // tdAction.dataset.value = `${currASel.value}`;
+      this.addActionRow(currVisualization.type, `${currASel.dcId}`, ['action', 'preview'] ,`${currASel.label}`, tdAction);
+
+      // new visualization
+      const preVis = currVisualization.getCopyofVisualization(`preview`)
+      const desC = preVis.getDesignChoicesBasedOnId([currASel.dcId])[0];
+      console.log('vis action: ', {currASel, desC});
+
+      if (desC.type === DesignChoiceType.option) {
+        desC.value = !desC.value;
+      }
+      previews.unshift({cell: tdAction, vis: preVis});
+    }
+
+    // TODO select existing actions if not enough new ones can be added
+
+    // add preview visualizations
+    divPreviews.forEach(async (divElem, i) => {
+      divElem.textContent = ''; // clear elements
+      const currPreview = previews[i];
+
+      const visCntr = document.createElement('div');
+      visCntr.classList.add('cntr-preview-vis');
+      divElem.appendChild(visCntr);
+
+      currPreview.vis.showVisualization(visCntr);
+
+      // add action listerner
+      this.addActionEventListener(currPreview.cell, currPreview.vis);
+      
+    });
+
+    // divPreviews.forEach(async (divElem, i) => {
+
+    //   // table entry
+    //   // const aInx = actionSelection[i];
+    //   // const currASel = currVisActions[aInx];
+    //   const currASel = actionSelection[i];
+    //   console.log('--------------');
+    //   // console.log('table action: ', {aInx, currASel});
+    //   console.log('table action: ', {currASel});
+    //   const tdAction = document.createElement('td');
+    //   tdAction.classList.add('current-state');
+    //   tdAction.innerText = '?'
+    //   tdAction.dataset.aid = `${currASel.dcId}`;
+    //   // tdAction.dataset.value = `${currASel.value}`;
+    //   this.addActionRow(currVisualization.type, `${currASel.dcId}`, ['action', 'preview'] ,`${currASel.label}`, tdAction);
+      
+
+
+    //   // preview
+    //   divElem.textContent = ''; // clear elements
+
+    //   const visCntr = document.createElement('div');
+    //   visCntr.classList.add('cntr-preview-vis');
+    //   divElem.appendChild(visCntr);
+      
+    //   const preVis = currVisualization.getCopyofVisualization(`preview-${i}`)
+    //   // reverse the order for the visualizations
+    //   // const aSelId = actionSelection[(this._numbPreviews-1)-i];
+
+    //   // const desC = preVis.designChoices[aSelId];
+    //   // const desC = preVis.getDesignChoicesBasedOnId([aSelId.dcId])[0];
+    //   const desC = preVis.getDesignChoicesBasedOnId([currASel.dcId])[0];
+    //   // console.log('vis action: ', {aSelId, desC});
+    //   console.log('vis action: ', {currASel, desC});
+    //   // const desC = preVis.getDesignChoicesBasedOnId([`${aSelId}`])[0];
+
+    //   if (desC.type === DesignChoiceType.option) {
+    //     // console.log('design choice: ', { i, id: desC.id, old: desC.value.toString(), new: (!desC.value).toString() });
+    //     desC.value = !desC.value;
+    //     // visCntrLabel.innerHTML = desC.label;
+    //   }
+    //   preVis.showVisualization(visCntr);
+
+    //   // add action listerner
+    //   this.addActionEventListener(tdAction, preVis);
+
+    // });
+    console.groupEnd();
+    // for(const aInx of actionSelection) {
+    // }
+
+  }
+
+  addActionEventListener(actionElem: HTMLElement, newVisualization: VisualizationBase) {
+    // click
+    actionElem.addEventListener('click', (event) => {
+      console.log('new Visualization and ActionElem: ', {actionElem, newVisualization});
+      
+      // remove preview
+      actionElem.parentElement.classList.remove('preview');
+      // remove other preview actions
+      this.removePreviewRows();
+
+      actionElem.innerText = '';
+      const actionId = actionElem.dataset.aid;
+      const action = newVisualization.getDesignChoicesBasedOnId([`${actionId}`])[0];
+      actionElem.dataset.value = `${action.value}`;
+      console.log('new Visualization action: ', action);
+      // update history
+      this.addHistoryColumn();
+      // add visualization to history
+      this.updateVisualizations(newVisualization);
+
+      // update actions
+      // this.updateActions();
+    });
+  }
+
+  removePreviewRows() {
+    const previewActions = Array.from(this.$actObTable.querySelectorAll('.action.preview'));
+    console.group('remove preview rows');
+    for(const pAct of previewActions) {
+      this.removeRow(pAct.id);
+    }
+    console.groupEnd();
+  }
+
+  updateObjectives() {
 
   }
 
   removeRow(rowId: string) {
     const rowElement: HTMLTableRowElement = this.$actObTable.querySelector(`#${rowId}`);
-
-    if(rowElement) {
+    console.log('remove row with Id: ', rowId);
+    if(rowElement) {      
       rowElement.remove();
+      console.log('row removed: ', rowId);
     }
 
 
   }
-  addRow(posFromTop: number, rowId: string, label: string, currElem: HTMLElement) {
+
+  addActionRow(visType: VisType, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
+    if(visType === VisType.Bar) {
+      // visualization: bar
+      this.addRow(4, rowId, classes, label, currElem);
+    } else {
+      // visualization: scatter & line
+      this.addRow(5, rowId, classes, label, currElem);
+    }
+
+  }
+
+  addRow(posFromTop: number, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
     const tableHeadCellHist: HTMLTableCellElement = this.$actObTable.querySelector('#act-ob-table-th-history');
     const currColSpan = tableHeadCellHist ? tableHeadCellHist.colSpan : 0;
     console.log('add row: ', {label, currColSpan});
@@ -288,12 +520,14 @@ export class Investigation {
     // new row that will be added to the table
     const newRow = document.createElement('tr');
     newRow.id = rowId;
+    if(classes && classes.length > 0) newRow.classList.add(...classes);
 
     // add all history states
     for(let i=0; i< currColSpan; i++) {
       const cell = document.createElement('td');
       cell.innerHTML = '';
       newRow.appendChild(cell);
+      cell.classList.add(`step-${i+1}`,'history-cell');
     }
 
     // add label to the row
@@ -321,7 +555,8 @@ export class Investigation {
     console.log('add History Column: ', this._visHistory);
     // find the step number
     const allSteps = this._visHistory.map((elem) => elem.step);
-    const numbSteps = allSteps.length;
+    console.log('allSteps: ', allSteps);
+    const numbSteps = allSteps.length+1;
     const currStep = numbSteps > 0 ? allSteps[numbSteps-1] : 1;
 
     // check if history columns already exist
@@ -362,23 +597,24 @@ export class Investigation {
         
         // TODO add the right column values, style, ....
         // get the current state value
-        const elemCurrState = row.querySelector('.current-state');
-        console.log('add Hist Col: current State: ', elemCurrState);
-        let currStateVal = '';
+        const elemCurrState = row.querySelector('.current-state') as HTMLElement;
+        // console.log('add Hist Col: current State: ', elemCurrState);
+
+         // add step variable (history steps) to column
+         const cell = document.createElement('td');
+         cell.classList.add(`step-${currStep}`,'history-cell');
+
         if(elemCurrState?.tagName === "SELECT") {
           // vistype and encodings
           const select = elemCurrState as HTMLSelectElement;
-          currStateVal = select.options[select.selectedIndex].text;
+          const currStateVal = select.options[select.selectedIndex].text;
+          cell.innerHTML = currStateVal.substring(0,2);
+          cell.title = currStateVal;
         } else {
           // actions and objectives
-          currStateVal = ''+currStep;
+          cell.dataset.value = elemCurrState.dataset.value;
         }
 
-        // TODO add step variable (history steps) to column
-        const cell = document.createElement('td');
-        cell.classList.add(`${currStep}`,'history-cell');
-        cell.innerHTML = currStateVal;
-        cell.title = currStateVal;
         const numbChildren = row.children.length;
         const numbColBeforeHist = 2;
         row.children[numbChildren-numbColBeforeHist].insertAdjacentElement('beforebegin', cell);

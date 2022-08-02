@@ -18,11 +18,21 @@ export class Scatterplot extends VisualizationBase {
     super(id, dataset);
     this.type = VisType.Scatter;
     this.xEncoding = xEncoding;
+    if (xEncoding === null || xEncoding === 'null') {
+      this.xEncoding = '';
+    }
+    
     this.yEncoding = yEncoding;
+    if (yEncoding === null || yEncoding === 'null') {
+      this.yEncoding = '';
+    }
+    
     this.colorEncoding = colorEncoding;
     if (colorEncoding === null || colorEncoding === 'null') {
       this.colorEncoding = '';
     }
+
+    console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
 
     this.setupVegaSpecification();
     this.setupDesignChoices();

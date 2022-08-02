@@ -36,6 +36,35 @@ export class Linechart extends VisualizationBase {
     return copyScatter;
   }
 
+  getEncodings(): {encoding: string, value: string}[] {
+    const encodings = [];
+    encodings.push({encoding: 'x', value: this.xEncoding});
+    encodings.push({encoding: 'y', value: this.yEncoding});
+    encodings.push({encoding: 'color', value: this.colorEncoding});
+
+    return encodings;
+  }
+  
+  setEncodings(encodinds: {enc: string, value: string}[]) {
+    for(const e of encodinds) {
+      const val = this.convertNullEncoding(e.value); 
+      if(e.enc === 'x') {
+        const xEnc = this.getDesignChoicesBasedOnId(['x_axis_encoding'])[0];
+        xEnc.value = val;
+        this.xEncoding = val;
+      } else if (e.enc === 'y') {
+        const yEnc = this.getDesignChoicesBasedOnId(['y_axis_encoding'])[0];
+        yEnc.value = val;
+        this.yEncoding = val;
+      } else if (e.enc === 'color') {
+        const cEnc = this.getDesignChoicesBasedOnId(['color_encoding'])[0];
+        cEnc.value = val;
+        this.colorEncoding = val;
+      }
+    }
+    this.setupVegaSpecification();
+  }
+
   setupVegaSpecification() {
     // TODO remove when data can be changed
     // const data = getDataStock();

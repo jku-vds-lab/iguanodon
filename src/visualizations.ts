@@ -120,8 +120,8 @@ export abstract class VisualizationBase {
 
   }
 
-  getStateOfDesignChoices(): { dcId: string; type: DesignChoiceType; value: boolean | string | number }[] {
-    const desCArr: { dcId: string; type: DesignChoiceType; value: boolean | string | number }[] = [];
+  getStateOfDesignChoices(): { dcId: string; label: string, type: DesignChoiceType; value: boolean | string | number }[] {
+    const desCArr: { dcId: string; label: string, type: DesignChoiceType; value: boolean | string | number }[] = [];
     for (const dc of this.designChoices) {
       desCArr.push(dc.getCurrentState());
     }

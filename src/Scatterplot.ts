@@ -2,7 +2,7 @@ import * as aq from 'arquero';
 import { op } from "arquero";
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
-import { addBackgroundColor, addLegend, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis } from "./designChoices";
+import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
@@ -17,20 +17,10 @@ export class Scatterplot extends VisualizationBase {
   constructor(id: string, dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
     super(id, dataset);
     this.type = VisType.Scatter;
-    this.xEncoding = xEncoding;
-    if (xEncoding === null || xEncoding === 'null') {
-      this.xEncoding = '';
-    }
-    
-    this.yEncoding = yEncoding;
-    if (yEncoding === null || yEncoding === 'null') {
-      this.yEncoding = '';
-    }
-    
-    this.colorEncoding = colorEncoding;
-    if (colorEncoding === null || colorEncoding === 'null') {
-      this.colorEncoding = '';
-    }
+    this.xEncoding = this.convertNullEncoding(xEncoding); 
+    this.yEncoding = this.convertNullEncoding(yEncoding); 
+    this.colorEncoding = this.convertNullEncoding(colorEncoding); 
+  
 
     console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
 
@@ -38,6 +28,7 @@ export class Scatterplot extends VisualizationBase {
     this.setupDesignChoices();
     this.setupObjectives();
   }
+
 
   getCopyofVisualization(copyId: string): VisualizationBase {
     const copyScatter = new Scatterplot(copyId, this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
@@ -51,6 +42,36 @@ export class Scatterplot extends VisualizationBase {
     // copyScatter.designChoices = deepCopy(this.designChoices);
     return copyScatter;
   }
+
+  getEncodings(): {encoding: string, value: string}[] {
+    const encodings = [];
+    encodings.push({encoding: 'x', value: this.xEncoding});
+    encodings.push({encoding: 'y', value: this.yEncoding});
+    encodings.push({encoding: 'color', value: this.colorEncoding});
+
+    return encodings;
+  }
+
+  setEncodings(encodinds: {enc: string, value: string}[]) {
+    for(const e of encodinds) {
+      const val = this.convertNullEncoding(e.value); 
+      if(e.enc === 'x') {
+        const xEnc = this.getDesignChoicesBasedOnId(['x_axis_encoding'])[0];
+        xEnc.value = val;
+        this.xEncoding = val;
+      } else if (e.enc === 'y') {
+        const yEnc = this.getDesignChoicesBasedOnId(['y_axis_encoding'])[0];
+        yEnc.value = val;
+        this.yEncoding = val;
+      } else if (e.enc === 'color') {
+        const cEnc = this.getDesignChoicesBasedOnId(['color_encoding'])[0];
+        cEnc.value = val;
+        this.colorEncoding = val;
+      }
+    }
+    this.setupVegaSpecification();
+  }
+
 
   setupVegaSpecification() {
     // const dataLen = this.dataset.length;
@@ -192,23 +213,23 @@ export class Scatterplot extends VisualizationBase {
     this.designChoices.push(samData);
 
     // TODO remove/comment out encodings
-    // // x-axis encoding
-    // const xAxisEnc = new xAxisEncoding();
-    // xAxisEnc.value = this.xEncoding;
-    // // xAxisEnc.value = 'Weight_in_lbs';
-    // this.designChoices.push(xAxisEnc);
+    // x-axis encoding
+    const xAxisEnc = new xAxisEncoding();
+    xAxisEnc.value = this.xEncoding;
+    // xAxisEnc.value = 'Weight_in_lbs';
+    this.designChoices.push(xAxisEnc);
 
-    // // y-axis encoding
-    // const yAxisEnc = new yAxisEncoding();
-    // yAxisEnc.value = this.yEncoding;
-    // // yAxisEnc.value = 'Horsepower';
-    // this.designChoices.push(yAxisEnc);
+    // y-axis encoding
+    const yAxisEnc = new yAxisEncoding();
+    yAxisEnc.value = this.yEncoding;
+    // yAxisEnc.value = 'Horsepower';
+    this.designChoices.push(yAxisEnc);
 
-    // // y-axis encoding
-    // const colorEnc = new colorEncoding();
-    // colorEnc.value = this.colorEncoding;
-    // // colorEnc.value = 'Origin';
-    // this.designChoices.push(colorEnc);
+    // y-axis encoding
+    const colorEnc = new colorEncoding();
+    colorEnc.value = this.colorEncoding;
+    // colorEnc.value = 'Origin';
+    this.designChoices.push(colorEnc);
 
   }
 

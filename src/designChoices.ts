@@ -32,9 +32,10 @@ export abstract class designChoiceBase {
     this.id = id;
   }
 
-  getCurrentState(): { dcId: string, type: DesignChoiceType, value: boolean | string | number } {
+  getCurrentState(): { dcId: string, label:string, type: DesignChoiceType, value: boolean | string | number } {
     return {
       dcId: this.id,
+      label: this.label,
       type: this.type,
       value: this.value
     };
@@ -144,7 +145,12 @@ export class xAxisEncoding extends designChoiceEncoding {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('x-axis encoding: ', { before: vegaSpec.encoding.x.field, after: this.value });
-      if (this.value !== null) {
+      
+      // if (this.value !== null) {
+      //   vegaSpec.encoding.x.field = this.value;
+      // }
+
+      if(vegaSpec?.encoding?.x?.field) {
         vegaSpec.encoding.x.field = this.value;
       }
       //}
@@ -178,7 +184,12 @@ export class yAxisEncoding extends designChoiceEncoding {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('y-axis encoding: ', { before: vegaSpec.encoding.y.field, after: this.value });
-      if (this.value !== null) {
+      
+      // if (this.value !== null) {
+      //   vegaSpec.encoding.y.field = this.value;
+      // }
+
+      if(vegaSpec?.encoding?.y?.field) {
         vegaSpec.encoding.y.field = this.value;
       }
       //}
@@ -211,12 +222,17 @@ export class colorEncoding extends designChoiceEncoding {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('color encoding: ', { before: vegaSpec.encoding.color.field, after: this.value });
-      if (this.value !== null) {
-        // vegaSpec.encoding.color = { field: '' };
+      
+      // if (this.value !== null) {
+      //   // vegaSpec.encoding.color = { field: '' };
+      //   vegaSpec.encoding.color.field = this.value;
+      // } else {
+      //   // delete vegaSpec.encoding.color;
+      //   vegaSpec.encoding.color.field = '';
+      // }
+
+      if(vegaSpec?.encoding?.color?.field) {
         vegaSpec.encoding.color.field = this.value;
-      } else {
-        // delete vegaSpec.encoding.color;
-        vegaSpec.encoding.color.field = '';
       }
       //}
     }
@@ -248,7 +264,7 @@ export class nominalColorScale extends designChoiceOption {
     if (colorEnc || colorEnc !== '') {
       const types = getColumnTypesFromArqueroTable(visualization.dataset);
       const datasetAttr = types.filter((elem) => elem.label === colorEnc)[0];
-      console.log('Nominal Color Scale: update VegaSpec: ', {colorEnc, datasetAttr});
+      // console.log('Nominal Color Scale: update VegaSpec: ', {colorEnc, datasetAttr});
       if (datasetAttr?.type === 'continuous') {
         // values of the attribute
         const data = visualization.dataset.array(colorEnc);

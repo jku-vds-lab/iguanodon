@@ -87,6 +87,14 @@ export abstract class VisualizationBase {
     }
   }
 
+  convertNullEncoding(value: string): string {
+    if (value === null || value === 'null') {
+      return '';
+    } else {
+      return value;
+    }
+  }
+
 
   baseDesignChoicesOnVisualization(visualization: VisualizationBase) {
     const desChoices = visualization.designChoices;

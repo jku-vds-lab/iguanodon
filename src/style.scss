@@ -65,6 +65,14 @@ $height-pipeline-stage: 1.5rem;
 
 #current-vis {
   grid-area: curr-vis;
+  margin: 2rem;
+}
+
+.vis-item {
+  // flex-grow: 0;
+  // flex-shrink: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #next-vis {
@@ -102,11 +110,43 @@ $height-pipeline-stage: 1.5rem;
   // height: 100%;
   margin-left: auto;
   border-collapse: collapse;
+  table-layout: fixed;
+  cursor: default;
   td, th {
     border: 1px $color-table-grid solid;
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
+
+    select {
+      width: 100%;
+    }
+
+    &.history-cell {
+      // width: 1rem !important;
+      // max-width: 1rem !important;
+      // min-width: 1rem !important;
+      text-overflow: ellipsis;
+      white-space: nowrap; // No line breaks
+      overflow: hidden; // require for text-overflow to work
+      text-align: center;
+    }
   }
 }
+
+#act-ob-table-th-history {
+  // min-width: 1rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap; // No line breaks
+  overflow: hidden; // require for text-overflow to work
+  text-align: center;
+}
+
+// --------------------------------------------------------------------------
+// **************************************************************************
+//
+// Everything below belongs to the old design
+//
+// **************************************************************************
+// --------------------------------------------------------------------------
 
 #content {
   display: grid;

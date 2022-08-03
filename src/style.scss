@@ -128,6 +128,11 @@ $height-pipeline-stage: 1.5rem;
   border-collapse: collapse;
   table-layout: fixed;
   cursor: default;
+
+  tbody.table-objectives {
+    border-top: 3px solid black;
+  }
+
   td, th {
     border: 1px $color-table-grid solid;
     padding: 0 0.25rem;
@@ -142,11 +147,23 @@ $height-pipeline-stage: 1.5rem;
     }
 
     &[data-value="true"] {
-      background-color: lightgreen;
+      background-color: #414141;
     }
 
     &[data-value="false"] {
-      background-color: lightslategrey;
+      background-color: lightgrey;
+    }
+
+    &[data-value="correct"] {
+      background-color: lightgreen;
+    }
+
+    &[data-value="partial"] {
+      background-color: lightsalmon;
+    }
+
+    &[data-value="wrong"] {
+      background-color: lightcoral;
     }
 
     &.history-cell {

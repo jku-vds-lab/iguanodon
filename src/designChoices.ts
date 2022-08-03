@@ -150,7 +150,7 @@ export class xAxisEncoding extends designChoiceEncoding {
       //   vegaSpec.encoding.x.field = this.value;
       // }
 
-      if(vegaSpec?.encoding?.x?.field) {
+      if(vegaSpec?.encoding?.x) {
         vegaSpec.encoding.x.field = this.value;
       }
       //}
@@ -189,7 +189,7 @@ export class yAxisEncoding extends designChoiceEncoding {
       //   vegaSpec.encoding.y.field = this.value;
       // }
 
-      if(vegaSpec?.encoding?.y?.field) {
+      if(vegaSpec?.encoding?.y) {
         vegaSpec.encoding.y.field = this.value;
       }
       //}
@@ -231,7 +231,7 @@ export class colorEncoding extends designChoiceEncoding {
       //   vegaSpec.encoding.color.field = '';
       // }
 
-      if(vegaSpec?.encoding?.color?.field) {
+      if(vegaSpec?.encoding?.color) {
         vegaSpec.encoding.color.field = this.value;
       }
       //}
@@ -285,7 +285,7 @@ export class nominalColorScale extends designChoiceOption {
       // FIXME add null check for JSON object property  
       // console.log('nominal color scale: ', { before: vegaSpec.encoding.color.type, after: this.value === true ? 'nominal' : 'ordinal' });
       // vegaSpec.encoding.color = { type: '' };
-      if(vegaSpec?.encoding?.color?.type) {
+      if(vegaSpec?.encoding?.color) {
         vegaSpec.encoding.color.type = this.value === true ? 'nominal' : colorTypeNotNominal;
       }
       //}
@@ -386,7 +386,9 @@ export class startWith0XAxis extends designChoiceOption {
       //if (vegaSpec.encoding && vegaSpec.encoding.x && vegaSpec.encoding.x.scale && vegaSpec.encoding.x.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('change x scale: ', { before: vegaSpec.encoding.x.scale.zero, after: this.value });
-      if(vegaSpec?.encoding?.x?.scale?.zero) {
+      console.log('change Zero X Axis: ', {newVal: this.value});
+      console.log('Vega Spec: ', JSON.stringify(vegaSpec.encoding));
+      if(vegaSpec?.encoding?.x?.scale) {
         vegaSpec.encoding.x.scale.zero = this.value;
       }
       //}
@@ -419,7 +421,7 @@ export class startWith0YAxis extends designChoiceOption {
       //if (vegaSpec.encoding && vegaSpec.encoding.y && vegaSpec.encoding.y.scale && vegaSpec.encoding.y.scale.zero) {
       // FIXME add null check for JSON object property  
       // console.log('change y scale: ', { before: vegaSpec.encoding.y.scale.zero, after: this.value });
-      if(vegaSpec?.encoding?.y?.scale?.zero) {
+      if(vegaSpec?.encoding?.y?.scale) {
         vegaSpec.encoding.y.scale.zero = this.value;
       }
       //}

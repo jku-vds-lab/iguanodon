@@ -58,6 +58,7 @@ export abstract class VisualizationBase {
   }
 
   async showVisualization(container: HTMLDivElement, isSmallMultiple: boolean = false) {
+    this.visContainer = container;
     // for (const desC of this.designChoices) {
     //   this.vegaSpec = desC.updateVegaSpec(this);
     // }
@@ -65,7 +66,6 @@ export abstract class VisualizationBase {
     this.updateVegaSpecBasedOnDesignChoices()
     // console.log('plot vega vis: ', this.id, this.vegaSpec);
     try {
-      this.visContainer = container;
       // await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
       if (isSmallMultiple) {
         const smVegaSpec = this.updateVegaSpecForSmallMultiple(deepCopy(this.vegaSpec));
@@ -112,11 +112,12 @@ export abstract class VisualizationBase {
     this.updateVegaSpecBasedOnDesignChoices();
     // TODO update parameters for objectives
     // vega spec for legend
-    // console.log('legend objective: ', this.objectives.filter((elem) => elem.id === 'addLegend')[0]);
-    (this.objectives.filter((elem) => elem.id === 'addLegend')[0] as any).vegaSpec = this.vegaSpec;
-    // console.log('rightColorEnc objective: ', this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0]);
-    (this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0] as any).vegaSpec = this.vegaSpec;
-    // vega spec for right color encoding
+    // [ ] commented out legend and rightColor encoding
+    // // console.log('legend objective: ', this.objectives.filter((elem) => elem.id === 'addLegend')[0]);
+    // (this.objectives.filter((elem) => elem.id === 'addLegend')[0] as any).vegaSpec = this.vegaSpec;
+    // // console.log('rightColorEnc objective: ', this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0]);
+    // (this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0] as any).vegaSpec = this.vegaSpec;
+    // // vega spec for right color encoding
 
   }
 
@@ -167,12 +168,13 @@ export abstract class VisualizationBase {
     return arr;
   }
 
-  getObjectivesState(): { id: string, state: ObjectiveState, corrDesignChoices: number, numDesignChoices: number }[] {
+  getObjectivesState(): { id: string, label: string, state: ObjectiveState, corrDesignChoices: number, numDesignChoices: number }[] {
     const stateObjectives = [];
     for (const ob of this.objectives) {
       const state = this.checkStateOfObjective(ob.id);
       stateObjectives.push({
         id: ob.id,
+        label: ob.label,
         state: state.state,
         corrDesignChoices: state.corrDesignChoices,
         numDesignChoices: ob.designChoices.length
@@ -186,14 +188,15 @@ export abstract class VisualizationBase {
   }
 
   abstract getCopyofVisualization(copyId: string): VisualizationBase;
+  abstract getVisualizationCopyWithEncodingsAndActions(copyId: string, encodinds: {field: string, value: string}[]): VisualizationBase;
 
   abstract setupVegaSpecification();
   abstract setupDesignChoices();
   abstract setupObjectives();
 
-  abstract getEncodings(): {encoding: string, value: string}[];
+  abstract getEncodings(): {field: string, value: string}[];
 
-  abstract setEncodings(encodinds: {enc: string, value: string}[]);
+  abstract setEncodings(encodinds: {field: string, value: string}[]);
 
   abstract updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec): VisualizationSpec;
   abstract checkStateOfObjective(id: string): { state: ObjectiveState, corrDesignChoices: number };

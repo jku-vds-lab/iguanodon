@@ -1,6 +1,6 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
-import { addBackgroundColor, addLegend, colorEncoding, nominalColorScale, sampleData, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import { addBackgroundColor, addLegend, colorEncoding, designChoiceBase, nominalColorScale, sampleData, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { VisType, VisualizationBase } from "./visualizations";
 
@@ -36,27 +36,50 @@ export class Linechart extends VisualizationBase {
     return copyScatter;
   }
 
-  getEncodings(): {encoding: string, value: string}[] {
+  getVisualizationCopyWithEncodingsAndActions(copyId: string, encodinds: {field: string, value: string}[]): VisualizationBase {
+    let xEnc = '';
+    let yEnc = '';
+    let cEnc = '';
+
+    for(const e of encodinds) {
+      const val = this.convertNullEncoding(e.value); 
+      if(e.field === 'x') {
+        xEnc = val;
+      } else if (e.field === 'y') {
+        yEnc = val;
+      } else if (e.field === 'color') {
+        cEnc = val;
+      }
+    }
+
+    const copyScatter = new Linechart(copyId, this.dataset, xEnc, xEnc, cEnc);
+    copyScatter.baseDesignChoicesOnVisualization(this);
+
+    return copyScatter;
+
+  }
+
+  getEncodings(): {field: string, value: string}[] {
     const encodings = [];
-    encodings.push({encoding: 'x', value: this.xEncoding});
-    encodings.push({encoding: 'y', value: this.yEncoding});
-    encodings.push({encoding: 'color', value: this.colorEncoding});
+    encodings.push({field: 'x', value: this.xEncoding});
+    encodings.push({field: 'y', value: this.yEncoding});
+    encodings.push({field: 'color', value: this.colorEncoding});
 
     return encodings;
   }
   
-  setEncodings(encodinds: {enc: string, value: string}[]) {
+  setEncodings(encodinds: {field: string, value: string}[]) {
     for(const e of encodinds) {
       const val = this.convertNullEncoding(e.value); 
-      if(e.enc === 'x') {
+      if(e.field === 'x') {
         const xEnc = this.getDesignChoicesBasedOnId(['x_axis_encoding'])[0];
         xEnc.value = val;
         this.xEncoding = val;
-      } else if (e.enc === 'y') {
+      } else if (e.field === 'y') {
         const yEnc = this.getDesignChoicesBasedOnId(['y_axis_encoding'])[0];
         yEnc.value = val;
         this.yEncoding = val;
-      } else if (e.enc === 'color') {
+      } else if (e.field === 'color') {
         const cEnc = this.getDesignChoicesBasedOnId(['color_encoding'])[0];
         cEnc.value = val;
         this.colorEncoding = val;

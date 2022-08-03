@@ -2,7 +2,7 @@ import * as aq from 'arquero';
 import { op } from "arquero";
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
-import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, designChoiceBase, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
@@ -13,6 +13,7 @@ export class Scatterplot extends VisualizationBase {
   private xEncoding: string;
   private yEncoding: string;
   private colorEncoding: string;
+  private _hasColorEncoding: boolean;
 
   constructor(id: string, dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
     super(id, dataset);
@@ -20,9 +21,20 @@ export class Scatterplot extends VisualizationBase {
     this.xEncoding = this.convertNullEncoding(xEncoding); 
     this.yEncoding = this.convertNullEncoding(yEncoding); 
     this.colorEncoding = this.convertNullEncoding(colorEncoding); 
+
+    this._hasColorEncoding = this.colorEncoding !== '';
   
 
     console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
+
+    // TODO 
+    // 1. create the actions
+    // 2. create objectives 
+    // 3. create Vega spec based on Encodings Actions
+
+    // create function that updated vegaSpec based on Encodings And Actions
+    // create functions that changes Encoding/Actions
+    // create function that randomly sets the states for an initial visualization
 
     this.setupVegaSpecification();
     this.setupDesignChoices();
@@ -43,33 +55,60 @@ export class Scatterplot extends VisualizationBase {
     return copyScatter;
   }
 
-  getEncodings(): {encoding: string, value: string}[] {
+  getVisualizationCopyWithEncodingsAndActions(copyId: string, encodinds: {field: string, value: string}[]): VisualizationBase {
+    let xEnc = '';
+    let yEnc = '';
+    let cEnc = '';
+
+    for(const e of encodinds) {
+      const val = this.convertNullEncoding(e.value); 
+      if(e.field === 'x') {
+        xEnc = val;
+      } else if (e.field === 'y') {
+        yEnc = val;
+      } else if (e.field === 'color') {
+        cEnc = val;
+      }
+    }
+
+    const copyScatter = new Scatterplot(copyId, this.dataset, xEnc, xEnc, cEnc);
+    copyScatter.baseDesignChoicesOnVisualization(this);
+
+    return copyScatter;
+
+  }
+
+  getEncodings(): {field: string, value: string}[] {
     const encodings = [];
-    encodings.push({encoding: 'x', value: this.xEncoding});
-    encodings.push({encoding: 'y', value: this.yEncoding});
-    encodings.push({encoding: 'color', value: this.colorEncoding});
+    encodings.push({field: 'x', value: this.xEncoding});
+    encodings.push({field: 'y', value: this.yEncoding});
+    encodings.push({field: 'color', value: this.colorEncoding});
 
     return encodings;
   }
 
-  setEncodings(encodinds: {enc: string, value: string}[]) {
+  setEncodings(encodinds: {field: string, value: string}[]) {
     for(const e of encodinds) {
       const val = this.convertNullEncoding(e.value); 
-      if(e.enc === 'x') {
+      if(e.field === 'x') {
         const xEnc = this.getDesignChoicesBasedOnId(['x_axis_encoding'])[0];
         xEnc.value = val;
         this.xEncoding = val;
-      } else if (e.enc === 'y') {
+      } else if (e.field === 'y') {
         const yEnc = this.getDesignChoicesBasedOnId(['y_axis_encoding'])[0];
         yEnc.value = val;
         this.yEncoding = val;
-      } else if (e.enc === 'color') {
+      } else if (e.field === 'color') {
         const cEnc = this.getDesignChoicesBasedOnId(['color_encoding'])[0];
         cEnc.value = val;
         this.colorEncoding = val;
       }
     }
+    this._hasColorEncoding = this.colorEncoding !== '';
     this.setupVegaSpecification();
+    this.setupDesignChoices();
+    this.setupObjectives();
+    this.updateVegaSpecBasedOnDesignChoices();
   }
 
 
@@ -198,14 +237,16 @@ export class Scatterplot extends VisualizationBase {
     this.designChoices.push(new startWith0YAxis());
     // add backgorund color
     this.designChoices.push(new addBackgroundColor());
-    // add legend
-    this.designChoices.push(new addLegend());
     // decrease mark size
     this.designChoices.push(new decreseMarkSize());
     // lower opacity mark
     this.designChoices.push(new lowerOpacityMark());
-    // nominal color scale
-    this.designChoices.push(new nominalColorScale());
+    if(this._hasColorEncoding) {
+      // add legend
+      this.designChoices.push(new addLegend());
+      // nominal color scale
+      this.designChoices.push(new nominalColorScale());
+    }
 
     // sample data
     const samData = new sampleData((this.vegaSpec as any).transform[0].sample);
@@ -316,7 +357,6 @@ export class Scatterplot extends VisualizationBase {
 
 
   setupObjectives() {
-
     // newObjectives: {
     //   id: string,
     //   label: string,
@@ -326,94 +366,6 @@ export class Scatterplot extends VisualizationBase {
     //   state: ObjectiveState,
     //   corrDesignChoices: number,
     // }[];
-    this.objectives = [];
-    // low-level objectives ---------------------------
-    // reduce overplotting
-    // const reduceOP = new Objective('reduceOP');
-    // reduceOP.label = 'Reduce Overplotting';
-    // const reduceOP = new ReduceOverPlotting('reduceOP');
-    // reduceOP.designChoices = this.getDesignChoicesBasedOnId(['sample_data', 'lower_mark_opacity', 'decrese_mark_size']);
-    // this.objectives.push(reduceOP);
-    const reduceOP = {
-      id: 'reduceOP',
-      label: 'Reduce Overplotting',
-      description: 'Reduce Overplotting: Description', //TODO add description
-      designChoices: this.getDesignChoicesBasedOnId(['sample_data', 'lower_mark_opacity', 'decrese_mark_size']),
-      state: null,
-      corrDesignChoices: 0
-    }
-    this.objectives.push(reduceOP);
-
-
-    // avoid nonzero axis distortion
-    // const avoidNZAD = new Objective('avoidNZAD');
-    // avoidNZAD.label = 'Avoid Non-Zero Axis Distortions';
-    // const avoidNZAD = new AvoidNonZeroAxis('avoidNZAD');
-    // avoidNZAD.designChoices = this.getDesignChoicesBasedOnId(['zeor_x_axis', 'zeor_y_axis']);
-    // this.objectives.push(avoidNZAD);
-    const avoidNZAD = {
-      id: 'avoidNZAD',
-      label: 'Avoid Non-Zero Axis Distortions',
-      description: 'Avoid Non-Zero Axis Distortions: Description', //TODO add description
-      designChoices: this.getDesignChoicesBasedOnId(['zeor_x_axis', 'zeor_y_axis']),
-      state: null,
-      corrDesignChoices: 0
-    }
-    this.objectives.push(avoidNZAD);
-    // add legend
-    // const addLegend = new Objective('addLegend');
-    // addLegend.label = 'Show Legend'
-    // const addLegend = new ShowLegend('addLegend', this.vegaSpec);
-    // addLegend.designChoices = this.getDesignChoicesBasedOnId(['legend']);
-    // this.objectives.push(addLegend);
-    const addLegend = {
-      id: 'addLegend',
-      label: 'Show Legend',
-      description: 'Show Legend: Description', //TODO add description
-      designChoices: this.getDesignChoicesBasedOnId(['legend']),
-      state: null,
-      corrDesignChoices: 0
-    }
-    this.objectives.push(addLegend);
-
-    // use the right color encoding
-    // const rightColorEnc = new Objective('rightColorEnc');
-    // rightColorEnc.label = 'Use Right Visual Color Encoding';
-    // const rightColorEnc = new RightColorEncding('rightColorEnc', this.vegaSpec);
-    // rightColorEnc.designChoices = this.getDesignChoicesBasedOnId(['nominal_color_scale']);
-    // this.objectives.push(rightColorEnc);
-    const rightColorEnc = {
-      id: 'rightColorEnc',
-      label: 'Use Right Visual Color Encoding',
-      description: 'Use Right Visual Color Encoding: Description', //TODO add description
-      designChoices: this.getDesignChoicesBasedOnId(['nominal_color_scale']),
-      state: null,
-      corrDesignChoices: 0
-    }
-    this.objectives.push(rightColorEnc);
-
-    // incerese domain understanding
-    // TODO design choices are not yet implmented
-    // const incDU = new Objective('incDU');
-    // incDU.designChoices = this.getDesignChoicesBasedOnId(['']);
-    // this.objectives.push(incDU);
-
-    // avoid distracting embellishments
-    // const avoidDisEm = new Objective('avoidDisEm');
-    // avoidDisEm.label = 'Avoid distracting embellishments';
-    // const avoidDisEm = new AvoidEmbellishments('avoidDisEm');
-    // avoidDisEm.designChoices = this.getDesignChoicesBasedOnId(['background_color']);
-    // this.objectives.push(avoidDisEm);
-    const avoidDisEm = {
-      id: 'avoidDisEm',
-      label: 'Avoid Distracting Embellishments',
-      description: 'Avoid Distracting Embellishments: Description', //TODO add description
-      designChoices: this.getDesignChoicesBasedOnId(['background_color']),
-      state: null,
-      corrDesignChoices: 0
-    }
-    this.objectives.push(avoidDisEm);
-
 
     // high-level objectives --------------------------
     this.highLevelObjectives = [];
@@ -439,11 +391,11 @@ export class Scatterplot extends VisualizationBase {
       description: '',
       lowLevelObjectives: []
     }
-    avoidMI.lowLevelObjectives.push(reduceOP);
-    avoidMI.lowLevelObjectives.push(avoidNZAD);
-    avoidMI.lowLevelObjectives.push(addLegend);
-    avoidMI.lowLevelObjectives.push(rightColorEnc);
-    this.highLevelObjectives.push(avoidMI);
+    
+    
+    
+    
+    
 
     // reduce memory load
     // const reduceML = new Objective('reduceML', true);
@@ -457,17 +409,126 @@ export class Scatterplot extends VisualizationBase {
       description: '',
       lowLevelObjectives: []
     }
+    
+
+
+
+    this.objectives = [];
+    // low-level objectives ---------------------------
+    // reduce overplotting
+    // const reduceOP = new Objective('reduceOP');
+    // reduceOP.label = 'Reduce Overplotting';
+    // const reduceOP = new ReduceOverPlotting('reduceOP');
+    // reduceOP.designChoices = this.getDesignChoicesBasedOnId(['sample_data', 'lower_mark_opacity', 'decrese_mark_size']);
+    // this.objectives.push(reduceOP);
+    const reduceOP = {
+      id: 'reduceOP',
+      label: 'Reduce Overplotting',
+      description: 'Reduce Overplotting: Description', //TODO add description
+      designChoices: this.getDesignChoicesBasedOnId(['sample_data', 'lower_mark_opacity', 'decrese_mark_size']),
+      state: null,
+      corrDesignChoices: 0
+    }
+    this.objectives.push(reduceOP);
+    // add LL objective to HL objective
+    avoidMI.lowLevelObjectives.push(reduceOP);
+
+
+    // avoid nonzero axis distortion
+    // const avoidNZAD = new Objective('avoidNZAD');
+    // avoidNZAD.label = 'Avoid Non-Zero Axis Distortions';
+    // const avoidNZAD = new AvoidNonZeroAxis('avoidNZAD');
+    // avoidNZAD.designChoices = this.getDesignChoicesBasedOnId(['zeor_x_axis', 'zeor_y_axis']);
+    // this.objectives.push(avoidNZAD);
+    const avoidNZAD = {
+      id: 'avoidNZAD',
+      label: 'Avoid Non-Zero Axis Distortions',
+      description: 'Avoid Non-Zero Axis Distortions: Description', //TODO add description
+      designChoices: this.getDesignChoicesBasedOnId(['zeor_x_axis', 'zeor_y_axis']),
+      state: null,
+      corrDesignChoices: 0
+    }
+    this.objectives.push(avoidNZAD);
+    // add LL objective to HL objective
+    avoidMI.lowLevelObjectives.push(avoidNZAD);
+
+    if(this._hasColorEncoding) {
+      // add legend
+      // const addLegend = new Objective('addLegend');
+      // addLegend.label = 'Show Legend'
+      // const addLegend = new ShowLegend('addLegend', this.vegaSpec);
+      // addLegend.designChoices = this.getDesignChoicesBasedOnId(['legend']);
+      // this.objectives.push(addLegend);
+      const addLegend = {
+        id: 'addLegend',
+        label: 'Show Legend',
+        description: 'Show Legend: Description', //TODO add description
+        designChoices: this.getDesignChoicesBasedOnId(['legend']),
+        state: null,
+        corrDesignChoices: 0
+      }
+      this.objectives.push(addLegend);
+      // add LL objective to HL objective
+      avoidMI.lowLevelObjectives.push(addLegend);
+
+      // use the right color encoding
+      // const rightColorEnc = new Objective('rightColorEnc');
+      // rightColorEnc.label = 'Use Right Visual Color Encoding';
+      // const rightColorEnc = new RightColorEncding('rightColorEnc', this.vegaSpec);
+      // rightColorEnc.designChoices = this.getDesignChoicesBasedOnId(['nominal_color_scale']);
+      // this.objectives.push(rightColorEnc);
+      const rightColorEnc = {
+        id: 'rightColorEnc',
+        label: 'Use Right Visual Color Encoding',
+        description: 'Use Right Visual Color Encoding: Description', //TODO add description
+        designChoices: this.getDesignChoicesBasedOnId(['nominal_color_scale']),
+        state: null,
+        corrDesignChoices: 0
+      }
+      this.objectives.push(rightColorEnc);
+      // add LL objective to HL objective
+      avoidMI.lowLevelObjectives.push(rightColorEnc);
+    }
+
+    // incerese domain understanding
+    // TODO design choices are not yet implmented
+    // const incDU = new Objective('incDU');
+    // incDU.designChoices = this.getDesignChoicesBasedOnId(['']);
+    // this.objectives.push(incDU);
+
+    // avoid distracting embellishments
+    // const avoidDisEm = new Objective('avoidDisEm');
+    // avoidDisEm.label = 'Avoid distracting embellishments';
+    // const avoidDisEm = new AvoidEmbellishments('avoidDisEm');
+    // avoidDisEm.designChoices = this.getDesignChoicesBasedOnId(['background_color']);
+    // this.objectives.push(avoidDisEm);
+    const avoidDisEm = {
+      id: 'avoidDisEm',
+      label: 'Avoid Distracting Embellishments',
+      description: 'Avoid Distracting Embellishments: Description', //TODO add description
+      designChoices: this.getDesignChoicesBasedOnId(['background_color']),
+      state: null,
+      corrDesignChoices: 0
+    }
+    this.objectives.push(avoidDisEm);
+    // add LL objective to HL objective
     reduceML.lowLevelObjectives.push(avoidDisEm);
+
+    // add HL Objectives to array
+    this.highLevelObjectives.push(avoidMI);
     this.highLevelObjectives.push(reduceML);
+
+
   }
 
 
-  getObjectivesState(): { id: string, state: ObjectiveState, corrDesignChoices: number, numDesignChoices: number }[] {
+  getObjectivesState(): { id: string, label: string, state: ObjectiveState, corrDesignChoices: number, numDesignChoices: number }[] {
     const stateObjectives = [];
     for (const ob of this.objectives) {
       const state = this.checkStateOfObjective(ob.id);
       stateObjectives.push({
         id: ob.id,
+        label: ob.label,
         state: state.state,
         corrDesignChoices: state.corrDesignChoices,
         numDesignChoices: ob.designChoices.length
@@ -480,6 +541,7 @@ export class Scatterplot extends VisualizationBase {
   checkStateOfObjective(id: string): { state: ObjectiveState, corrDesignChoices: number } {
     // make sure the vegaSpec is up-to-date
     this.updateVegaSpecBasedOnDesignChoices();
+
 
     if (id === 'reduceOP') {
       return this.checkReduceOverplotting();
@@ -668,28 +730,33 @@ export class Scatterplot extends VisualizationBase {
 
 
 
-    console.log('________');
-    // console.log('Axis min/max: ', { xMin, xMax, yMin, yMax });
-    console.log('Axis min/max: ', minMax);
-    const xdiff = Math.abs(minMax.xMax - minMax.xMin);
-    const ydiff = Math.abs(minMax.yMax - minMax.yMin);
+    // console.log('________');
+    // // console.log('Axis min/max: ', { xMin, xMax, yMin, yMax });
+    // console.log('Axis min/max: ', minMax);
+    // const xdiff = Math.abs(minMax.xMax - minMax.xMin);
+    // const ydiff = Math.abs(minMax.yMax - minMax.yMin);
 
-    // according to DRACO rules: http://vizrec.bernhardpointner.com/recommender
-    // Prefer not to use zero when the difference between min and max is larger than distance to 0.
-    // no show 0 -> max-min > min
-    // show 0 -> max-min < min
-    const xShow0 = minMax.xmin >= 0 && xdiff < minMax.xmin;
-    const yShow0 = minMax.ymin >= 0 && ydiff < minMax.ymin;
-    console.log('Axis prefered state: ', { xdiff, xShow0, ydiff, yShow0 });
+    // // according to DRACO rules: http://vizrec.bernhardpointner.com/recommender
+    // // Prefer not to use zero when the difference between min and max is larger than distance to 0.
+    // // no show 0 -> max-min > min
+    // // show 0 -> max-min < min
+    // const xShow0 = minMax.xmin >= 0 && xdiff < minMax.xmin;
+    // const yShow0 = minMax.ymin >= 0 && ydiff < minMax.ymin;
+    // console.log('Axis prefered state: ', { xdiff, xShow0, ydiff, yShow0 });
 
-    // const amount = objetive.designChoices.length;
+    // // const amount = objetive.designChoices.length;
 
 
     const desCXAxisState = objetive.designChoices.filter((elem) => elem.id === 'zeor_x_axis')[0].value;
     const desCYAxisState = objetive.designChoices.filter((elem) => elem.id === 'zeor_y_axis')[0].value;
 
-    const xCorr = desCXAxisState === xShow0;
-    const yCorr = desCYAxisState === yShow0;
+    // const xCorr = desCXAxisState === xShow0;
+    // const yCorr = desCYAxisState === yShow0;
+    
+    const xCorr = desCXAxisState ===  (minMax.xMin >= 0);
+    const yCorr = desCYAxisState ===  (minMax.yMin >= 0);
+    console.log('Zero on axis: ',{xCorr, desCXAxisState, xMin: minMax.xMin, yCorr, desCYAxisState, yMin: minMax.yMin});
+
     const sumCorr = Number(xCorr) + Number(yCorr);
 
 

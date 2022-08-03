@@ -1,5 +1,6 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { DesignChoiceType } from "./designChoices";
+import { ObjectiveState } from "./Objective";
 import { Scatterplot } from "./Scatterplot";
 import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
 import { VisType, VisualizationBase } from "./visualizations";
@@ -157,7 +158,7 @@ export class Investigation {
     // create visualizations dynamically (scatter, line, bar)
     const scatter = new Scatterplot('init', this.dataset, selectX.value, selectY.value, selectC.value);
     
-    this.addHistoryColumn();
+    // this.addHistoryColumn();
     this.updateVisualizations(scatter);
 
   }
@@ -166,7 +167,7 @@ export class Investigation {
     // vis selection
     const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
     selectVis.addEventListener('change', (ev) => {
-      this.addHistoryColumn();
+      // this.addHistoryColumn();
       this.updateEncodings();
 
       const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
@@ -185,7 +186,7 @@ export class Investigation {
     const selectEncs: HTMLSelectElement[] = Array.from(this.$actObTable.querySelectorAll('.encoding-selecion'));
     for(const sel of selectEncs) {
       sel.addEventListener('change', (ev) => {
-        this.addHistoryColumn();
+        // this.addHistoryColumn();
 
 
         // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
@@ -202,14 +203,18 @@ export class Investigation {
 
         const currentState = this._visHistory[this._visHistory.length-1];
         const currVisualization = currentState.visualization;
+        const newName = `vis-${this._visHistory.length}`;
         const newVis = currVisualization.getCopyofVisualization(`vis-${this._visHistory.length}`);
 
         const encodings = [
-          {enc: 'x', value: selectX.value},
-          {enc: 'y', value: selectY.value},
-          {enc: 'color', value: selectC.value},
+          {field: 'x', value: selectX.value},
+          {field: 'y', value: selectY.value},
+          {field: 'color', value: selectC.value},
         ];
         newVis.setEncodings(encodings);
+        // [ ] update vegaSpec based on encodings
+        // const newVis = currVisualization.getVisualizationCopyWithEncodingsAndActions(newName,encodings);
+
 
          // update history
         // this.addHistoryColumn();
@@ -255,14 +260,14 @@ export class Investigation {
       // console.log('xEncRow: ',xEncRow);
       const elemTd = document.createElement('td');
       elemTd.appendChild($xSelect)
-      this.addRow(2,'x-axis-encoding', ['encoding'],'Set X-Axis Encoding', elemTd);
+      this.addRow('actions',2,'x-axis-encoding', ['encoding'],'Set X-Axis Encoding', elemTd);
     }
 
     if(!yEncRow) {
       // console.log('yEncRow: ',yEncRow);
       const elemTd = document.createElement('td');
       elemTd.appendChild($ySelect)
-      this.addRow(3,'y-axis-encoding', ['encoding'],'Set Y-Axis Encoding', elemTd);
+      this.addRow('actions', 3,'y-axis-encoding', ['encoding'],'Set Y-Axis Encoding', elemTd);
     }
 
     
@@ -273,7 +278,7 @@ export class Investigation {
         // console.log('cEncRow: ',cEncRow);
         const elemTd = document.createElement('td');
         elemTd.appendChild($colorSelect)
-        this.addRow(4,'color-encoding', ['encoding'],'Set Color Encoding', elemTd);
+        this.addRow('actions', 4,'color-encoding', ['encoding'],'Set Color Encoding', elemTd);
       }
   
       // this.addRow(2,'x-axis-encoding','Set X-Axis Encoding', $xSelect);
@@ -298,6 +303,7 @@ export class Investigation {
   }
 
   async updateVisualizations(visualization: VisualizationBase) {
+    this.addHistoryColumn();
     console.log('update Visualization');
 
     const newStep = this._visHistory.length+1;
@@ -314,16 +320,24 @@ export class Investigation {
 
     console.log('visHistory: ', this._visHistory);
     const encodings = visualization.getEncodings();
-    const xEnc = encodings.filter((elem) => elem.encoding === 'x')[0];
-    const yEnc = encodings.filter((elem) => elem.encoding === 'y')[0];
+    const xEnc = encodings.filter((elem) => elem.field === 'x')[0];
+    const yEnc = encodings.filter((elem) => elem.field === 'y')[0];
     console.log('select values: ', {x: xEnc.value, y: yEnc.value});
     // TODO check for all visualizations
     if(xEnc.value !== '' && yEnc.value !== '') {
       this.updateActions();
     }
 
+    // 
+
     // TODO add loading animation
+    console.log('show visualization in: ', visItem);
     await visualization.showVisualization(visItem);
+
+    // TODO update objectives
+    if(xEnc.value !== '' && yEnc.value !== '') {
+      this.updateObjectives();
+    }
   }
 
   updateActions() {
@@ -466,7 +480,7 @@ export class Investigation {
       actionElem.dataset.value = `${action.value}`;
       console.log('new Visualization action: ', action);
       // update history
-      this.addHistoryColumn();
+      // this.addHistoryColumn();
       // add visualization to history
       this.updateVisualizations(newVisualization);
 
@@ -477,23 +491,71 @@ export class Investigation {
 
   removePreviewRows() {
     const previewActions = Array.from(this.$actObTable.querySelectorAll('.action.preview'));
-    console.group('remove preview rows');
+    // console.group('remove preview rows');
     for(const pAct of previewActions) {
       this.removeRow(pAct.id);
     }
-    console.groupEnd();
+    // console.groupEnd();
   }
 
   updateObjectives() {
+    // get current visualization
+    const currentState = this._visHistory[this._visHistory.length-1];
+    const currVisualization = currentState.visualization;
+    
+    // existing objectives
+    const existingObjective = Array.from(this.$actObTable.querySelectorAll('tr.objective'));
+    const existingObjectiveIds = existingObjective.map((elem) => elem.id);
+    console.log('Existing objectives: ', existingObjectiveIds);
 
+    const currVisObjectives = currVisualization.getObjectivesState();
+    console.log('current Objective: ', currVisObjectives);
+
+    // new preview actions
+    // const newObjectives =  currVisObjectives.filter((elem) => existingObjectiveIds.indexOf(elem.id) === -1);
+    // console.log('newObjectives: ', newObjectives);
+ 
+
+    // go through all objecives of visualizatin
+    for(const obj of currVisObjectives) {
+      // check if row already exists
+      const currObjRow = existingObjective.filter((elem) => elem.id === obj.id);
+
+      if(currObjRow.length === 1)  {
+        // row exists
+        // update all existing objectives
+        const currCell = currObjRow[0].querySelector('.current-state') as HTMLElement;
+        currCell.dataset.value = `${this.convertObjStateToString(obj.state)}`;;
+
+      } else {
+        // row does ont exist
+        // add rows for the non existing objecives
+        // -> set values for the newly created objective
+        const tdObjective = document.createElement('td');
+        tdObjective.classList.add('current-state');
+        tdObjective.dataset.value = `${this.convertObjStateToString(obj.state)}`;
+        this.addObjectiveRow(`${obj.id}`, ['objective'] ,`${obj.label}`, tdObjective);
+      }
+
+      
+    }
+    // TODO handle ojective rows that have no state in current visualization  
+    
+
+  }
+
+  convertObjStateToString(objState: ObjectiveState): string {
+    if(objState === ObjectiveState.correct) return 'correct';
+    if(objState === ObjectiveState.partial) return 'partial';
+    if(objState === ObjectiveState.wrong) return 'wrong';
   }
 
   removeRow(rowId: string) {
     const rowElement: HTMLTableRowElement = this.$actObTable.querySelector(`#${rowId}`);
-    console.log('remove row with Id: ', rowId);
+    // console.log('remove row with Id: ', rowId);
     if(rowElement) {      
       rowElement.remove();
-      console.log('row removed: ', rowId);
+      // console.log('row removed: ', rowId);
     }
 
 
@@ -502,20 +564,23 @@ export class Investigation {
   addActionRow(visType: VisType, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
     if(visType === VisType.Bar) {
       // visualization: bar
-      this.addRow(4, rowId, classes, label, currElem);
+      this.addRow('actions', 4, rowId, classes, label, currElem);
     } else {
       // visualization: scatter & line
-      this.addRow(5, rowId, classes, label, currElem);
+      this.addRow('actions',5, rowId, classes, label, currElem);
     }
-
   }
 
-  addRow(posFromTop: number, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
+  addObjectiveRow(rowId: string, classes: string[], label: string, currElem: HTMLElement) {
+    this.addRow('objectives', 4, rowId, classes, label, currElem);
+  }
+
+  addRow(type: string, posFromTop: number, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
     const tableHeadCellHist: HTMLTableCellElement = this.$actObTable.querySelector('#act-ob-table-th-history');
     const currColSpan = tableHeadCellHist ? tableHeadCellHist.colSpan : 0;
     console.log('add row: ', {label, currColSpan});
 
-    const bodyAction = this.$actObTable.querySelector('tbody.table-actions');
+    const bodyAction = this.$actObTable.querySelector(`tbody.table-${type}`);
 
     // new row that will be added to the table
     const newRow = document.createElement('tr');

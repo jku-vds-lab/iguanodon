@@ -1,5 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { DesignChoiceType } from "./designChoices";
+import { ActionType } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { Scatterplot } from "./Scatterplot";
 import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
@@ -156,7 +156,7 @@ export class Investigation {
   
     // console.log('dataset Investigation: ', this.dataset);
     // create visualizations dynamically (scatter, line, bar)
-    const scatter = new Scatterplot('init', this.dataset, selectX.value, selectY.value, selectC.value);
+    const scatter = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
     
     // this.addHistoryColumn();
     this.updateVisualizations(scatter);
@@ -177,7 +177,7 @@ export class Investigation {
     
       // console.log('dataset Investigation: ', this.dataset);
       // create visualizations dynamically (scatter, line, bar)
-      const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
+      const scatter = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
     
       this.updateVisualizations(scatter);
     });
@@ -348,7 +348,7 @@ export class Investigation {
     const currentState = this._visHistory[this._visHistory.length-1];
     const currVisualization = currentState.visualization;
     // only get action without encodings
-    const currVisActions = currVisualization.getStateOfDesignChoices().filter((elem) => elem.type === DesignChoiceType.option);
+    const currVisActions = currVisualization.getStateOfDesignChoices().filter((elem) => elem.type === ActionType.Option);
     console.log('update Action: current visualizations: ', currVisualization);
     console.log('update Action: current actions: ', currVisActions);
     console.groupCollapsed('action previews')
@@ -363,7 +363,7 @@ export class Investigation {
     // new preview actions
     const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.dcId) === -1);
     console.log('filtered actions: ', newActions);
-    const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as { dcId: string, label:string, type: DesignChoiceType, value: boolean | string | number }[];
+    const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as { dcId: string, label:string, type: ActionType, value: boolean | string | number }[];
     console.log('Selected actions for preview: ', actionSelection);
 
    
@@ -384,10 +384,10 @@ export class Investigation {
 
       // new visualization
       const preVis = currVisualization.getCopyofVisualization(`preview`)
-      const desC = preVis.getDesignChoicesBasedOnId([currASel.dcId])[0];
+      const desC = preVis.getAction(currASel.dcId);
       console.log('vis action: ', {currASel, desC});
 
-      if (desC.type === DesignChoiceType.option) {
+      if (desC.type === ActionType.Option) {
         desC.value = !desC.value;
       }
       previews.unshift({cell: tdAction, vis: preVis});
@@ -476,7 +476,7 @@ export class Investigation {
 
       actionElem.innerText = '';
       const actionId = actionElem.dataset.aid;
-      const action = newVisualization.getDesignChoicesBasedOnId([`${actionId}`])[0];
+      const action = newVisualization.getAction(`${actionId}`);
       actionElem.dataset.value = `${action.value}`;
       console.log('new Visualization action: ', action);
       // update history

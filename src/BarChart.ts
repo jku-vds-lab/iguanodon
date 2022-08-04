@@ -12,16 +12,15 @@ export class Barchart extends VisualizationBase {
   private colorEncoding: string;
 
 
-  constructor(id: string, dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
-    super(id, dataset);
-    this.type = VisType.Bar;
+  constructor(dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
+    super(dataset, VisType.Bar);
     this.xEncoding = xEncoding;
     this.yEncoding = yEncoding;
     this.colorEncoding = colorEncoding === null ? '' : colorEncoding;
 
     this.setupVegaSpecification();
     this.setupDesignChoices();
-    this.setupObjectives();
+    this.updateObjectives();
   }
 
   getCopyofVisualization(copyId: string): VisualizationBase {
@@ -185,7 +184,7 @@ export class Barchart extends VisualizationBase {
 
 
 
-  setupObjectives() {
+  updateObjectives() {
 
     // newObjectives: {
     //   id: string,

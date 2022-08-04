@@ -11,16 +11,15 @@ export class Linechart extends VisualizationBase {
   private colorEncoding: string;
 
 
-  constructor(id: string, dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
-    super(id, dataset);
-    this.type = VisType.Line;
+  constructor(dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
+    super(dataset, VisType.Line);
     this.xEncoding = xEncoding;
     this.yEncoding = yEncoding;
     this.colorEncoding = colorEncoding === null ? '' : colorEncoding;
 
     this.setupVegaSpecification();
     this.setupDesignChoices();
-    this.setupObjectives();
+    this.updateObjectives();
   }
 
   getCopyofVisualization(copyId: string): VisualizationBase {
@@ -205,7 +204,7 @@ export class Linechart extends VisualizationBase {
   // }
 
 
-  setupObjectives() {
+  updateObjectives() {
     this.objectives = [];
 
 

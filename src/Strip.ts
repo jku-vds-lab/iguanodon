@@ -1,4 +1,4 @@
-import { DesignChoiceType, VisPiplineStage } from "./designChoices";
+import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
 import { lowLevelObjective, VisType, VisualizationBase } from "./visualizations";
@@ -450,7 +450,7 @@ export class Strip {
         const desC = preVis.designChoices[selctionId];
         // console.log('preview: ', { i, preVis });
 
-        if (desC.type === DesignChoiceType.option) {
+        if (desC.type === ActionType.Option) {
           // console.log('design choice: ', { i, id: desC.id, old: desC.value.toString(), new: (!desC.value).toString() });
           desC.value = !desC.value;
           visCntrLabel.innerHTML = desC.label;
@@ -635,7 +635,7 @@ export class Strip {
         // set HTML dataset attribute
         pipItem.dataset.designChoiceId = desC.id
 
-        if (desC.type === DesignChoiceType.option) {
+        if (desC.type === ActionType.Option) {
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.checked = desC.value as boolean;

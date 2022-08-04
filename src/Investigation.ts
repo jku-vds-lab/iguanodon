@@ -203,15 +203,17 @@ export class Investigation {
 
         const currentState = this._visHistory[this._visHistory.length-1];
         const currVisualization = currentState.visualization;
-        const newName = `vis-${this._visHistory.length}`;
-        const newVis = currVisualization.getCopyofVisualization(`vis-${this._visHistory.length}`);
+        // const newName = `vis-${this._visHistory.length}`;
+        // const newVis = currVisualization.getCopyofVisualization();
 
+        
         const encodings = [
           {field: 'x', value: selectX.value},
           {field: 'y', value: selectY.value},
           {field: 'color', value: selectC.value},
         ];
-        newVis.setEncodings(encodings);
+        // newVis.setEncodings(encodings);
+        const newVis = currVisualization.getCopyofVisualizationWithChangedEncodings(encodings);
         // [ ] update vegaSpec based on encodings
         // const newVis = currVisualization.getVisualizationCopyWithEncodingsAndActions(newName,encodings);
 
@@ -348,7 +350,7 @@ export class Investigation {
     const currentState = this._visHistory[this._visHistory.length-1];
     const currVisualization = currentState.visualization;
     // only get action without encodings
-    const currVisActions = currVisualization.getStateOfDesignChoices().filter((elem) => elem.type === ActionType.Option);
+    const currVisActions = currVisualization.actions.filter((elem) => elem.type === ActionType.Option);
     console.log('update Action: current visualizations: ', currVisualization);
     console.log('update Action: current actions: ', currVisActions);
     console.groupCollapsed('action previews')
@@ -361,7 +363,7 @@ export class Investigation {
     console.log('Existing actions: ', existingActionIds);
 
     // new preview actions
-    const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.dcId) === -1);
+    const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.id) === -1);
     console.log('filtered actions: ', newActions);
     const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as { dcId: string, label:string, type: ActionType, value: boolean | string | number }[];
     console.log('Selected actions for preview: ', actionSelection);
@@ -383,7 +385,7 @@ export class Investigation {
       this.addActionRow(currVisualization.type, `${currASel.dcId}`, ['action', 'preview'] ,`${currASel.label}`, tdAction);
 
       // new visualization
-      const preVis = currVisualization.getCopyofVisualization(`preview`)
+      const preVis = currVisualization.getCopyofVisualization()
       const desC = preVis.getAction(currASel.dcId);
       console.log('vis action: ', {currASel, desC});
 

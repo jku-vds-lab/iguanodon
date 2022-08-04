@@ -12,19 +12,19 @@ export enum VisPiplineStage {
 }
 
 /**
- * Enumation for the type of design choice, either an Vega specification ption (start x-axis with 0) or the attribute encoding (x-axis: horsepower).
+ * Enumation for the type of design choice, either an Vega specification option (start x-axis with 0) or the attribute encoding (x-axis: horsepower).
  */
-export enum DesignChoiceType {
+export enum ActionType {
   // TODO probably not needed
-  option,
-  encoding
+  Option = 'Option',
+  Encoding = 'Encoding'
 }
 
 
 export abstract class designChoiceBase {
   id: string;
   stage: VisPiplineStage;
-  type: DesignChoiceType;
+  type: ActionType;
   value: boolean | string | number;
   label: string;
 
@@ -32,7 +32,7 @@ export abstract class designChoiceBase {
     this.id = id;
   }
 
-  getCurrentState(): { dcId: string, label:string, type: DesignChoiceType, value: boolean | string | number } {
+  getCurrentState(): { dcId: string, label:string, type: ActionType, value: boolean | string | number } {
     return {
       dcId: this.id,
       label: this.label,
@@ -51,7 +51,7 @@ export abstract class designChoiceOption extends designChoiceBase {
 
   constructor(id: string) {
     super(id);
-    this.type = DesignChoiceType.option;
+    this.type = ActionType.Option;
   }
 
   // getCurrentState(): {dcId: string, type: DesignChoiceType, value: boolean} {
@@ -69,7 +69,7 @@ export abstract class designChoiceEncoding extends designChoiceBase {
 
   constructor(id: string) {
     super(id);
-    this.type = DesignChoiceType.encoding;
+    this.type = ActionType.Encoding;
   }
 
   // getCurrentState(): {dcId: string, type: DesignChoiceType, value: string} {

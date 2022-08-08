@@ -4,11 +4,8 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
 import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, designChoiceBase, ActionType, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, VisPiplineStage, xAxisEncoding, yAxisEncoding } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable, uniqueFilter } from "./util";
-import { highLevelObjective, IAction, IObjective, IObjectiveState, VisType, VisualizationBase } from "./visualizations";
-
-
-
+import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable, getRandomBoolean, uniqueFilter } from "./util";
+import { highLevelObjective, IAction, IEncoding, IObjective, IObjectiveState, VisType, VisualizationBase } from "./visualizations";
 
 // export enum ScatterplotActions {
 //   XEncoding, 
@@ -43,9 +40,8 @@ export class Scatterplot extends VisualizationBase {
     this._hasColorEncoding = this.colorEncoding !== '';
     
 
-    console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
+    // console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
 
-    // TODO 
     // 1. create the actions based on encodings
     this.updateActions();
     // 2. create objectives based on encodings
@@ -53,6 +49,7 @@ export class Scatterplot extends VisualizationBase {
     // 3. create Vega spec based on encodings & actions
     this.updateVegaSpec();
 
+    // console.log('SP vega-spec: ',this.vegaSpec);
     // create function that updated vegaSpec based on Encodings And Actions
     // create functions that changes Encoding/Actions
     // create function that randomly sets the states for an initial visualization
@@ -61,17 +58,6 @@ export class Scatterplot extends VisualizationBase {
     // this.setupDesignChoices();
     // this.setupObjectives();
   }
-
-  createActionObject(id: string, label: string, value: any, visStage: VisPiplineStage, type: ActionType): IAction {
-    return {
-      id,
-      label,
-      value,
-      visStage,
-      type
-    };
-  }
-
 
   updateActions() {
     this.actions = [];
@@ -88,35 +74,35 @@ export class Scatterplot extends VisualizationBase {
 
     // option actions
     // sample data
-    const aSample = this.createActionObject('sample_data','Sample Data (25%)', false, VisPiplineStage.dataTransform, ActionType.Option);
+    const aSample = this.createActionObject('sample_data','Sample Data (25%)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
     this.actions.push(aSample);
     // aggregation (mean)
-    const aAggregation = this.createActionObject('aggregate','Aggregate Data (Mean)', false, VisPiplineStage.dataTransform, ActionType.Option);
+    const aAggregation = this.createActionObject('aggregate','Aggregate Data (Mean)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
     this.actions.push(aAggregation);
     // lower mark opacity
-    const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', false, VisPiplineStage.visualMapping, ActionType.Option);
+    const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
     this.actions.push(aOpacity);
     // decrese mark size
-    const aSize = this.createActionObject('decrease_size','Decreased Mark Size', false, VisPiplineStage.visualMapping, ActionType.Option);
+    const aSize = this.createActionObject('decrease_size','Decreased Mark Size', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
     this.actions.push(aSize);
     // start x with 0
-    const aXZero = this.createActionObject('x_axis_zero','Start x-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
+    const aXZero = this.createActionObject('x_axis_zero','Start x-Axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aXZero);
     // start y with 0
-    const aYZero = this.createActionObject('y_axis_zero','Start y-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
+    const aYZero = this.createActionObject('y_axis_zero','Start y-Axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aYZero);
     // background color
-    const aBackground = this.createActionObject('background_color','Add Background Color', false, VisPiplineStage.viewTransform, ActionType.Option);
+    const aBackground = this.createActionObject('background_color','Add Background Color', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aBackground);
 
 
     // conditional option actions
     if(this._hasColorEncoding) {
       // legend
-      const aLegend = this.createActionObject('legend','Add Legend', false, VisPiplineStage.viewTransform, ActionType.Option)
+      const aLegend = this.createActionObject('legend','Add Legend', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option)
       this.actions.push(aLegend);
       // nomnal color scale
-      const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', false, VisPiplineStage.visualMapping, ActionType.Option)
+      const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option)
       this.actions.push(aNominalColors);
     }
   }
@@ -231,11 +217,14 @@ export class Scatterplot extends VisualizationBase {
     const dataTotalSize = this.dataset.numRows();
 
     // get action values
-    // TODO add aggreation
     // sample data
     const sampleDataAction = this.getAction('sample_data');
     const sampleDataActionValue = sampleDataAction !== null ? sampleDataAction.value : false;
     const sampledSize = sampleDataActionValue ? Math.ceil(dataTotalSize/4) : dataTotalSize;
+   
+    // aggreation mean
+    const aggregateAction = this.getAction('aggregate');
+    const aggregateValues = aggregateAction !== null ? aggregateAction.value : false;
 
     // background color
     const backgroundColorAction = this.getAction('background_color');
@@ -312,6 +301,10 @@ export class Scatterplot extends VisualizationBase {
         type: 'quantitative',
         scale: { zero: zeroXAxis } // start x-axis with 0
       };
+
+      if(aggregateValues) {
+        vegaSpecBuildUp.encoding.x.aggregate = 'mean'
+      }
     }
     // y
     if(this.yEncoding) {
@@ -321,6 +314,10 @@ export class Scatterplot extends VisualizationBase {
         type: 'quantitative',
         scale: { zero: zeroYAxis } // start y-axis with 0
       };
+
+      if(aggregateValues) {
+        vegaSpecBuildUp.encoding.y.aggregate = 'mean'
+      }
     }
 
     // color
@@ -346,11 +343,11 @@ export class Scatterplot extends VisualizationBase {
 
   getCopyofVisualization(): VisualizationBase {
     const copy = new Scatterplot(this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
-    this.setActionsBasedOnVisualization(this);
+    copy.setActionsBasedOnVisualization(this);
     return copy;
   }
 
-  getCopyofVisualizationWithChangedEncodings(encodings: {field: string, value: string}[]): VisualizationBase{
+  getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase{
     let xEnc = '';
     let yEnc = '';
     let cEnc = '';
@@ -367,7 +364,9 @@ export class Scatterplot extends VisualizationBase {
     }
 
     const copy = new Scatterplot(this.dataset, xEnc, yEnc, cEnc);
-    this.setActionsBasedOnVisualization(this);
+    copy.setActionsBasedOnVisualization(this);
+    // console.log('Actions: ', {origin: this.actions, copy: copy.actions});
+    // console.log('vega-Specs: ', {origin: this.vegaSpec, copy: copy.vegaSpec});
     return copy;
   }
 
@@ -408,7 +407,7 @@ export class Scatterplot extends VisualizationBase {
 
   // }
 
-  getEncodings(): {field: string, value: string}[] {
+  getEncodings(): IEncoding[] {
     const encodings = [];
     encodings.push({field: 'x', value: this.xEncoding});
     encodings.push({field: 'y', value: this.yEncoding});
@@ -417,7 +416,7 @@ export class Scatterplot extends VisualizationBase {
     return encodings;
   }
 
-  setEncodings(encodinds: {field: string, value: string}[]) {
+  setEncodings(encodinds: IEncoding[]) {
     for(const e of encodinds) {
       const val = this.convertNullEncoding(e.value); 
       if(e.field === 'x') {
@@ -875,7 +874,6 @@ export class Scatterplot extends VisualizationBase {
     // this.updateVegaSpecBasedOnDesignChoices();
     this.updateVegaSpec();
 
-
     if (id === 'reduceOP') {
       return this.checkReduceOverplotting();
     } else if (id === 'avoidNZAD') {
@@ -962,10 +960,10 @@ export class Scatterplot extends VisualizationBase {
     // }
 
 
-    const hullmarks = convexHull(markObjects);
+    // const hullmarks = convexHull(markObjects);
     // console.log('hull points info: ', hullmarks);
     // console.log('hull points: ', hullmarks.map((elem) => elem.mark));
-    const hullArea = caculateAreaPolygone(hullmarks);
+    // const hullArea = caculateAreaPolygone(hullmarks);
     // console.log('hull Area: ', hullArea);
     console.groupCollapsed('Action: Overlapp')
     console.time("overlapp Calc");
@@ -977,12 +975,12 @@ export class Scatterplot extends VisualizationBase {
     console.log('________');
     console.log('Overplotting points:', { points: marks.length, overlapPoints: areaOverlap.overlapPoints, ratio: areaOverlap.overlapPoints / marks.length });
     console.log('Overplotting Vis Area:', { pointsArea: areaAllMarks, areaContainingMarks, ratio: areaAllMarks / areaContainingMarks });
-    console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
+    // console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
     console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: percentageOverlap });
     console.groupEnd();
 
     // get objective
-    const objetive = this.getObjective('reduceOP');
+    const objective = this.getObjective('reduceOP');
     /*
 
     // get deign choice of objective: 'sample_data', 'lower_mark_opacity', 'decrese_mark_size'
@@ -1030,12 +1028,12 @@ export class Scatterplot extends VisualizationBase {
     */
 
 
-    const amount = objetive.actions.length;
+    const amount = objective.actions.length;
 
-    const numbOfTrue = objetive.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
-    const numbOfFalse = objetive.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
+    const numbOfTrue = objective.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
+    const numbOfFalse = objective.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
     const correct = numbOfTrue === 1;
-    const corrActions = correct ? objetive.actions.length : 0;
+    const corrActions = correct ? objective.actions.length : 0;
 
     return {
       state: correct ? ObjectiveState.correct : ObjectiveState.wrong,
@@ -1081,8 +1079,10 @@ export class Scatterplot extends VisualizationBase {
     // // const amount = objetive.designChoices.length;
 
 
-    const desCXAxisState = objetive.actions.filter((elem) => elem.id === 'x_axis_zero')[0].value;
-    const desCYAxisState = objetive.actions.filter((elem) => elem.id === 'y_axis_zero')[0].value;
+    // const desCXAxisState = objetive.actions.filter((elem) => elem.id === 'x_axis_zero')[0].value;
+    const desCXAxisState = this.getAction('x_axis_zero').value;
+    // const desCYAxisState = objetive.actions.filter((elem) => elem.id === 'y_axis_zero')[0].value;
+    const desCYAxisState = this.getAction('y_axis_zero').value;
 
     // const xCorr = desCXAxisState === xShow0;
     // const yCorr = desCYAxisState === yShow0;

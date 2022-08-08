@@ -3,7 +3,7 @@ import { ActionType } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { Scatterplot } from "./Scatterplot";
 import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
-import { VisType, VisualizationBase } from "./visualizations";
+import { IAction, VisType, VisualizationBase } from "./visualizations";
 
 
 
@@ -40,7 +40,7 @@ export class Investigation {
 
     // setup all elemtens and their containers:
     // current Vis, next Vis, table, previews
-    this.setupInterface();
+    this.setupInterface(VisType.Scatter);
     this.setupInitialVisualization();
 
 
@@ -52,7 +52,7 @@ export class Investigation {
     // this.addHistoryColumn();
   }
 
-  setupInterface() {
+  setupInterface(starVisType: VisType = VisType.Scatter) {
     // current vis
     this.$currVis = document.createElement('div');
     this.$currVis.id = 'current-vis';
@@ -68,7 +68,7 @@ export class Investigation {
     this.$cntrTable = document.createElement('div'); // container for table
     this.$cntrTable.id = 'cntr-table';
     
-    this.$actObTable = this.createTable();
+    this.$actObTable = this.createTable(starVisType);
     this.$actObTable.id = 'act-ob-table';
 
     this.$cntrTable.appendChild(this.$actObTable);
@@ -130,13 +130,14 @@ export class Investigation {
     // add vis type select with its options to table
     const infoSel = {id: 'vis-select', classes: ['current-state']};
     const visTypeOpt = [
-      {value: ''+VisType.Scatter, text: 'Scatterplot'},
-      {value: ''+VisType.Line, text: 'Line Chart'},
-      {value: ''+VisType.Bar, text: 'Bar Chart'}
+      {value: ''+VisType.Scatter, text: this.getVisTypeText(VisType.Scatter)},
+      {value: ''+VisType.Line, text: this.getVisTypeText(VisType.Line)},
+      {value: ''+VisType.Bar, text: this.getVisTypeText(VisType.Bar)}
     ];
     const $select = this._ceateHTMLSelectWithOptions(infoSel, visTypeOpt);
     // set initial visualization type dynamically
     $select.value = ''+starVisType;
+    $select.dataset.value = this.getVisTypeText(starVisType);
 
     // add select to table cell
     const $cellVisType = $table.querySelector('#vis-type-cell');
@@ -144,6 +145,16 @@ export class Investigation {
 
 
     return $table;
+  }
+
+  getVisTypeText(visType: VisType): string {
+    if(visType === VisType.Scatter) {
+      return 'Scatterplot';
+    }else if(visType === VisType.Line) {
+      return 'Line Chart';
+    } else {
+      return 'Bar Chart';
+    }
   }
 
   setupInitialVisualization() {
@@ -170,7 +181,7 @@ export class Investigation {
       // this.addHistoryColumn();
       this.updateEncodings();
 
-      const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
+      // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
       const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
       const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
       const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
@@ -179,6 +190,11 @@ export class Investigation {
       // create visualizations dynamically (scatter, line, bar)
       const scatter = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
     
+
+      
+      this.addHistoryColumn();
+
+      selectVis.dataset.value = this.getVisTypeText(Number(selectVis.value) as VisType);
       this.updateVisualizations(scatter);
     });
 
@@ -219,7 +235,11 @@ export class Investigation {
 
 
          // update history
-        // this.addHistoryColumn();
+        this.addHistoryColumn();
+
+        selectX.dataset.value = selectX.value;
+        selectY.dataset.value = selectY.value;
+        selectC.dataset.value = selectC.value;
         this.updateVisualizations(newVis);
       });
     }
@@ -240,16 +260,20 @@ export class Investigation {
     });
 
     // add empty option
-    opts.unshift({value: 'null', text: ''});
+    opts.unshift({value: '', text: ''});
 
     const xSel = {id: 'x-axis-select', classes: ['encoding-selecion', 'current-state']};
     const $xSelect = this._ceateHTMLSelectWithOptions(xSel, opts);
+    $xSelect.dataset.value = $xSelect.value;
+
 
     const ySel = {id: 'y-axis-select', classes: ['encoding-selecion', 'current-state']};
     const $ySelect = this._ceateHTMLSelectWithOptions(ySel, opts);
+    $ySelect.dataset.value = $ySelect.value;
 
     const colorSel = {id: 'color-select', classes: ['encoding-selecion', 'current-state']};
     const $colorSelect = this._ceateHTMLSelectWithOptions(colorSel, opts);
+    $colorSelect.dataset.value = $colorSelect.value;
 
     // check if encoding rows exist
     const xEncRow: HTMLTableRowElement = this.$actObTable.querySelector('#x-axis-encoding');
@@ -304,10 +328,16 @@ export class Investigation {
     // }
   }
 
-  async updateVisualizations(visualization: VisualizationBase) {
-    this.addHistoryColumn();
-    console.log('update Visualization');
+  // async updateActionChange(visualization: VisualizationBase) {
+  //   console.log('updateActionChange');
+  //   this.addHistoryColumn();
+  //   this.updateVisualizations(visualization);
+  // }
 
+  async updateVisualizations(visualization: VisualizationBase) {
+    console.log('update Visualization');
+    
+    // this.addHistoryColumn();
     const newStep = this._visHistory.length+1;
     this._visHistory.push({step: newStep, score: 0, visualization});
 
@@ -316,15 +346,15 @@ export class Investigation {
 
     // create container for new visualization
     const visItem = document.createElement('div');
-    visItem.classList.add('vis-item');
+    visItem.classList.add('current-vis-vega-wrapper');
     // add vis container to vis strip
     this.$currVis.appendChild(visItem);
 
-    console.log('visHistory: ', this._visHistory);
+    // console.log('visHistory: ', this._visHistory);
     const encodings = visualization.getEncodings();
     const xEnc = encodings.filter((elem) => elem.field === 'x')[0];
     const yEnc = encodings.filter((elem) => elem.field === 'y')[0];
-    console.log('select values: ', {x: xEnc.value, y: yEnc.value});
+    // console.log('select values: ', {x: xEnc.value, y: yEnc.value});
     // TODO check for all visualizations
     if(xEnc.value !== '' && yEnc.value !== '') {
       this.updateActions();
@@ -333,7 +363,7 @@ export class Investigation {
     // 
 
     // TODO add loading animation
-    console.log('show visualization in: ', visItem);
+    // console.log('show visualization in: ', visItem);
     await visualization.showVisualization(visItem);
 
     // TODO update objectives
@@ -351,8 +381,8 @@ export class Investigation {
     const currVisualization = currentState.visualization;
     // only get action without encodings
     const currVisActions = currVisualization.actions.filter((elem) => elem.type === ActionType.Option);
-    console.log('update Action: current visualizations: ', currVisualization);
-    console.log('update Action: current actions: ', currVisActions);
+    // console.log('update Action: current visualizations: ', currVisualization);
+    // console.log('update Action: current actions: ', currVisActions);
     console.groupCollapsed('action previews')
     // const actionSelection = getUniqueRandomValuesFrom0toN(currVisActions.length, this._numbPreviews);
     // console.log('Selected actions for preview: ', actionSelection);
@@ -365,10 +395,12 @@ export class Investigation {
     // new preview actions
     const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.id) === -1);
     console.log('filtered actions: ', newActions);
-    const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as { dcId: string, label:string, type: ActionType, value: boolean | string | number }[];
+    // TODO set preview to number of fitered actions
+    const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as IAction[];
     console.log('Selected actions for preview: ', actionSelection);
 
-   
+    // get felx container for previews 'preview-vis';
+    const cntrPreviews = this.$previewVis.querySelector('.preview-vis');
 
     // add previews with table entries
     const divPreviews = Array.from(this.$previewVis.querySelectorAll('.preview-option')) as HTMLDivElement[];
@@ -380,13 +412,13 @@ export class Investigation {
       const tdAction = document.createElement('td');
       tdAction.classList.add('current-state');
       tdAction.innerText = '?'
-      tdAction.dataset.aid = `${currASel.dcId}`;
+      tdAction.dataset.aid = `${currASel.id}`;
       // tdAction.dataset.value = `${currASel.value}`;
-      this.addActionRow(currVisualization.type, `${currASel.dcId}`, ['action', 'preview'] ,`${currASel.label}`, tdAction);
+      this.addActionRow(currVisualization.type, `${currASel.id}`, ['action', 'preview'] ,`${currASel.label}`, tdAction);
 
       // new visualization
       const preVis = currVisualization.getCopyofVisualization()
-      const desC = preVis.getAction(currASel.dcId);
+      const desC = preVis.getAction(currASel.id);
       console.log('vis action: ', {currASel, desC});
 
       if (desC.type === ActionType.Option) {
@@ -470,16 +502,24 @@ export class Investigation {
     // click
     actionElem.addEventListener('click', (event) => {
       console.log('new Visualization and ActionElem: ', {actionElem, newVisualization});
-      
+            
       // remove preview
-      actionElem.parentElement.classList.remove('preview');
+      const parentRow = actionElem.parentElement;
+      parentRow.classList.remove('preview');
+      
       // remove other preview actions
       this.removePreviewRows();
 
-      actionElem.innerText = '';
-      const actionId = actionElem.dataset.aid;
+      // create copy of element to remove eventlisteners
+      const copyActionElem = actionElem.cloneNode() as HTMLElement;
+      // replace action element with its copy
+      parentRow.replaceChild(copyActionElem, actionElem);
+
+      copyActionElem.innerText = '';
+      const actionId = copyActionElem.dataset.aid;
       const action = newVisualization.getAction(`${actionId}`);
-      actionElem.dataset.value = `${action.value}`;
+      this.addHistoryColumn();
+      copyActionElem.dataset.value = `${action.value}`;
       console.log('new Visualization action: ', action);
       // update history
       // this.addHistoryColumn();
@@ -490,6 +530,7 @@ export class Investigation {
       // this.updateActions();
     });
   }
+
 
   removePreviewRows() {
     const previewActions = Array.from(this.$actObTable.querySelectorAll('.action.preview'));
@@ -580,7 +621,7 @@ export class Investigation {
   addRow(type: string, posFromTop: number, rowId: string, classes: string[], label: string, currElem: HTMLElement) {
     const tableHeadCellHist: HTMLTableCellElement = this.$actObTable.querySelector('#act-ob-table-th-history');
     const currColSpan = tableHeadCellHist ? tableHeadCellHist.colSpan : 0;
-    console.log('add row: ', {label, currColSpan});
+    // console.log('add row: ', {label, currColSpan});
 
     const bodyAction = this.$actObTable.querySelector(`tbody.table-${type}`);
 
@@ -620,10 +661,11 @@ export class Investigation {
 
   addHistoryColumn() {
     console.log('add History Column: ', this._visHistory);
+    // console.log('History Column length: ', this._visHistory.length);
     // find the step number
     const allSteps = this._visHistory.map((elem) => elem.step);
-    console.log('allSteps: ', allSteps);
-    const numbSteps = allSteps.length+1;
+    // console.log('allSteps: ', allSteps);
+    const numbSteps = allSteps.length;
     const currStep = numbSteps > 0 ? allSteps[numbSteps-1] : 1;
 
     // check if history columns already exist
@@ -674,9 +716,13 @@ export class Investigation {
         if(elemCurrState?.tagName === "SELECT") {
           // vistype and encodings
           const select = elemCurrState as HTMLSelectElement;
-          const currStateVal = select.options[select.selectedIndex].text;
-          cell.innerHTML = currStateVal.substring(0,2);
-          cell.title = currStateVal;
+          // const currStateVal = select.options[select.selectedIndex].text;
+          // cell.innerHTML = currStateVal.substring(0,2);
+          // cell.title = currStateVal;
+          const value = select.dataset.value;
+          cell.dataset.value = value;
+          cell.innerHTML = value.substring(0,2);
+          cell.title = value;
         } else {
           // actions and objectives
           cell.dataset.value = elemCurrState.dataset.value;

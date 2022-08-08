@@ -342,7 +342,7 @@ function initScatterplot(xEnc: string, yEnc: string, colotEnc: string) {
   // const colTypesTable = getColumnTypesFromArqueroTable(aqDataset);
   // console.log('colTypesTable: ', colTypesTable);
 
-  const scatterplot = new Scatterplot('scatter0', aqDataset, xEnc, yEnc, colotEnc);
+  const scatterplot = new Scatterplot(aqDataset, xEnc, yEnc, colotEnc);
   console.log('Start vis: ', scatterplot);
   const strip = new Strip(scatterplot, visStrip, visMutli);
   // strip.addVisualization(scatterplot);
@@ -358,7 +358,7 @@ function initLinechart() {
   const colTypesTable = getColumnTypesFromArqueroTable(aqDataset);
   console.log('colTypesTable: ', colTypesTable);
 
-  const linechart = new Linechart('line0', aqDataset, 'date', 'price', 'symbol');
+  const linechart = new Linechart(aqDataset, 'date', 'price', 'symbol');
   console.log('Start vis: ', linechart);
   const strip = new Strip(linechart, visStrip, visMutli);
   // strip.addVisualization(scatterplot);
@@ -368,7 +368,7 @@ function initLinechart() {
 function initBarchart() {
   const dataset = getDataCars();
   const aqDataset = aq.from(dataset);
-  const barchart = new Barchart('line0', aqDataset, 'date', 'price', 'symbol');
+  const barchart = new Barchart(aqDataset, 'date', 'price', 'symbol');
   console.log('Start vis: ', barchart);
   const strip = new Strip(barchart, visStrip, visMutli);
   // strip.addVisualization(scatterplot);

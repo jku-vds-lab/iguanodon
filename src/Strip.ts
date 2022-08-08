@@ -1,7 +1,7 @@
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
-import { lowLevelObjective, VisType, VisualizationBase } from "./visualizations";
+import { IObjective, VisType, VisualizationBase } from "./visualizations";
 
 
 export class Strip {
@@ -127,7 +127,7 @@ export class Strip {
         this.$objectivesContainer.appendChild(tmpLowObj);
 
 
-        for (const dc of lob.designChoices) {
+        for (const dc of lob.actions) {
           this.highlightPipelineOption(tmpLowObj, dc.id);
         }
         // hover
@@ -159,7 +159,7 @@ export class Strip {
           // get details container for lastPos
           const lastCntr = this.$detailsStrip.querySelector(`[data-pos='${lastPos}']`);
           // get design choice containers
-          for (const dc of lob.designChoices) {
+          for (const dc of lob.actions) {
             // cntrDesC.classList.add('highlighted');
             const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`).children[0] as HTMLDivElement;
             const dimDc = cntrDesC.getBoundingClientRect();
@@ -196,7 +196,7 @@ export class Strip {
           // get details container for lastPos
           const lastCntr = this.$detailsStrip.querySelector(`[data-pos='${lastPos}']`);
           // get design choices container
-          for (const dc of lob.designChoices) {
+          for (const dc of lob.actions) {
             const cntrDesC = lastCntr.querySelector(`[data-design-choice-id='${dc.id}']`);
             // cntrDesC.classList.remove('highlighted');
             const paths = svgElement.querySelectorAll('.obj-dc-path');
@@ -217,7 +217,7 @@ export class Strip {
   //   this.$objectiveIndicator.appendChild(svgElement);
   // }
 
-  addObjectiveIdication(obj: lowLevelObjective, designChoiceId: string, startPos: number, endPos: number, betterScore: boolean) {
+  addObjectiveIdication(obj: IObjective, designChoiceId: string, startPos: number, endPos: number, betterScore: boolean) {
     // get current dimensions
     // const stripDimensions = this.$detailsStrip.getBoundingClientRect();
     const indicatorDim = this.$objectiveIndicator.getBoundingClientRect();
@@ -335,7 +335,7 @@ export class Strip {
       let maxDesC = 0;
       let amountCorrDesC = 0;
       for (const cob of corrObjectives) {
-        maxDesC = maxDesC + cob.numDesignChoices;
+        maxDesC = maxDesC + cob.numActions;
         // highlight objective correctness
         const objClass = cob.state === ObjectiveState.correct ? 'correct' : (cob.state === ObjectiveState.partial ? 'partial' : 'wrong');
         const objElem = this.$objectivesContainer.querySelector(`[data-obj-id=${cob.id}]`);
@@ -347,7 +347,7 @@ export class Strip {
         }
 
         // get number of correct design choices
-        amountCorrDesC = amountCorrDesC + cob.corrDesignChoices;
+        amountCorrDesC = amountCorrDesC + cob.corrActions;
 
       }
       const score = Math.round((amountCorrDesC / maxDesC) * 10000) / 100;
@@ -369,24 +369,24 @@ export class Strip {
       if (histLeg >= 2) {
         const oldState = this._visHistory[histLeg - 2];
         const oldVis = oldState.visualization;
-        const oldVisState = oldVis.getStateOfDesignChoices();
+        const oldVisState = oldVis.actions;
         const oldScore = oldState.score;
 
         const newState = this._visHistory[histLeg - 1];
         const newVis = newState.visualization;
-        const newVisState = newVis.getStateOfDesignChoices();
+        const newVisState = newVis.actions;
         const newScore = newState.score;
         console.log('New and old Visualization States: ', { oldVisState, newVisState });
 
         const diffArr = [];
         for (const oldDesC of oldVisState) {
-          const newDesC = newVisState.filter((elem) => elem.dcId === oldDesC.dcId)[0];
+          const newDesC = newVisState.filter((elem) => elem.id === oldDesC.id)[0];
           if (newDesC) {
             const oldValue = oldDesC.value;
             const newValue = newDesC.value;
             if (oldValue !== newValue) {
               diffArr.push({
-                dcId: oldDesC.dcId,
+                dcId: oldDesC.id,
                 type: oldDesC.type,
                 oldValue,
                 newValue
@@ -413,14 +413,14 @@ export class Strip {
   }
 
   async updateMulitPreview(visualization: VisualizationBase) {
-    const numbDesignChoices = visualization.designChoices.length;
+    const numbDesignChoices = visualization.actions.length;
     // console.log('update Previews from design choices: ', visualization.designChoices);
     const divPreviews = Array.from(this.$visMultiPreview.getElementsByClassName('vis-mult-item')) as HTMLDivElement[];
 
     // console.log('update Previews');
     // console.log('params: ', numbDesignChoices,)
     // get random array with indices of the design choices
-    const designChoiceSelection = getUniqueRandomValuesFrom0toN(visualization.designChoices.length, divPreviews.length);
+    const designChoiceSelection = getUniqueRandomValuesFrom0toN(visualization.actions.length, divPreviews.length);
     // console.log('params: ', { numbDesignChoices, designChoiceSelection });
     // for (const divElem of divPreviews) {
     divPreviews.forEach(async (divElem, i) => {
@@ -443,11 +443,11 @@ export class Strip {
         // const preVis = new Scatterplot(`preview-${i}`);
         // preVis.baseDesignChoicesOnVisualization(visualization);
 
-        const preVis = visualization.getCopyofVisualization(`preview-${i}`)
+        const preVis = visualization.getCopyofVisualization();
         // preVis.id = `preview-${i}`;
         // console.log('copy: ', preVis);
         const selctionId = designChoiceSelection[i];
-        const desC = preVis.designChoices[selctionId];
+        const desC = preVis.actions[selctionId];
         // console.log('preview: ', { i, preVis });
 
         if (desC.type === ActionType.Option) {
@@ -628,7 +628,7 @@ export class Strip {
       pipItem.classList.add('pipeline-item');
       container.appendChild(pipItem);
 
-      const desC = visualization.designChoices.filter((elem) => elem.id === desChOrderId)[0]
+      const desC = visualization.actions.filter((elem) => elem.id === desChOrderId)[0]
       // console.log('add pipeline stage: ', { desC, desChOrderId, designChoices: visualization.designChoices });
       if (desC) {
         pipItem.classList.add('pipeline-stage-item');
@@ -642,8 +642,8 @@ export class Strip {
           // cb.disabled = true;
           pipItem.appendChild(cb);
           this.highlightPipelineOption(cb, desC.id);
-          const preVis = visualization.getCopyofVisualization(`preview-cb`);
-          const preVisDesC = preVis.getDesignChoicesBasedOnId([desC.id])[0];
+          const preVis = visualization.getCopyofVisualization();
+          const preVisDesC = preVis.getAction(desC.id);
           preVisDesC.value = !preVisDesC.value;
           this.addPreviewActionsBasedOnDesignChoice(cb, preVis);
 
@@ -700,7 +700,7 @@ export class Strip {
     this._pipelineDesignChoiceOrder.push('empty');
 
     // 2. Data Transform -> Stage
-    const dcDataTrans = visualization.designChoices.filter((elem) => elem.stage === VisPiplineStage.dataTransform)
+    const dcDataTrans = visualization.actions.filter((elem) => elem.visStage === VisPiplineStage.dataTransform)
     for (const desC of dcDataTrans) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;
@@ -718,7 +718,7 @@ export class Strip {
     this._pipelineDesignChoiceOrder.push('empty');
 
     // 4. Visual Mapping -> Stage
-    const dcVisualMap = visualization.designChoices.filter((elem) => elem.stage === VisPiplineStage.visualMapping)
+    const dcVisualMap = visualization.actions.filter((elem) => elem.visStage === VisPiplineStage.visualMapping)
     for (const desC of dcVisualMap) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;
@@ -736,7 +736,7 @@ export class Strip {
     this._pipelineDesignChoiceOrder.push('empty');
 
     // 6. View Transform -> Stage
-    const dcViewTrans = visualization.designChoices.filter((elem) => elem.stage === VisPiplineStage.viewTransform)
+    const dcViewTrans = visualization.actions.filter((elem) => elem.visStage === VisPiplineStage.viewTransform)
     for (const desC of dcViewTrans) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = desC.label;

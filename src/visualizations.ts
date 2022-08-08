@@ -21,6 +21,11 @@ export interface IAction {
   type: ActionType;
 }
 
+export interface IEncoding {
+  field: string;
+  value: string;
+}
+
 export interface IObjective {
   id: string;
   label: string;
@@ -124,6 +129,16 @@ export abstract class VisualizationBase {
     } else {
       return value;
     }
+  }
+
+  createActionObject(id: string, label: string, value: any, visStage: VisPiplineStage, type: ActionType): IAction {
+    return {
+      id,
+      label,
+      value,
+      visStage,
+      type
+    };
   }
 
 
@@ -245,8 +260,6 @@ export abstract class VisualizationBase {
   //   return this.objectives.filter((elem) => elem.id === id)[0];
   // }
 
-
-
   getAction(id: string): IAction {
     const actions = this.actions.filter((elem) => elem.id === id);
     if(actions.length === 1) {
@@ -263,8 +276,8 @@ export abstract class VisualizationBase {
       if(act) {
         actions.push(act);
       }
-      return actions;
     }
+    return actions;
   }
 
   getObjective(id: string): IObjective {
@@ -283,8 +296,8 @@ export abstract class VisualizationBase {
       if(obj) {
         objectives.push(obj);
       }
-      return objectives;
     }
+    return objectives;
   }
   
   abstract updateActions();
@@ -292,12 +305,12 @@ export abstract class VisualizationBase {
 
   abstract updateVegaSpec();
 
-  abstract getEncodings(): {field: string, value: string}[];
+  abstract getEncodings(): IEncoding[];
 
-  abstract setEncodings(encodinds: {field: string, value: string}[]);
+  abstract setEncodings(encodinds: IEncoding[]);
   
   abstract getCopyofVisualization(): VisualizationBase;
-  abstract getCopyofVisualizationWithChangedEncodings(encodings: {field: string, value: string}[]): VisualizationBase;
+  abstract getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase;
 
   // abstract getVisualizationCopyWithEncodingsAndActions(copyId: string, encodings: {field: string, value: string}[]): VisualizationBase;
 

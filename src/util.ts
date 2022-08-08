@@ -38,8 +38,13 @@ export const deepCopy = <T>(target: T): T => {
  * @param max 
  * @returns 
  */
-export function getRandomInt(max) {
+export function getRandomInt(max): number {
   return Math.floor(Math.random() * max);
+}
+
+
+export function getRandomBoolean(): boolean {
+  return Math.random() < 0.5 ? false : true;
 }
 
 /**

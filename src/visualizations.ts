@@ -1,6 +1,6 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import embed, { VisualizationSpec } from "vega-embed";
-import { designChoiceBase, ActionType, VisPiplineStage } from "./designChoices";
+import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { deepCopy } from "./util";
 

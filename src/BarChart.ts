@@ -1,7 +1,7 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
 import { getDataCars } from "./dataCars";
-import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, designChoiceBase, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import {  } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { IEncoding, VisType, VisualizationBase } from "./visualizations";
 

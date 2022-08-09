@@ -20,6 +20,8 @@ export enum ActionType {
   Encoding = 'Encoding'
 }
 
+/*
+
 
 export abstract class designChoiceBase {
   id: string;
@@ -498,3 +500,4 @@ export class addLegend extends designChoiceOption {
 
 // TODO add design choice: BP & LP: direct labels vs lagend
 // TODO add design choice: Bp: order bars by height
+*/

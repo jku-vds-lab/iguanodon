@@ -1,6 +1,6 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
-import { ActionType, addBackgroundColor, addLegend, colorEncoding, designChoiceBase, nominalColorScale, sampleData, startWith0YAxis, VisPiplineStage, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { IEncoding, VisType, VisualizationBase } from "./visualizations";
 

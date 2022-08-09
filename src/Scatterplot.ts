@@ -2,7 +2,7 @@ import * as aq from 'arquero';
 import { op } from "arquero";
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
-import { addBackgroundColor, addLegend, colorEncoding, decreseMarkSize, designChoiceBase, ActionType, lowerOpacityMark, nominalColorScale, sampleData, startWith0XAxis, startWith0YAxis, VisPiplineStage, xAxisEncoding, yAxisEncoding } from "./designChoices";
+import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable, getRandomBoolean, uniqueFilter } from "./util";
 import { highLevelObjective, IAction, IEncoding, IObjective, IObjectiveState, VisType, VisualizationBase } from "./visualizations";

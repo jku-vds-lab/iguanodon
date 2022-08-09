@@ -19,6 +19,7 @@ export class Investigation {
   $wrapperTable: HTMLDivElement;
   $cntrTable: HTMLDivElement;
   $wrapperPreview: HTMLDivElement;
+  $previewSVG: SVGElement;
   $previewVis: HTMLDivElement;
 
   $actObTable: HTMLTableElement;
@@ -78,16 +79,22 @@ export class Investigation {
     this.$wrapperPreview = document.createElement('div'); // right side
     this.$wrapperPreview.id = 'wrapper-preview';
 
+    // preview svg (connection lines)
+    this.$previewSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.$previewSVG.id = 'preview-svg';
+    this.$wrapperPreview.appendChild(this.$previewSVG);
+
+    // preview vis (previews)
     this.$previewVis = document.createElement('div');
     this.$previewVis.id = 'preview-vis';
     this.$wrapperPreview.appendChild(this.$previewVis);
 
-    // preview vis containers
-    for(let i=0; i<this._numbPreviews; i++) {
-      const preVisOpt = document.createElement('div');
-      preVisOpt.classList.add('preview-option',`pos-${i+1}`);
-      this.$previewVis.appendChild(preVisOpt);
-    }
+    // FIXME preview vis containers
+    // for(let i=0; i<this._numbPreviews; i++) {
+    //   const preVisOpt = document.createElement('div');
+    //   preVisOpt.classList.add('preview-option',`pos-${i+1}`);
+    //   this.$previewVis.appendChild(preVisOpt);
+    // }
 
     // add dom elements to container
     this.$container.appendChild(this.$currVis);
@@ -399,11 +406,10 @@ export class Investigation {
     const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as IAction[];
     console.log('Selected actions for preview: ', actionSelection);
 
-    // get felx container for previews 'preview-vis';
-    const cntrPreviews = this.$previewVis.querySelector('.preview-vis');
+    // clear Previews
+    this.$previewVis.innerHTML = ''; 
 
-    // add previews with table entries
-    const divPreviews = Array.from(this.$previewVis.querySelectorAll('.preview-option')) as HTMLDivElement[];
+    
     
 
     // create the preview rows
@@ -428,6 +434,31 @@ export class Investigation {
     }
 
     // TODO select existing actions if not enough new ones can be added
+    // FIXME adapt previews
+    const actualPreviews = newActions.length < this._numbPreviews ? newActions.length : this._numbPreviews;
+    for(let i=0; i<actualPreviews; i++) {
+      const preVisOpt = document.createElement('div');
+      preVisOpt.classList.add('preview-option',`pos-${i+1}`);
+      this.$previewVis.appendChild(preVisOpt);
+    }
+
+    // add previews with table entries
+    const divPreviews = Array.from(this.$previewVis.querySelectorAll('.preview-option')) as HTMLDivElement[];
+
+
+    // remove old group elements
+    const oldGroups = Array.from(this.$previewSVG.querySelectorAll('.all-preview-paths'));
+    if(oldGroups.length > 0) {
+      for(const og of oldGroups) {
+        const parent = og.parentNode;
+        parent.removeChild(og);
+      }
+    }
+
+    // add new group element to SVG
+    const svgGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    svgGroup.classList.add('all-preview-paths');
+    this.$previewSVG.appendChild(svgGroup);
 
     // add preview visualizations
     divPreviews.forEach(async (divElem, i) => {
@@ -439,6 +470,42 @@ export class Investigation {
       divElem.appendChild(visCntr);
 
       currPreview.vis.showVisualization(visCntr);
+
+      // FIXME add svg connection lines
+      let svgDim = this.$previewSVG.getBoundingClientRect();
+      let visDim = visCntr.getBoundingClientRect();
+      let cellDim = currPreview.cell.getBoundingClientRect();
+      let tableDim = this.$actObTable.getBoundingClientRect();
+      console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
+
+      // const svgCoord = {x: svgDim.x, y: svgDim.y};
+      const cellTopRight = {x: 0, y: cellDim.y-svgDim.y+1};      
+      const cellBotRight = {x: 0, y: cellDim.bottom-svgDim.y-1};      
+      const previewTopLeft = {x: visDim.x-svgDim.x, y: visDim.y-svgDim.y};      
+      const previewBotLeft = {x: visDim.x-svgDim.x, y: visDim.bottom-svgDim.y-2}; 
+      
+      // create path element 
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.classList.add('preview-path');
+
+      const xMiddle = (previewTopLeft.x - cellTopRight.x)/2;
+      // C: controlX1, controlY1, controlX2, controlY2, x, y,
+      const dPath = `M ${cellTopRight.x} ${cellTopRight.y} 
+      C ${xMiddle} ${cellTopRight.y} ${xMiddle} ${previewTopLeft.y} ${previewTopLeft.x} ${previewTopLeft.y}
+      L ${previewBotLeft.x} ${previewBotLeft.y}
+      C ${xMiddle} ${previewBotLeft.y} ${xMiddle} ${cellBotRight.y} ${cellBotRight.x} ${cellBotRight.y}
+      Z`;
+      console.log('Path.d: ', dPath);
+      path.setAttribute('d',dPath);
+      
+      // add path to svg group
+      svgGroup.appendChild(path);
+
+      svgDim = this.$previewSVG.getBoundingClientRect();
+      visDim = visCntr.getBoundingClientRect();
+      cellDim = currPreview.cell.getBoundingClientRect();
+      tableDim = this.$actObTable.getBoundingClientRect();
+      console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
 
       // add action listerner
       this.addActionEventListener(currPreview.cell, currPreview.vis);

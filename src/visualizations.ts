@@ -99,9 +99,9 @@ export abstract class VisualizationBase {
       if (isSmallMultiple) {
         const smVegaSpec = this.updateVegaSpecForSmallMultiple(deepCopy(this.vegaSpec));
 
-        await embed(container, smVegaSpec, { actions: false });
+        await embed(container, smVegaSpec, { actions: false, padding: {left: 0, top: 0, right: 0, bottom: 0} });
       } else {
-        await embed(container, this.vegaSpec, { actions: false, renderer: 'svg' });
+        await embed(container, this.vegaSpec, { actions: false, renderer: 'svg', padding: {left: 0, top: 0, right: 0, bottom: 0}});
       }
     } catch (error) {
       // HACK add meaningful error catch
@@ -154,7 +154,7 @@ export abstract class VisualizationBase {
     for(const gAction of givenActions) {
       // find the action that should be changed based on the given one
       const currAction = this.actions.filter((elem) => elem.id ===  gAction.id);
-      if (currAction) {
+      if (currAction && currAction.length > 0) {
         // set the current action value to the one given
         currAction[0].value = gAction.value;
       }

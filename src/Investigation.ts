@@ -390,21 +390,21 @@ export class Investigation {
     const currVisActions = currVisualization.actions.filter((elem) => elem.type === ActionType.Option);
     // console.log('update Action: current visualizations: ', currVisualization);
     // console.log('update Action: current actions: ', currVisActions);
-    console.groupCollapsed('action previews')
     // const actionSelection = getUniqueRandomValuesFrom0toN(currVisActions.length, this._numbPreviews);
     // console.log('Selected actions for preview: ', actionSelection);
     
+    // console.groupCollapsed('action previews')
     // existing actions
     const existingActions = Array.from(this.$actObTable.querySelectorAll('tr.action'));
     const existingActionIds = existingActions.map((elem) => elem.id);
-    console.log('Existing actions: ', existingActionIds);
+    // console.log('Existing actions: ', existingActionIds);
 
     // new preview actions
     const newActions =  currVisActions.filter((elem) => existingActionIds.indexOf(elem.id) === -1);
-    console.log('filtered actions: ', newActions);
+    // console.log('filtered actions: ', newActions);
     // TODO set preview to number of fitered actions
     const actionSelection = getUniqueRandomValuesFromArray(newActions, this._numbPreviews) as IAction[];
-    console.log('Selected actions for preview: ', actionSelection);
+    // console.log('Selected actions for preview: ', actionSelection);
 
     // clear Previews
     this.$previewVis.innerHTML = ''; 
@@ -424,11 +424,11 @@ export class Investigation {
 
       // new visualization
       const preVis = currVisualization.getCopyofVisualization()
-      const desC = preVis.getAction(currASel.id);
-      console.log('vis action: ', {currASel, desC});
+      const action = preVis.getAction(currASel.id);
+      // console.log('vis action: ', {currASel, action});
 
-      if (desC.type === ActionType.Option) {
-        desC.value = !desC.value;
+      if (action.type === ActionType.Option) {
+        action.value = !action.value;
       }
       previews.unshift({cell: tdAction, vis: preVis});
     }
@@ -476,7 +476,7 @@ export class Investigation {
       let visDim = visCntr.getBoundingClientRect();
       let cellDim = currPreview.cell.getBoundingClientRect();
       let tableDim = this.$actObTable.getBoundingClientRect();
-      console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
+      // console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
 
       // const svgCoord = {x: svgDim.x, y: svgDim.y};
       const cellTopRight = {x: 0, y: cellDim.y-svgDim.y+1};      
@@ -495,7 +495,7 @@ export class Investigation {
       L ${previewBotLeft.x} ${previewBotLeft.y}
       C ${xMiddle} ${previewBotLeft.y} ${xMiddle} ${cellBotRight.y} ${cellBotRight.x} ${cellBotRight.y}
       Z`;
-      console.log('Path.d: ', dPath);
+      // console.log('Path.d: ', dPath);
       path.setAttribute('d',dPath);
       
       // add path to svg group
@@ -585,11 +585,35 @@ export class Investigation {
       copyActionElem.innerText = '';
       const actionId = copyActionElem.dataset.aid;
       const action = newVisualization.getAction(`${actionId}`);
+      // update history
       this.addHistoryColumn();
       copyActionElem.dataset.value = `${action.value}`;
       console.log('new Visualization action: ', action);
-      // update history
-      // this.addHistoryColumn();
+      
+      // FIXME add event listener for hover
+      copyActionElem.addEventListener('click',(event) => {
+        // new visualization
+        const currentVis = this._visHistory[this._visHistory.length-1];
+        const changedVis = currentVis.visualization.getCopyofVisualization();
+        const action = changedVis.getAction(actionId);
+        // console.log('changedVis action (clicked): ', {actionId, action});
+        // console.log('changedVis action before (clicked): ', {value: action.value});
+
+        if (action.type === ActionType.Option) {
+          action.value = !action.value;
+        }
+        // console.log('changedVis action after (clicked): ', {value: action.value});
+        
+        // update history
+        this.addHistoryColumn();
+        copyActionElem.dataset.value = `${action.value}`;
+
+        // add visualization to history
+        this.updateVisualizations(changedVis);
+
+
+      });
+
       // add visualization to history
       this.updateVisualizations(newVisualization);
 

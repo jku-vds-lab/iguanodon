@@ -280,6 +280,7 @@ export class Scatterplot extends VisualizationBase {
       transform: [{ sample: sampledSize }],
       width: 'container', //responsive width
       height: 'container', //responsive height
+      autosize: {type: 'fit', contains: 'padding'},
       background: `${backgorundColor}`, // background color}
     };
 

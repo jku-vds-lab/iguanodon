@@ -108,8 +108,8 @@ export class Investigation {
     $table.innerHTML = `
       <thead>
         <tr>
-          <th scope="col">Actions & Objectives</th>
-          <th scope="col">Current</th>
+          <th class="label" scope="col">Actions & Objectives</th>
+          <th class="current" scope="col">Current</th>
         </tr>
       </thead>
       <tbody class="table-actions">
@@ -505,7 +505,7 @@ export class Investigation {
       visDim = visCntr.getBoundingClientRect();
       cellDim = currPreview.cell.getBoundingClientRect();
       tableDim = this.$actObTable.getBoundingClientRect();
-      console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
+      // console.log('Coord: ', {tableDim, cellDim, svgDim, visDim});
 
       // add action listerner
       this.addActionEventListener(currPreview.cell, currPreview.vis);
@@ -588,40 +588,82 @@ export class Investigation {
       // update history
       this.addHistoryColumn();
       copyActionElem.dataset.value = `${action.value}`;
-      console.log('new Visualization action: ', action);
-      
-      // FIXME add event listener for hover
-      copyActionElem.addEventListener('click',(event) => {
-        // new visualization
-        const currentVis = this._visHistory[this._visHistory.length-1];
-        const changedVis = currentVis.visualization.getCopyofVisualization();
-        const action = changedVis.getAction(actionId);
-        // console.log('changedVis action (clicked): ', {actionId, action});
-        // console.log('changedVis action before (clicked): ', {value: action.value});
-
-        if (action.type === ActionType.Option) {
-          action.value = !action.value;
-        }
-        // console.log('changedVis action after (clicked): ', {value: action.value});
-        
-        // update history
-        this.addHistoryColumn();
-        copyActionElem.dataset.value = `${action.value}`;
-
-        // add visualization to history
-        this.updateVisualizations(changedVis);
-
-
+     
+      // add EventListeners for click and hover (mouseenter/mouseleave)
+      copyActionElem.addEventListener('click',async (event) => {
+        this.changeActionAndVisualizations(actionId, copyActionElem);
       });
+      
+      copyActionElem.addEventListener('mouseenter',async (event) => {
+        this.updateBigPreviewVisualization(actionId);
+      });
+
+      copyActionElem.addEventListener('mouseleave',async (event) => {
+        this.clearBigPreviewVisualization();
+      });
+
 
       // add visualization to history
       this.updateVisualizations(newVisualization);
-
-      // update actions
-      // this.updateActions();
     });
   }
 
+  async changeActionAndVisualizations(actionId: string, actionElem: HTMLElement) {
+    // get current visualization
+    const currentVis = this._visHistory[this._visHistory.length-1];
+    // create copy of current visualization
+    const changedVis = currentVis.visualization.getCopyofVisualization();
+    
+    // get action and changes its value of the copy visualization
+    const action = changedVis.getAction(actionId);
+    if (action.type === ActionType.Option) {
+      action.value = !action.value;
+    }
+    
+    // update history
+    this.addHistoryColumn();
+    actionElem.dataset.value = `${action.value}`;
+
+    // update current visualization
+    await this.updateVisualizations(changedVis);
+
+    // update big preview vis
+    this.updateBigPreviewVisualization(actionId);
+  }
+
+  async updateBigPreviewVisualization(actionId: string) {
+    // get current visualization visualization
+    const currentVis = this._visHistory[this._visHistory.length-1];
+    // get copy of visualization
+    const bigPreviewVis = currentVis.visualization.getCopyofVisualization();
+
+    // get action and changes its value of the copy visualization
+    const action = bigPreviewVis.getAction(actionId);
+    if (action.type === ActionType.Option) {
+      action.value = !action.value;
+    }
+    // clear prevew Vis container
+    this.$nextVis.textContent = '';
+
+    // hide multiple previews
+    this.$wrapperPreview.classList.add('hide');
+
+    // create container for new visualization
+    const visItem = document.createElement('div');
+    visItem.classList.add('next-vis-vega-wrapper');
+    // add vis container to vis strip
+    this.$nextVis.appendChild(visItem);
+
+    await bigPreviewVis.showVisualization(visItem);
+    
+  }
+
+  clearBigPreviewVisualization() {
+    // clear big preview Vis container
+    this.$nextVis.textContent = '';
+    // show multiple previews
+    this.$wrapperPreview.classList.remove('hide');
+  }
 
   removePreviewRows() {
     const previewActions = Array.from(this.$actObTable.querySelectorAll('.action.preview'));
@@ -769,7 +811,8 @@ export class Investigation {
       tableHeadCellHist.id = 'act-ob-table-th-history';
       tableHeadCellHist.scope = 'col';
       tableHeadCellHist.colSpan = 0;
-      tableHeadCellHist.innerHTML = 'History';
+      tableHeadCellHist.innerText = 'History';
+      tableHeadCellHist.title = 'History';
       tableHeadRow.insertBefore(tableHeadCellHist, tableHeadRow.children[0]);
 
       // <thead>

@@ -52,6 +52,11 @@ $height-pipeline-stage: 1.5rem;
   box-sizing: border-box;
 }
 
+.hide {
+  // display: none !important;
+  visibility: hidden !important;
+}
+
 #main {
   display: grid;
   width: 100%;
@@ -66,18 +71,27 @@ $height-pipeline-stage: 1.5rem;
 #current-vis {
   grid-area: curr-vis;
   margin: auto 0 auto auto;
+  // margin: 2rem;
+  // max-width: 100%;
+  // max-height: 100%;
 }
 
-.current-vis-vega-wrapper {
+.current-vis-vega-wrapper, .next-vis-vega-wrapper {
   width: 480px;
   height: 270px;
+  // width: 100%;
+  // height: 100%;
+  // padding: 0 !important;
+  // margin: 0 !important;
 }
+
 
 #next-vis {
   grid-column-start: 2;
   grid-column-end: 3;
   grid-row-start: 1;
   grid-row-end: 2;
+  margin: auto;
 }
 
 #wrapper-preview {
@@ -148,6 +162,20 @@ $height-pipeline-stage: 1.5rem;
     border: 1px $color-table-grid solid;
     padding: 0 0.25rem;
 
+    &.history-cell {
+      min-width: 1rem;
+      max-width: 1rem;
+      width: 1rem;
+    }
+
+    &.label {
+      min-width: 15rem !important;
+    }
+
+    &.current {
+      min-width: 10rem;
+    }
+
     &.current-state {
       padding: 0;
       text-align: center;
@@ -195,6 +223,7 @@ $height-pipeline-stage: 1.5rem;
   white-space: nowrap; // No line breaks
   overflow: hidden; // require for text-overflow to work
   text-align: center;
+  min-width: 0rem;
 }
 
 // --------------------------------------------------------------------------

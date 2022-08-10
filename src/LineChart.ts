@@ -2,7 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { IEncoding, VisType, VisualizationBase } from "./visualizations";
+import { highLevelObjective, IEncoding, IObjective, VisType, VisualizationBase } from "./visualizations";
 
 export class Linechart extends VisualizationBase {
 
@@ -42,155 +42,176 @@ export class Linechart extends VisualizationBase {
   updateActions() {
     this.actions = [];
     // TODO create all actions
-    // // encoding actions
-    // // x
-    // const xEnc = this.createActionObject('x_encoding','x-Axis Encoding', this.xEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    // this.actions.push(xEnc);
-    // // y
-    // const yEnc = this.createActionObject('y_encoding','y-Axis Encoding', this.yEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    // this.actions.push(yEnc);
-    // // color
-    // const cEnc = this.createActionObject('color_encoding','Color Encoding', this.colorEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    // this.actions.push(cEnc);
+    // encoding actions
+    // x
+    const xEnc = this.createActionObject('x_encoding','x-Axis Encoding', this.xEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    this.actions.push(xEnc);
+    // y
+    const yEnc = this.createActionObject('y_encoding','y-Axis Encoding', this.yEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    this.actions.push(yEnc);
+    // color
+    const cEnc = this.createActionObject('color_encoding','Color Encoding', this.colorEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    this.actions.push(cEnc);
 
-    // // option actions
+    // option actions
     // // sample data
     // const aSample = this.createActionObject('sample_data','Sample Data (25%)', false, VisPiplineStage.dataTransform, ActionType.Option);
     // this.actions.push(aSample);
     // // aggregation (mean)
     // const aAggregation = this.createActionObject('aggregate','Aggregate Data (Mean)', false, VisPiplineStage.dataTransform, ActionType.Option);
     // this.actions.push(aAggregation);
-    // // lower mark opacity
-    // const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', false, VisPiplineStage.visualMapping, ActionType.Option);
-    // this.actions.push(aOpacity);
-    // // decrese mark size
-    // const aSize = this.createActionObject('decrease_size','Decreased Mark Size', false, VisPiplineStage.visualMapping, ActionType.Option);
-    // this.actions.push(aSize);
-    // // start x with 0
-    // const aXZero = this.createActionObject('x_axis_zero','Start x-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
-    // this.actions.push(aXZero);
-    // // start y with 0
-    // const aYZero = this.createActionObject('y_axis_zero','Start y-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
-    // this.actions.push(aYZero);
-    // // background color
-    // const aBackground = this.createActionObject('background_color','Add Background Color', false, VisPiplineStage.viewTransform, ActionType.Option);
-    // this.actions.push(aBackground);
+
+    // lower mark opacity
+    const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', false, VisPiplineStage.visualMapping, ActionType.Option);
+    this.actions.push(aOpacity);
+    // decrese mark size
+    const aSize = this.createActionObject('decrease_size','Decreased Mark Size', false, VisPiplineStage.visualMapping, ActionType.Option);
+    this.actions.push(aSize);
+    
+    // start x with 0
+    const aXZero = this.createActionObject('x_axis_zero','Start x-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
+    this.actions.push(aXZero);
+    // start y with 0
+    const aYZero = this.createActionObject('y_axis_zero','Start y-Axis with 0', false, VisPiplineStage.viewTransform, ActionType.Option);
+    this.actions.push(aYZero);
+    // background color
+    const aBackground = this.createActionObject('background_color','Add Background Color', false, VisPiplineStage.viewTransform, ActionType.Option);
+    this.actions.push(aBackground);
 
 
-    // // conditional option actions
-    // if(this._hasColorEncoding) {
-    //   // legend
-    //   const aLegend = this.createActionObject('legend','Add Legend', false, VisPiplineStage.viewTransform, ActionType.Option)
-    //   this.actions.push(aLegend);
-    //   // nomnal color scale
-    //   const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', false, VisPiplineStage.visualMapping, ActionType.Option)
-    //   this.actions.push(aNominalColors);
-    // }
+    // conditional option actions
+    if(this._hasColorEncoding) {
+      // legend
+      const aLegend = this.createActionObject('legend','Add Legend', false, VisPiplineStage.viewTransform, ActionType.Option)
+      this.actions.push(aLegend);
+      // nomnal color scale
+      const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', false, VisPiplineStage.visualMapping, ActionType.Option)
+      this.actions.push(aNominalColors);
+      // direct labels
+      const aDirectLabels = this.createActionObject('direct_labels','Use Direct Labels', false, VisPiplineStage.viewTransform, ActionType.Option)
+      this.actions.push(aDirectLabels);
+
+    }
   }
 
   updateObjectives() {
     // TODO create objectives
-    // const avoidMIObjectives: IObjective[] = [];
-    // const reduceMLObjectives: IObjective[] = [];
+    const avoidMIObjectives: IObjective[] = [];
+    const reduceMLObjectives: IObjective[] = [];
 
-    // // ----- objectives ----- 
-    // this.objectives = [];
-    // // reduce overplotting
-    // const reduceOP: IObjective = {
-    //   id: 'reduceOP',
-    //   label: 'Reduce Overplotting',
-    //   description: 'Reduce Overplotting: Description', //TODO add description
-    //   actions: this.getMultipleAction(['sample_data', 'aggregate', 'lower_opacity', 'decrease_size']),
-    //   state: null,
-    //   corrActions: 0,
-    //   numActions: 4
-    // }
-    // this.objectives.push(reduceOP);
-    // // add objective to HL objective
-    // avoidMIObjectives.push(reduceOP);
+    // ----- objectives ----- 
+    this.objectives = [];
+    // reduce overplotting
+    const reduceOP: IObjective = {
+      id: 'reduceOP',
+      label: 'Reduce Overplotting',
+      description: 'Reduce Overplotting: Description', //TODO add description
+      actions: this.getMultipleAction(['lower_opacity', 'decrease_size']),
+      state: null,
+      corrActions: 0,
+      numActions: 4
+    }
+    this.objectives.push(reduceOP);
+    // add objective to HL objective
+    avoidMIObjectives.push(reduceOP);
 
-    // // avoid non-zero axis
-    // const avoidNZAD: IObjective = {
-    //   id: 'avoidNZAD',
-    //   label: 'Avoid Non-Zero Axis Distortions',
-    //   description: 'Avoid Non-Zero Axis Distortions: Description', //TODO add description
-    //   actions: this.getMultipleAction(['x_axis_zero', 'y_axis_zero']),
-    //   state: null,
-    //   corrActions: 0,
-    //   numActions: 2
-    // }
-    // this.objectives.push(avoidNZAD);
-    // // add objective to HL objective
-    // avoidMIObjectives.push(avoidNZAD);
+    // avoid non-zero axis
+    const avoidNZAD: IObjective = {
+      id: 'avoidNZAD',
+      label: 'Avoid Non-Zero Axis Distortions',
+      description: 'Avoid Non-Zero Axis Distortions: Description', //TODO add description
+      actions: this.getMultipleAction(['x_axis_zero', 'y_axis_zero']),
+      state: null,
+      corrActions: 0,
+      numActions: 2
+    }
+    this.objectives.push(avoidNZAD);
+    // add objective to HL objective
+    avoidMIObjectives.push(avoidNZAD);
 
-    // // avoid distracting embellishments
-    // const avoidDisEm: IObjective = {
-    //   id: 'avoidDisEm',
-    //   label: 'Avoid Distracting Embellishments',
-    //   description: 'Avoid Distracting Embellishments: Description', //TODO add description
-    //   actions: this.getMultipleAction(['background_color']),
-    //   state: null,
-    //   corrActions: 0,
-    //   numActions: 1
-    // }
-    // this.objectives.push(avoidDisEm);
-    // // add objective to HL objective
-    // reduceMLObjectives.push(avoidDisEm);
+    // avoid distracting embellishments
+    const avoidDisEm: IObjective = {
+      id: 'avoidDisEm',
+      label: 'Avoid Distracting Embellishments',
+      description: 'Avoid Distracting Embellishments: Description', //TODO add description
+      actions: this.getMultipleAction(['background_color']),
+      state: null,
+      corrActions: 0,
+      numActions: 1
+    }
+    this.objectives.push(avoidDisEm);
+    // add objective to HL objective
+    reduceMLObjectives.push(avoidDisEm);
 
-    // // coditional objectives
-    // if(this._hasColorEncoding) {
-    //   // add legend
-    //   const addLegend: IObjective = {
-    //     id: 'addLegend',
-    //     label: 'Show Legend',
-    //     description: 'Show Legend: Description', //TODO add description
-    //     actions: this.getMultipleAction(['legend']),
-    //     state: null,
-    //     corrActions: 0,
-    //     numActions: 1
-    //   }
-    //   this.objectives.push(addLegend);
-    //   // add objective to HL objective
-    //   avoidMIObjectives.push(addLegend);
+    // coditional objectives
+    if(this._hasColorEncoding) {
+      // add legend
+      const addLegend: IObjective = {
+        id: 'addLegend',
+        label: 'Show Legend',
+        description: 'Show Legend: Description', //TODO add description
+        actions: this.getMultipleAction(['legend']),
+        state: null,
+        corrActions: 0,
+        numActions: 1
+      }
+      this.objectives.push(addLegend);
+      // add objective to HL objective
+      avoidMIObjectives.push(addLegend);
 
-    //   // use the right color encoding
-    //   const rightColorEnc: IObjective = {
-    //     id: 'rightColorEnc',
-    //     label: 'Use Right Visual Color Encoding',
-    //     description: 'Use Right Visual Color Encoding: Description', //TODO add description
-    //     actions: this.getMultipleAction(['nominal_colors']),
-    //     state: null,
-    //     corrActions: 0,
-    //     numActions: 1
-    //   }
-    //   this.objectives.push(rightColorEnc);
-    //   // add objective to HL objective
-    //   avoidMIObjectives.push(rightColorEnc);
-    // }
+      // use the right color encoding
+      const rightColorEnc: IObjective = {
+        id: 'rightColorEnc',
+        label: 'Use Right Visual Color Encoding',
+        description: 'Use Right Visual Color Encoding: Description', //TODO add description
+        actions: this.getMultipleAction(['nominal_colors']),
+        state: null,
+        corrActions: 0,
+        numActions: 1
+      }
+      this.objectives.push(rightColorEnc);
+      // add objective to HL objective
+      avoidMIObjectives.push(rightColorEnc);
+
+
+      // use direct labels
+      const directLabels: IObjective = {
+        id: 'rightColorEnc',
+        label: 'Add Labels Close to the Data',
+        description: 'Add Labels Close to the Data: Description', //TODO add description
+        actions: this.getMultipleAction(['direct_labels']),
+        state: null,
+        corrActions: 0,
+        numActions: 1
+      }
+      this.objectives.push(directLabels);
+      // add objective to HL objective
+      avoidMIObjectives.push(directLabels);
+    }
     
 
-    // // ----- high-level objectives ----- 
-    // this.highLevelObjectives = [];
+    // ----- high-level objectives ----- 
+    this.highLevelObjectives = [];
 
-    // // avoid missinterpretation
-    // const avoidMI: highLevelObjective = {
-    //   id: 'avoidMI',
-    //   label: 'Avoid Misinterpretation',
-    //   description: '',
-    //   lowLevelObjectives: avoidMIObjectives
-    // }
+    // avoid missinterpretation
+    const avoidMI: highLevelObjective = {
+      id: 'avoidMI',
+      label: 'Avoid Misinterpretation',
+      description: '',
+      lowLevelObjectives: avoidMIObjectives
+    }
     
-    // // reduce memory load
-    // const reduceML: highLevelObjective = {
-    //   id: 'reduceML',
-    //   label: 'Reduce Memory Load',
-    //   description: '',
-    //   lowLevelObjectives: reduceMLObjectives
-    // }
+    // reduce memory load
+    const reduceML: highLevelObjective = {
+      id: 'reduceML',
+      label: 'Reduce Memory Load',
+      description: '',
+      lowLevelObjectives: reduceMLObjectives
+    }
 
-    // // add HL Objectives to array
-    // this.highLevelObjectives.push(avoidMI);
-    // this.highLevelObjectives.push(reduceML);
+    // add HL Objectives to array
+    this.highLevelObjectives.push(avoidMI);
+    this.highLevelObjectives.push(reduceML);
   }
 
   updateVegaSpec() {

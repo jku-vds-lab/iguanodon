@@ -965,19 +965,20 @@ export class Scatterplot extends VisualizationBase {
     // console.log('hull points: ', hullmarks.map((elem) => elem.mark));
     // const hullArea = caculateAreaPolygone(hullmarks);
     // console.log('hull Area: ', hullArea);
-    console.groupCollapsed('Action: Overlapp')
-    console.time("overlapp Calc");
+
+    // console.groupCollapsed('Action: Overlapp')
+    // console.time("overlapp Calc");
     const areaOverlap = calculatePointsOverlap(markObjects);
     const percentageOverlap = areaOverlap.overlapArea / areaAllMarks;
     // console.log('point area overlap: ', areaOverlap);
-    console.timeEnd("overlapp Calc");
+    // console.timeEnd("overlapp Calc");
 
-    console.log('________');
-    console.log('Overplotting points:', { points: marks.length, overlapPoints: areaOverlap.overlapPoints, ratio: areaOverlap.overlapPoints / marks.length });
-    console.log('Overplotting Vis Area:', { pointsArea: areaAllMarks, areaContainingMarks, ratio: areaAllMarks / areaContainingMarks });
-    // console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
-    console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: percentageOverlap });
-    console.groupEnd();
+    // console.log('________');
+    // console.log('Overplotting points:', { points: marks.length, overlapPoints: areaOverlap.overlapPoints, ratio: areaOverlap.overlapPoints / marks.length });
+    // console.log('Overplotting Vis Area:', { pointsArea: areaAllMarks, areaContainingMarks, ratio: areaAllMarks / areaContainingMarks });
+    // // console.log('Overplotting Hull Area:', { pointsArea: areaAllMarks, hullArea, ratio: areaAllMarks / hullArea });
+    // console.log('Overplotting Overlap Area:', { pointsArea: areaAllMarks, overlapArea: areaOverlap.overlapArea, ratio: percentageOverlap });
+    // console.groupEnd();
 
     // get objective
     const objective = this.getObjective('reduceOP');
@@ -1089,7 +1090,7 @@ export class Scatterplot extends VisualizationBase {
     
     const xCorr = desCXAxisState ===  (minMax.xMin >= 0);
     const yCorr = desCYAxisState ===  (minMax.yMin >= 0);
-    console.log('Zero on axis: ',{xCorr, desCXAxisState, xMin: minMax.xMin, yCorr, desCYAxisState, yMin: minMax.yMin});
+    // console.log('Zero on axis: ',{xCorr, desCXAxisState, xMin: minMax.xMin, yCorr, desCYAxisState, yMin: minMax.yMin});
 
     const sumCorr = Number(xCorr) + Number(yCorr);
 

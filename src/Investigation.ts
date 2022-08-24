@@ -1,10 +1,13 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
+import { Barchart } from "./BarChart";
+import { getDataCars } from "./dataCars";
 import { ActionType } from "./designChoices";
 import { ObjectiveState } from "./Objective";
 import { Scatterplot } from "./Scatterplot";
 import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqueRandomValuesFromArray } from "./util";
 import { IAction, VisType, VisualizationBase } from "./visualizations";
-
+import * as aq from 'arquero';
+import { getDataStock } from "./dataStock";
 
 
 export class Investigation {
@@ -36,7 +39,7 @@ export class Investigation {
 
     this._visHistory = [];
     this.dataset = dataset;
-    this._dataColumns = getColumnTypesFromArqueroTable(dataset)
+    this._dataColumns = getColumnTypesFromArqueroTable(dataset);
     console.log('data columns: ', this._dataColumns);
 
     // setup all elemtens and their containers:
@@ -51,6 +54,23 @@ export class Investigation {
     // this.addHistoryColumn();
     // this.addHistoryColumn();
     // this.addHistoryColumn();
+  }
+
+  updateDataset(dataset: ColumnTable) {
+    this.dataset = dataset;
+    this._dataColumns = getColumnTypesFromArqueroTable(dataset);
+    console.log('data columns: ', this._dataColumns);
+
+    //get current attibure of dataset
+    const opts = this._dataColumns.map((elem) => { 
+      return {value: elem.label, text: elem.label}
+    });
+    // add empty option
+    opts.unshift({value: '', text: ''});
+
+    this._updateSelectionOptions('x-axis-select', opts);
+    this._updateSelectionOptions('y-axis-select', opts);
+    this._updateSelectionOptions('color-select', opts);
   }
 
   setupInterface(starVisType: VisType = VisType.Scatter) {
@@ -186,7 +206,7 @@ export class Investigation {
     const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
     selectVis.addEventListener('change', (ev) => {
       // this.addHistoryColumn();
-      this.updateEncodings();
+      
 
       // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
       const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
@@ -195,14 +215,66 @@ export class Investigation {
     
       // console.log('dataset Investigation: ', this.dataset);
       // create visualizations dynamically (scatter, line, bar)
-      const scatter = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
-    
 
+      // set data attribute of HTML vis selection (#vis-select)
+      selectVis.dataset.value = this.getVisTypeText(Number(selectVis.value) as VisType);
       
+      // create visualization
+      let visualization: VisualizationBase;
+      const visTypeNumber = Number(selectVis.value);
+      if(visTypeNumber === VisType.Scatter) {
+        // scatterplot
+        const currData = getDataCars();
+        const aqDataset = aq.from(currData);
+        this.updateDataset(aqDataset);
+        visualization = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
+      } else if (visTypeNumber === VisType.Line) {
+        // line chart
+        const currData = getDataStock();
+        const aqDataset = aq.from(currData);
+        this.updateDataset(aqDataset);
+        visualization = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
+      } else {
+        // bar chart
+        const currData = getDataCars();
+        const aqDataset = aq.from(currData);
+        this.updateDataset(aqDataset);
+        visualization = new Barchart(this.dataset, selectX.value, selectY.value, null);
+      }
+
+      this.updateEncodings();
       this.addHistoryColumn();
 
-      selectVis.dataset.value = this.getVisTypeText(Number(selectVis.value) as VisType);
-      this.updateVisualizations(scatter);
+      // [ ] set rows (actions/objectives) that are not needed to 'suspended'
+      const visActionsId = visualization.actions.map((elem) => elem.id);
+      const tableBodyActions = this.$actObTable.querySelector(`tbody.table-actions`);
+      const actionRows = Array.from(tableBodyActions.querySelectorAll('tr')) as HTMLElement[];
+      for(const aRow of actionRows) {
+        const rowID = aRow.id;
+        if(visActionsId.indexOf(rowID) === -1) {
+          aRow.classList.add('suspended');
+          // TODO make not interactionable
+        } else {
+          aRow.classList.remove('suspended');
+        }
+      }
+
+
+      const visObjectivesId = visualization.objectives.map((elem) => elem.id);
+      const tableBodyObjectives = this.$actObTable.querySelector(`tbody.table-objectives`);
+      const objectiveRows = Array.from(tableBodyObjectives.querySelectorAll('tr')) as HTMLElement[];
+      for(const oRow of objectiveRows) {
+        const rowID = oRow.id;
+        if(visObjectivesId.indexOf(rowID) === -1) {
+          oRow.classList.add('suspended');
+        } else {
+          oRow.classList.remove('suspended');
+        }
+      }
+
+
+      
+      this.updateVisualizations(visualization);
     });
 
     // encoding selection
@@ -232,12 +304,15 @@ export class Investigation {
         
         const encodings = [
           {field: 'x', value: selectX.value},
-          {field: 'y', value: selectY.value},
-          {field: 'color', value: selectC.value},
+          {field: 'y', value: selectY.value}
         ];
+        if(selectC) {
+          encodings.push({field: 'color', value: selectC.value});
+        }
+
         // newVis.setEncodings(encodings);
         const newVis = currVisualization.getCopyofVisualizationWithChangedEncodings(encodings);
-        // [ ] update vegaSpec based on encodings
+        // update vegaSpec based on encodings
         // const newVis = currVisualization.getVisualizationCopyWithEncodingsAndActions(newName,encodings);
 
 
@@ -246,7 +321,9 @@ export class Investigation {
 
         selectX.dataset.value = selectX.value;
         selectY.dataset.value = selectY.value;
-        selectC.dataset.value = selectC.value;
+        if(selectC) {
+          selectC.dataset.value = selectC.value;
+        }
         this.updateVisualizations(newVis);
       });
     }
@@ -395,7 +472,7 @@ export class Investigation {
     
     // console.groupCollapsed('action previews')
     // existing actions
-    const existingActions = Array.from(this.$actObTable.querySelectorAll('tr.action'));
+    const existingActions = Array.from(this.$actObTable.querySelectorAll('tr.action:not(.suspended)'));
     const existingActionIds = existingActions.map((elem) => elem.id);
     // console.log('Existing actions: ', existingActionIds);
 
@@ -591,15 +668,24 @@ export class Investigation {
      
       // add EventListeners for click and hover (mouseenter/mouseleave)
       copyActionElem.addEventListener('click',async (event) => {
-        this.changeActionAndVisualizations(actionId, copyActionElem);
+        const isSuspended = copyActionElem.classList.contains('suspended');
+        if(!isSuspended) {
+          this.changeActionAndVisualizations(actionId, copyActionElem);
+        }
       });
       
       copyActionElem.addEventListener('mouseenter',async (event) => {
-        this.updateBigPreviewVisualization(actionId);
+        const isSuspended = copyActionElem.classList.contains('suspended');
+        if(!isSuspended) {
+          this.updateBigPreviewVisualization(actionId);
+        }
       });
 
       copyActionElem.addEventListener('mouseleave',async (event) => {
-        this.clearBigPreviewVisualization();
+        const isSuspended = copyActionElem.classList.contains('suspended');
+        if(!isSuspended) {
+          this.clearBigPreviewVisualization();
+        }
       });
 
 
@@ -756,7 +842,7 @@ export class Investigation {
     const currColSpan = tableHeadCellHist ? tableHeadCellHist.colSpan : 0;
     // console.log('add row: ', {label, currColSpan});
 
-    const bodyAction = this.$actObTable.querySelector(`tbody.table-${type}`);
+    const tableBodyType = this.$actObTable.querySelector(`tbody.table-${type}`);
 
     // new row that will be added to the table
     const newRow = document.createElement('tr');
@@ -780,13 +866,13 @@ export class Investigation {
     newRow.appendChild(currElem);
 
     // add new row after first row in table
-    const numbChildren = bodyAction.children.length;
+    const numbChildren = tableBodyType.children.length;
     const position = posFromTop-1; // because the first row has index 0 not 1
     // console.log('positions:',{numbChildren, posFromTop, position});
     if(numbChildren > position) {
-      bodyAction.children[position].insertAdjacentElement('beforebegin', newRow);
+      tableBodyType.children[position].insertAdjacentElement('beforebegin', newRow);
     } else {
-      bodyAction.appendChild(newRow);
+      tableBodyType.appendChild(newRow);
     }
 
   }
@@ -877,14 +963,18 @@ export class Investigation {
     if(select.classes && select.classes.length > 0) $select.classList.add(...select.classes);
 
     // add options to select
-    for(const op of options) {
-      const $opt= document.createElement('option');
-      $opt.value = op.value;
-      $opt.innerText = op.text;
-      if(op.id) $opt.id = op.id;
-      if(op.classes && op.classes.length > 0) $opt.classList.add(...op.classes);
-      $select.append($opt);
-    }
+    // for(const op of options) {
+    //   const $opt= document.createElement('option');
+    //   $opt.value = op.value;
+    //   $opt.innerText = op.text;
+    //   if(op.id) $opt.id = op.id;
+    //   if(op.classes && op.classes.length > 0) $opt.classList.add(...op.classes);
+    //   $select.append($opt);
+    // }
+    // get document fragment with all the options
+    const fragment = this._createHTMLOptions(options);
+    $select.appendChild(fragment)
+
     // const $optS= document.createElement('option');
     // $optS.value = ''+VisType.Scatter;
     // $optS.innerText = 'Scatterplot';
@@ -900,4 +990,31 @@ export class Investigation {
     return $select;
   }
 
+  private _createHTMLOptions(options: {id?: string, value: string, text: string, classes?: string[]}[]): DocumentFragment {
+    const fragment = new DocumentFragment();
+    // add options to fragment
+    for(const op of options) {
+      const $opt= document.createElement('option');
+      $opt.value = op.value;
+      $opt.innerText = op.text;
+      if(op.id) $opt.id = op.id;
+      if(op.classes && op.classes.length > 0) $opt.classList.add(...op.classes);
+      fragment.appendChild($opt);
+    }
+
+    return fragment;
+  }
+
+  private _updateSelectionOptions(selectId: string, options: {id?: string, value: string, text: string, classes?: string[]}[]) {
+    // get select
+    const select: HTMLSelectElement = this.$actObTable.querySelector(`#${selectId}`);
+
+    if(select) {
+      // get fragment with optons
+      const fragment = this._createHTMLOptions(options);
+      select.innerHTML = '';
+      select.appendChild(fragment);
+    }
+
+  }
 }

@@ -2,6 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
+import { getColumnTypesFromArqueroTable, uniqueFilter } from "./util";
 import { highLevelObjective, IEncoding, IObjective, VisType, VisualizationBase } from "./visualizations";
 
 export class Linechart extends VisualizationBase {
@@ -87,9 +88,10 @@ export class Linechart extends VisualizationBase {
       // nomnal color scale
       const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', false, VisPiplineStage.visualMapping, ActionType.Option)
       this.actions.push(aNominalColors);
-      // direct labels
-      const aDirectLabels = this.createActionObject('direct_labels','Use Direct Labels', false, VisPiplineStage.viewTransform, ActionType.Option)
-      this.actions.push(aDirectLabels);
+      // FIXME
+      // // direct labels
+      // const aDirectLabels = this.createActionObject('direct_labels','Use Direct Labels', false, VisPiplineStage.viewTransform, ActionType.Option)
+      // this.actions.push(aDirectLabels);
 
     }
   }
@@ -174,19 +176,20 @@ export class Linechart extends VisualizationBase {
       avoidMIObjectives.push(rightColorEnc);
 
 
-      // use direct labels
-      const directLabels: IObjective = {
-        id: 'rightColorEnc',
-        label: 'Add Labels Close to the Data',
-        description: 'Add Labels Close to the Data: Description', //TODO add description
-        actions: this.getMultipleAction(['direct_labels']),
-        state: null,
-        corrActions: 0,
-        numActions: 1
-      }
-      this.objectives.push(directLabels);
-      // add objective to HL objective
-      avoidMIObjectives.push(directLabels);
+      // FIXME
+      // // use direct labels
+      // const directLabels: IObjective = {
+      //   id: 'directLabels',
+      //   label: 'Add Labels Close to the Data',
+      //   description: 'Add Labels Close to the Data: Description', //TODO add description
+      //   actions: this.getMultipleAction(['direct_labels']),
+      //   state: null,
+      //   corrActions: 0,
+      //   numActions: 1
+      // }
+      // this.objectives.push(directLabels);
+      // // add objective to HL objective
+      // avoidMIObjectives.push(directLabels);
     }
     
 
@@ -218,7 +221,114 @@ export class Linechart extends VisualizationBase {
     // get number of data items
     const dataTotalSize = this.dataset.numRows();
 
-    // TODO create vega-spec based on actions
+    // get action values
+    // background color
+    const backgroundColorAction = this.getAction('background_color');
+    const backgroundColorValue =backgroundColorAction !== null ? backgroundColorAction.value : false;
+    const backgorundColor = backgroundColorValue ? '#d4d4d4' : '#FFFFFF';
+
+    // decreased size
+    const decreasedSizeAction = this.getAction('decrease_size');
+    const decreasedSizeActionValue = decreasedSizeAction !== null ? decreasedSizeAction.value : false;
+    const size = decreasedSizeActionValue ? 1 : 2;
+
+    // opacity
+    const opacityAction = this.getAction('lower_opacity');
+    const opacityActionValue = opacityAction !== null ? opacityAction.value : false;
+    const opacity = opacityActionValue ? 0.4 : 1;
+
+    // zero on x-axis
+    // const zeroXAxisAction = this.getAction('x_axis_zero');
+    // const zeroXAxis = zeroXAxisAction !== null ? zeroXAxisAction.value : false;
+
+    // zero on y-axis
+    const zeroYAxisAction = this.getAction('y_axis_zero');
+    const zeroYAxis = zeroYAxisAction !== null ? zeroYAxisAction.value : false;
+
+    // legend
+    const legendAction = this.getAction('legend');
+    const showLegend = legendAction !== null ? legendAction.value : false;
+    
+    // nominal color sale
+    const dataTypes = getColumnTypesFromArqueroTable(this.dataset);
+    const datasetAttr = dataTypes.filter((elem) => elem.label === this.colorEncoding)[0];
+    let colorTypeNotNominal = 'ordinal';
+    if (datasetAttr?.type === 'continuous') {
+      // values of the attribute
+      const data = this.dataset.array(this.colorEncoding);
+      const uniqueData = data.filter(uniqueFilter); // get unique values
+      if (uniqueData.length > 10) {
+        colorTypeNotNominal = 'quantitative';
+      }
+    }
+
+    const nominalColorsAction = this.getAction('nominal_colors');
+    const nominalColorsActionValue = nominalColorsAction !== null ? nominalColorsAction.value : false;
+    const colorType = nominalColorsActionValue ? 'nominal' : colorTypeNotNominal;
+
+
+    // direct label
+    const directLabelsAction = this.getAction('direct_labels');
+    const directLabels = directLabelsAction !== null ? directLabelsAction.value : false;
+
+    // setup the VegaSpec object
+    // FIXME add direct labels config
+    // gerneral 
+    let vegaSpecBuildUp: any = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+      //data: { url: './assets/cars.json' },
+      data: { values: this.dataset.objects() }, // TODO replace with link to file 
+      // transform: [{ sample: sampledSize }],
+      width: 'container', //responsive width
+      height: 'container', //responsive height
+      autosize: {type: 'fit', contains: 'padding'},
+      background: `${backgorundColor}`, // background color}
+    };
+
+    // marks
+    vegaSpecBuildUp.mark = {
+      type: 'line', // mark type
+      filled: true,
+      size, // mark size
+      opacity //mark opacity
+    };
+
+    // encodings 
+    vegaSpecBuildUp.encoding = {};
+    // x
+    if(this.xEncoding) {
+      vegaSpecBuildUp.encoding.x = {
+        field: this.xEncoding,
+        type: 'temporal'
+      };
+    }
+    // y
+    if(this.yEncoding) {
+      vegaSpecBuildUp.encoding.y = {
+        field: this.yEncoding,
+        // field: 'Horsepower',
+        type: 'quantitative',
+        scale: { zero: zeroYAxis } // start y-axis with 0
+      };
+    }
+
+    // color
+    if(this.colorEncoding) {
+      vegaSpecBuildUp.encoding.color = {
+        field: this.colorEncoding,
+        type: colorType  // define color scale type
+      };
+    }
+
+    // config
+    vegaSpecBuildUp.config = {
+      legend: {
+        disable: !showLegend // hide legend
+      }
+    };
+
+    this.vegaSpec = vegaSpecBuildUp;
+
   }
 
 
@@ -617,6 +727,8 @@ export class Linechart extends VisualizationBase {
       return this.checkRightColorEncding();
     } else if (id === 'avoidDisEm') {
       return this.checkAvoidEmbellishments();
+    }else if (id === 'directLabels') {
+      return this.checkDirectLabels();
     }
   }
 
@@ -631,7 +743,24 @@ export class Linechart extends VisualizationBase {
 
     const numbOfTrue = objetive.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
     const numbOfFalse = objetive.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
-    const correct = numbOfTrue === 1;
+    const correct = numbOfTrue === 0;
+    const corrActions = correct ? objetive.actions.length : 0;
+
+    return {
+      state: correct ? ObjectiveState.correct : ObjectiveState.wrong,
+      corrActions
+    };
+  }
+
+  private checkDirectLabels(): { state: ObjectiveState, corrActions: number } {
+    const objetive = this.getObjective('directLabels');
+    // TODO Objective: duirect labels
+
+    const amount = objetive.actions.length;
+
+    const numbOfTrue = objetive.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
+    const numbOfFalse = objetive.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
+    const correct = numbOfFalse === 1;
     const corrActions = correct ? objetive.actions.length : 0;
 
     return {

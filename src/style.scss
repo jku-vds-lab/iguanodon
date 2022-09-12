@@ -19,6 +19,8 @@ $color-bg-action-element: #31363B; // e.g button
 // $color-green: #3DD425;
 // $color-turquoise: #00D3B8;
 $color-blue: #3DAEE9;
+$color-blue-shded: #093952;
+$color-blue-tinted: #9ad5f4;
 $color-blue-transparent: #3DAEE988;
 // $color-pruple: #926EE4;
 
@@ -26,6 +28,17 @@ $color-correct: green;
 $color-partial: orange;
 $color-wrong: red;
 $color-default: black;
+
+$color-default: black;
+// $color-action-true: #414141;
+// $color-action-false: lightgrey;
+$color-action-true: $color-blue;
+$color-action-false: lightgrey;
+$color-action-init-true: lightgrey;
+$color-action-init-false: lightgrey;
+$color-object-correct: lightgreen;
+$color-object-partial: lightsalmon;
+$color-object-wrong: lightcoral;
 
 $color-vis-pipeline-dt: #66C2A5;
 $color-vis-pipeline-vm: #E78AC3;
@@ -186,23 +199,23 @@ $height-pipeline-stage: 1.5rem;
     }
 
     &[data-value="true"] {
-      background-color: #414141;
+      background-color: $color-action-true;
     }
 
     &[data-value="false"] {
-      background-color: lightgrey;
+      background-color: $color-action-false;
     }
 
     &[data-value="correct"] {
-      background-color: lightgreen;
+      background-color: $color-object-correct;
     }
 
     &[data-value="partial"] {
-      background-color: lightsalmon;
+      background-color: $color-object-partial;
     }
 
     &[data-value="wrong"] {
-      background-color: lightcoral;
+      background-color: $color-object-wrong;
     }
 
     &.history-cell {

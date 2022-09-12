@@ -288,7 +288,7 @@ export class Linechart extends VisualizationBase {
     // marks
     vegaSpecBuildUp.mark = {
       type: 'line', // mark type
-      filled: true,
+      filled: false,
       size, // mark size
       opacity //mark opacity
     };
@@ -306,7 +306,6 @@ export class Linechart extends VisualizationBase {
     if(this.yEncoding) {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,
-        // field: 'Horsepower',
         type: 'quantitative',
         scale: { zero: zeroYAxis } // start y-axis with 0
       };

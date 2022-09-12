@@ -236,6 +236,12 @@ export class Barchart extends VisualizationBase {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,
         type: 'quantitative',
+        aggregate: 'mean',
+        scale: { zero: zeroYAxis } // start y-axis with 0
+      };
+    } else {
+      vegaSpecBuildUp.encoding.y = {
+        aggregate: 'count',
         scale: { zero: zeroYAxis } // start y-axis with 0
       };
     }

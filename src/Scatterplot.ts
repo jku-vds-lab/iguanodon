@@ -298,7 +298,6 @@ export class Scatterplot extends VisualizationBase {
     if(this.xEncoding) {
       vegaSpecBuildUp.encoding.x = {
         field: this.xEncoding,
-        // field: 'Weight_in_lbs',
         type: 'quantitative',
         scale: { zero: zeroXAxis } // start x-axis with 0
       };
@@ -311,7 +310,6 @@ export class Scatterplot extends VisualizationBase {
     if(this.yEncoding) {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,
-        // field: 'Horsepower',
         type: 'quantitative',
         scale: { zero: zeroYAxis } // start y-axis with 0
       };
@@ -325,7 +323,6 @@ export class Scatterplot extends VisualizationBase {
     if(this.colorEncoding) {
       vegaSpecBuildUp.encoding.color = {
         field: this.colorEncoding,
-        // field: 'Origin',
         type: colorType  // define color scale type
       };
     }

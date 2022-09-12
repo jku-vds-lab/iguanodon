@@ -8,6 +8,7 @@ import { getColumnTypesFromArqueroTable, getUniqueRandomValuesFrom0toN, getUniqu
 import { IAction, VisType, VisualizationBase } from "./visualizations";
 import * as aq from 'arquero';
 import { getDataStock } from "./dataStock";
+import { Linechart } from "./LineChart";
 
 
 export class Investigation {
@@ -233,7 +234,7 @@ export class Investigation {
         const currData = getDataStock();
         const aqDataset = aq.from(currData);
         this.updateDataset(aqDataset);
-        visualization = new Scatterplot(this.dataset, selectX.value, selectY.value, selectC.value);
+        visualization = new Linechart(this.dataset, selectX.value, selectY.value, selectC.value);
       } else {
         // bar chart
         const currData = getDataCars();

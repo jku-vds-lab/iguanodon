@@ -262,10 +262,10 @@ export class Investigation {
         // get current state cell
         const currCell = aRow.querySelector('.current-state') as HTMLElement;
         if(currCell) {
-        if(visActionsId.indexOf(rowID) === -1) {
+          if(visActionsId.indexOf(rowID) === -1) {
             currCell.classList.add('suspended');
-          // TODO make not interactionable
-        } else {
+            // TODO make not interactionable
+          } else {
             currCell.classList.remove('suspended');
             // set visualization actions
             // get current value
@@ -293,10 +293,10 @@ export class Investigation {
         // get current state cell
         const currCell = oRow.querySelector('.current-state') as HTMLElement;
         if(currCell) {
-        if(visObjectivesId.indexOf(rowID) === -1) {
+          if(visObjectivesId.indexOf(rowID) === -1) {
             // oRow.classList.add('suspended');
             currCell.classList.add('suspended');
-        } else {
+          } else {
             // oRow.classList.remove('suspended');
             currCell.classList.remove('suspended');
           }
@@ -306,59 +306,14 @@ export class Investigation {
 
       // this.updateEncodings();
       // this.addHistoryColumn();
-      
+
       this.updateVisualizations(visualization);
     });
 
-    // encoding selection
+    // --- encoding selection
     const selectEncs: HTMLSelectElement[] = Array.from(this.$actObTable.querySelectorAll('.encoding-selecion'));
     for(const sel of selectEncs) {
-      sel.addEventListener('change', (ev) => {
-        // this.addHistoryColumn();
-
-
-        // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
-        const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
-        const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
-        const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
-     
-        // console.log('dataset Investigation: ', this.dataset);
-        // create visualizations dynamically (scatter, line, bar)
-        // const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
-        // console.log('-----****------');
-        // console.log('selection Change: ', scatter.designChoices['x_axis_encoding']);
-        // console.log('-----****------');
-
-        const currentState = this._visHistory[this._visHistory.length-1];
-        const currVisualization = currentState.visualization;
-        // const newName = `vis-${this._visHistory.length}`;
-        // const newVis = currVisualization.getCopyofVisualization();
-
-        
-        const encodings = [
-          {field: 'x', value: selectX.value},
-          {field: 'y', value: selectY.value}
-        ];
-        if(selectC) {
-          encodings.push({field: 'color', value: selectC.value});
-        }
-
-        // newVis.setEncodings(encodings);
-        const newVis = currVisualization.getCopyofVisualizationWithChangedEncodings(encodings);
-        // update vegaSpec based on encodings
-        // const newVis = currVisualization.getVisualizationCopyWithEncodingsAndActions(newName,encodings);
-
-
-         // update history
-        this.addHistoryColumn();
-
-        selectX.dataset.value = selectX.value;
-        selectY.dataset.value = selectY.value;
-        if(selectC) {
-          selectC.dataset.value = selectC.value;
-        }
-        this.updateVisualizations(newVis);
-      });
+      this.addEventListenerForEncodingSelect(sel)
     }
   }
 
@@ -404,6 +359,7 @@ export class Investigation {
       const elemTd = document.createElement('td');
       elemTd.appendChild($xSelect)
       this.addRow('actions',2,'x-axis-encoding', ['encoding'],'Set X-Axis Encoding', elemTd);
+      this.addEventListenerForEncodingSelect($xSelect);
     }
 
     if(!yEncRow) {
@@ -411,6 +367,7 @@ export class Investigation {
       const elemTd = document.createElement('td');
       elemTd.appendChild($ySelect)
       this.addRow('actions', 3,'y-axis-encoding', ['encoding'],'Set Y-Axis Encoding', elemTd);
+      this.addEventListenerForEncodingSelect($ySelect);
     }
 
     
@@ -422,7 +379,8 @@ export class Investigation {
         const elemTd = document.createElement('td');
         elemTd.appendChild($colorSelect)
         this.addRow('actions', 4,'color-encoding', ['encoding'],'Set Color Encoding', elemTd);
-      }
+        this.addEventListenerForEncodingSelect($colorSelect);
+     }
   
       // this.addRow(2,'x-axis-encoding','Set X-Axis Encoding', $xSelect);
       // this.addRow(3,'y-axis-encoding','Set Y-Axis Encoding', $ySelect);
@@ -443,6 +401,112 @@ export class Investigation {
     //   this.addRow(2,'x-axis-encoding','Set X-Axis Encoding', $xSelect);
     //   this.addRow(3,'y-axis-encoding','Set Y-Axis Encoding', $ySelect);
     // }
+  }
+
+  addEventListenerForEncodingSelect(select: HTMLSelectElement) {
+    console.warn('Add EventListener encoding select: ', select);
+    if(!select.dataset.hasEventListener) {
+      select.dataset.hasEventListener = `${true}`;
+      select.addEventListener('change', (ev) => {
+        // this.addHistoryColumn();
+
+        ev.stopPropagation();
+        // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
+        const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
+        const selectY: HTMLSelectElement = this.$actObTable.querySelector('#y-axis-select');
+        const selectC: HTMLSelectElement = this.$actObTable.querySelector('#color-select');
+    
+        // console.log('dataset Investigation: ', this.dataset);
+        // create visualizations dynamically (scatter, line, bar)
+        // const scatter = new Scatterplot('test', this.dataset, selectX.value, selectY.value, selectC.value);
+        // console.log('-----****------');
+        // console.log('selection Change: ', scatter.designChoices['x_axis_encoding']);
+        // console.log('-----****------');
+
+        const currentState = this._visHistory[this._visHistory.length-1];
+        const currVisualization = currentState.visualization;
+        // const newName = `vis-${this._visHistory.length}`;
+        // const newVis = currVisualization.getCopyofVisualization();
+
+        
+        const encodings = [
+          {field: 'x', value: selectX.value},
+          {field: 'y', value: selectY.value}
+        ];
+        if(selectC) {
+          encodings.push({field: 'color', value: selectC.value});
+        }
+        console.log('encodigs change: new encodings: ', JSON.stringify(encodings));
+
+        // newVis.setEncodings(encodings);
+        const newVis = currVisualization.getCopyofVisualizationWithChangedEncodings(encodings);
+        // update vegaSpec based on encodings
+        // const newVis = currVisualization.getVisualizationCopyWithEncodingsAndActions(newName,encodings);
+
+        // update history
+        this.addHistoryColumn();
+
+        // [ ] set rows (actions/objectives) that are not needed to 'suspended'
+        const visActionsId = newVis.actions.map((elem) => elem.id);
+        const tableBodyActions = this.$actObTable.querySelector(`tbody.table-actions`);
+        const actionRows = Array.from(tableBodyActions.querySelectorAll('tr')) as HTMLElement[];
+        // [ ] only set css class for the current state cell
+        for(const aRow of actionRows) {
+          const rowID = aRow.id;
+          // get current state cell
+          const currCell = aRow.querySelector('.current-state') as HTMLElement;
+          if(currCell) {
+            if(visActionsId.indexOf(rowID) === -1) {
+              currCell.classList.add('suspended');
+              // TODO make not interactionable
+            } else {
+              currCell.classList.remove('suspended');
+              // set visualization actions
+              // get current value
+              const currVal = currCell.dataset.value;
+              // get visualization action
+              const visAction = newVis.getAction(rowID);
+              // set visualization action value
+              if(visAction !== null) {
+                console.log('---\nUpdate existing Actions: old action', JSON.stringify(visAction));
+                console.log('Update existing Actions: new value: ',currVal );
+                visAction.value = currVal;
+                console.log('Update existing Actions: new action', JSON.stringify(visAction));
+              }
+            }
+          }
+        }
+
+
+        const visObjectivesId = newVis.objectives.map((elem) => elem.id);
+        const tableBodyObjectives = this.$actObTable.querySelector(`tbody.table-objectives`);
+        const objectiveRows = Array.from(tableBodyObjectives.querySelectorAll('tr')) as HTMLElement[];
+        // [ ] only set css class for the current state cell
+        for(const oRow of objectiveRows) {
+          const rowID = oRow.id;
+          // get current state cell
+          const currCell = oRow.querySelector('.current-state') as HTMLElement;
+          if(currCell) {
+            if(visObjectivesId.indexOf(rowID) === -1) {
+              // oRow.classList.add('suspended');
+              currCell.classList.add('suspended');
+            } else {
+              // oRow.classList.remove('suspended');
+              currCell.classList.remove('suspended');
+            }
+          }
+        }
+
+
+        
+        selectX.dataset.value = selectX.value;
+        selectY.dataset.value = selectY.value;
+        if(selectC) {
+          selectC.dataset.value = selectC.value;
+        }
+        this.updateVisualizations(newVis);
+      });
+    }
   }
 
   // async updateActionChange(visualization: VisualizationBase) {
@@ -489,6 +553,12 @@ export class Investigation {
     }
   }
 
+  removeMultiplePreviews() {
+    this.$previewVis.innerHTML = ''; 
+    this.$previewSVG.innerHTML = '';
+    this.removePreviewRows();
+  }
+
   updateActions() {
     // remove other preview actions
     this.removePreviewRows();
@@ -517,7 +587,8 @@ export class Investigation {
     // console.log('Selected actions for preview: ', actionSelection);
 
     // clear Previews
-    this.$previewVis.innerHTML = ''; 
+    this.removeMultiplePreviews();
+    // this.$previewVis.innerHTML = ''; 
 
     
     
@@ -572,7 +643,7 @@ export class Investigation {
 
     // add preview visualizations
     divPreviews.forEach(async (divElem, i) => {
-      divElem.textContent = ''; // clear elements
+      divElem.innerHTML = ''; // clear elements
       const currPreview = previews[i];
 
       const visCntr = document.createElement('div');
@@ -979,6 +1050,8 @@ export class Investigation {
         } else {
           // actions and objectives
           cell.dataset.value = elemCurrState.dataset.value;
+          // set 'suspended' class
+          cell.classList.toggle('suspended', elemCurrState.classList.contains('suspended'));
         }
 
         const numbChildren = row.children.length;
@@ -1046,6 +1119,7 @@ export class Investigation {
       // get fragment with optons
       const fragment = this._createHTMLOptions(options);
       select.innerHTML = '';
+      select.dataset.value = select.value;
       select.appendChild(fragment);
     }
 

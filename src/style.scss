@@ -198,6 +198,10 @@ $height-pipeline-stage: 1.5rem;
       width: 100%;
     }
 
+    &.suspended {
+      background-color: $color-app-background !important;
+    }
+
     &[data-value="true"] {
       background-color: $color-action-true;
     }

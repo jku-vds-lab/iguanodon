@@ -39,8 +39,7 @@ export class Scatterplot extends VisualizationBase {
 
     this._hasColorEncoding = this.colorEncoding !== '';
     
-
-    // console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
+    console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
 
     // 1. create the actions based on encodings
     this.updateActions();

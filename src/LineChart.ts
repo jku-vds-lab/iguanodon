@@ -21,7 +21,7 @@ export class Linechart extends VisualizationBase {
 
     this._hasColorEncoding = this.colorEncoding !== '';
 
-    console.log('LC enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
+    console.log('LC enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding, hasColorEncoding: this._hasColorEncoding});
 
     // 1. create the actions based on encodings
     this.updateActions();

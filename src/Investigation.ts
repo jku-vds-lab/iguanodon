@@ -203,11 +203,17 @@ export class Investigation {
   }
 
   addEventListeners() {
-    // vis selection
+    // --- vis selection
     const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
     selectVis.addEventListener('change', (ev) => {
       // this.addHistoryColumn();
       
+      // add or remove encodings for the visualization
+      this.updateEncodings();
+      this.addHistoryColumn();
+
+      // remove previews
+      this.removeMultiplePreviews();
 
       // const selectVis: HTMLSelectElement = this.$actObTable.querySelector('#vis-select');
       const selectX: HTMLSelectElement = this.$actObTable.querySelector('#x-axis-select');
@@ -243,20 +249,37 @@ export class Investigation {
         visualization = new Barchart(this.dataset, selectX.value, selectY.value, null);
       }
 
-      this.updateEncodings();
-      this.addHistoryColumn();
+      // this.updateEncodings();
+      // this.addHistoryColumn();
 
       // [ ] set rows (actions/objectives) that are not needed to 'suspended'
       const visActionsId = visualization.actions.map((elem) => elem.id);
       const tableBodyActions = this.$actObTable.querySelector(`tbody.table-actions`);
       const actionRows = Array.from(tableBodyActions.querySelectorAll('tr')) as HTMLElement[];
+      // [ ] only set css class for the current state cell
       for(const aRow of actionRows) {
         const rowID = aRow.id;
+        // get current state cell
+        const currCell = aRow.querySelector('.current-state') as HTMLElement;
+        if(currCell) {
         if(visActionsId.indexOf(rowID) === -1) {
-          aRow.classList.add('suspended');
+            currCell.classList.add('suspended');
           // TODO make not interactionable
         } else {
-          aRow.classList.remove('suspended');
+            currCell.classList.remove('suspended');
+            // set visualization actions
+            // get current value
+            const currVal = currCell.dataset.value;
+            // get visualization action
+            const visAction = visualization.getAction(rowID);
+            // set visualization action value
+            if(visAction !== null) {
+              console.log('Update existing Actions: old action', JSON.stringify(visAction));
+              console.log('Update existing Actions: new value: ',currVal );
+              visAction.value = currVal;
+              console.log('Update existing Actions: new action', JSON.stringify(visAction));
+            }
+          }
         }
       }
 
@@ -264,16 +287,25 @@ export class Investigation {
       const visObjectivesId = visualization.objectives.map((elem) => elem.id);
       const tableBodyObjectives = this.$actObTable.querySelector(`tbody.table-objectives`);
       const objectiveRows = Array.from(tableBodyObjectives.querySelectorAll('tr')) as HTMLElement[];
+      // [ ] only set css class for the current state cell
       for(const oRow of objectiveRows) {
         const rowID = oRow.id;
+        // get current state cell
+        const currCell = oRow.querySelector('.current-state') as HTMLElement;
+        if(currCell) {
         if(visObjectivesId.indexOf(rowID) === -1) {
-          oRow.classList.add('suspended');
+            // oRow.classList.add('suspended');
+            currCell.classList.add('suspended');
         } else {
-          oRow.classList.remove('suspended');
+            // oRow.classList.remove('suspended');
+            currCell.classList.remove('suspended');
+          }
         }
       }
 
 
+      // this.updateEncodings();
+      // this.addHistoryColumn();
       
       this.updateVisualizations(visualization);
     });

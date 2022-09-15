@@ -30,6 +30,7 @@ $color-wrong: red;
 $color-default: black;
 
 $color-default: black;
+$color-toggle-gray: lightgrey;
 // $color-action-true: #414141;
 // $color-action-false: lightgrey;
 $color-action-true: $color-blue;
@@ -61,7 +62,7 @@ $height-pipeline-stage: 1.5rem;
   color: $color-font-app;
 }
 
-* {
+*, *:after, *:before  {
   box-sizing: border-box;
 }
 
@@ -69,6 +70,68 @@ $height-pipeline-stage: 1.5rem;
   // display: none !important;
   visibility: hidden !important;
 }
+
+// --- Start: Toggle Switch ---
+.toggle-switch {
+  position: relative;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  // pill (background) when unchecked
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 1rem;
+  background-color: $color-toggle-gray;
+  transition: .3s;
+  -webkit-transition: .3s;
+}
+
+// New selector for the circle pseudo-element
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  border-radius: 50%;
+  background-color: white;
+  transition: .3s;
+  -webkit-transition: .3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  // pill (background) when checked
+  background-color: $color-default;
+}
+
+
+.toggle-switch input:checked + .toggle-slider:before {
+  // move circle pseudo-element from left to right 
+  // and right to left when the input is checked
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+// not needed for now
+// .toggle-switch input:focus + .toggle-slider {
+//   box-shadow: 0 0 5px $color-default;
+// }
+
+// --- End: Toggle Switch ---
 
 #main {
   display: grid;

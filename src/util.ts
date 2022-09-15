@@ -22,7 +22,7 @@ export const deepCopy = <T>(target: T): T => {
     (target as any[]).forEach((v) => { cp.push(v); });
     return cp.map((n: any) => deepCopy<any>(n)) as any;
   }
-  if (typeof target === 'object' && target !== {}) {
+  if (typeof target === 'object') {
     const cp = { ...(target as { [key: string]: any }) } as { [key: string]: any };
     Object.keys(cp).forEach((k) => {
       cp[k] = deepCopy<any>(cp[k]);
@@ -278,4 +278,20 @@ export function calculateOverlapBetween2Points(pA: { x: number, y: number, r: nu
     return 2 * aSeg;
   }
   return 0
+}
+
+export function createToggleSwitch(): HTMLLabelElement {
+  const htmlLabel = document.createElement('label');
+  htmlLabel.classList.add('toggle-switch');
+
+  const htmlInput = document.createElement('input');
+  htmlInput.type = 'checkbox';
+  htmlLabel.appendChild(htmlInput);
+
+  const htmlSpan = document.createElement('span');
+  htmlSpan.classList.add('toggle-slider');
+  htmlLabel.appendChild(htmlSpan);
+
+
+  return htmlLabel;
 }

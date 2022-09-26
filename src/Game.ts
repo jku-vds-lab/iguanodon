@@ -50,10 +50,24 @@ export class Game {
     // last vis
     this.$lastVis = document.createElement('div');
     this.$lastVis.id = 'last-vis';
+    this.$lastVis.classList.add('vis-container');
+    const lastVisLabel = document.createElement('div');
+    lastVisLabel.classList.add('vis-label');
+    const lastVisPlot = document.createElement('div');
+    lastVisPlot.classList.add('vis-plot');
+    this.$lastVis.appendChild(lastVisLabel);
+    this.$lastVis.appendChild(lastVisPlot);
 
     // current vis
     this.$currVis = document.createElement('div');
     this.$currVis.id = 'current-vis';
+    this.$currVis.classList.add('vis-container');
+    const currVisLabel = document.createElement('div');
+    currVisLabel.classList.add('vis-label');
+    const currVisPlot = document.createElement('div');
+    currVisPlot.classList.add('vis-plot');
+    this.$currVis.appendChild(currVisLabel);
+    this.$currVis.appendChild(currVisPlot);
 
     // this.$cntrTable = document.createElement('div'); // container for table
     // this.$cntrTable.id = 'cntr-table';
@@ -222,8 +236,10 @@ export class Game {
     }
 
     // update last vis
-    this.visualization.showVisualization(this.$lastVis);
+    this.updateVisualizationContainer(this.$lastVis,this._currAttempt,this.visualization);
 
+
+    // TODO check for all correct objectives or last attempt
 
     // ----- NEXT ATTEMPT
     this._currAttempt++;
@@ -257,8 +273,16 @@ export class Game {
        
     }
     // update current vis
-    this.visualization.showVisualization(this.$currVis);
+    this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
 
+
+  }
+
+  updateVisualizationContainer(visContainer: HTMLDivElement, attempt: number, vis: VisualizationBase) {
+    const divLabel = visContainer.querySelector('.vis-label') as HTMLDivElement;
+    divLabel.innerText = `Attempt ${attempt}`;
+    const divPlot = visContainer.querySelector('.vis-plot') as HTMLDivElement;
+    vis.showVisualization(divPlot);
   }
 
   convertObjStateToString(objState: ObjectiveState): string {
@@ -296,7 +320,8 @@ export class Game {
         }
 
         // update current vis
-        this.visualization.showVisualization(this.$currVis);
+        this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
+        
       }
     });
 
@@ -334,7 +359,8 @@ export class Game {
     }
 
     // update visualization in current visualization div
-    await this.visualization.showVisualization(this.$currVis);
+    this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
+
 
   }
 

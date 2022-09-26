@@ -154,20 +154,36 @@ $height-pipeline-stage: 1.5rem;
 
 #last-vis {
   grid-area: last-vis;
-  margin: auto;
-  margin: 2rem;
-  width: 80%;
-  height: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 #current-vis {
   grid-area: curr-vis;
-  margin: auto;
-  margin: 2rem;
-  width: 80%;
-  height: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
+.vis-container {
+  .vis-label {
+    margin-top: 1rem;
+    height: 2rem;
+    font-weight: bold;
+  }
+
+  .vis-plot {
+    height: 21rem;
+    width: 46rem;
+  }
+}
+
+// game table with all actions, objectives and attempts + solution
 #game-table {
   grid-area: game-table;
   display: flex;
@@ -181,27 +197,28 @@ $height-pipeline-stage: 1.5rem;
     border-right: 1px black solid;
     align-items: center;
 
+    // all column, but the last will have a border on the right side
     &:last-child {
       border-right: none;
     }
 
-    &.attempt, &.solution {
-      margin-left: auto;
-    }
-
+    // row in each column
     .row {
       height: 1.5rem;
       width: 100%;
 
+      // the first row = header
       &:first-child {
         border-bottom: 1px black solid;
         text-align: center;
       }
 
+      // all actions
       &.action {
         border-bottom: 1px black solid;
       }
 
+      // objectives are colored based on their states
       &.objective {  
         &[data-value="none"] {
           background-color: $color-object-none;
@@ -220,6 +237,7 @@ $height-pipeline-stage: 1.5rem;
         }
       }
 
+      // confirm button for each column
       &.confirm {
         height: 1.5rem;
         width: 90%;
@@ -227,7 +245,8 @@ $height-pipeline-stage: 1.5rem;
         cursor: pointer;
       }
 
-      label {
+      // the toogle switches of the actions
+      .toggle-switch {
         margin-top: 1px;
       }
     }

@@ -2,6 +2,7 @@ import * as aq from 'arquero';
 import { Barchart } from './BarChart';
 import { getDataCars } from './dataCars';
 import { getDataStock } from './dataStock';
+import { Game, IGameDescription } from './Game';
 import { Investigation } from './Investigation';
 import { Linechart } from './LineChart';
 import { Scatterplot } from './Scatterplot';
@@ -40,7 +41,20 @@ const dataset = getDataCars();
 let isFreeMode = false;
 const aqDataset = aq.from(dataset);
 
-const testInvestigation = new Investigation($main, isFreeMode, aqDataset);
+// scatterplot
+const scatter = new Scatterplot(aqDataset, 'Miles_per_Gallon', 'Horsepower', 'Origin');
+
+// game
+const gameDescr: IGameDescription = {
+  gameId: 1,
+  visualization: scatter
+}
+
+// new game
+const game = new Game($main, gameDescr, aqDataset, false);
+
+
+// const testInvestigation = new Investigation($main, isFreeMode, aqDataset);
 
 function clearInvestigation() {
   $main.replaceChildren();

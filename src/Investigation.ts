@@ -891,7 +891,7 @@ export class Investigation {
         // row exists
         // update all existing objectives
         const currCell = currObjRow[0].querySelector('.current-state') as HTMLElement;
-        currCell.dataset.value = `${this.convertObjStateToString(obj.state)}`;;
+        currCell.dataset.value = `${this.convertObjStateToString(obj.state)}`;
 
       } else {
         // row does ont exist

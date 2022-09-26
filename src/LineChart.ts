@@ -43,16 +43,16 @@ export class Linechart extends VisualizationBase {
   updateActions() {
     this.actions = [];
     // TODO create all actions
-    // encoding actions
-    // x
-    const xEnc = this.createActionObject('x_encoding','x-Axis Encoding', this.xEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    this.actions.push(xEnc);
-    // y
-    const yEnc = this.createActionObject('y_encoding','y-Axis Encoding', this.yEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    this.actions.push(yEnc);
-    // color
-    const cEnc = this.createActionObject('color_encoding','Color Encoding', this.colorEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
-    this.actions.push(cEnc);
+    // // encoding actions
+    // // x
+    // const xEnc = this.createActionObject('x_encoding','x-Axis Encoding', this.xEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    // this.actions.push(xEnc);
+    // // y
+    // const yEnc = this.createActionObject('y_encoding','y-Axis Encoding', this.yEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    // this.actions.push(yEnc);
+    // // color
+    // const cEnc = this.createActionObject('color_encoding','Color Encoding', this.colorEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
+    // this.actions.push(cEnc);
 
     // option actions
     // // sample data

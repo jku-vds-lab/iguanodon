@@ -49,6 +49,9 @@ $color-vis-pipeline-vt: #8DA0CB;
 
 // new version
 $color-table-grid: $color-default;
+$color-bg-header: lightgray;
+$color-bg-action-even: white;
+$color-bg-action-odd: #EFF0F1;
 
 // height variables
 $height-header: 2rem; 
@@ -77,9 +80,11 @@ $height-pipeline-stage: 1.5rem;
 .toggle-switch {
   position: relative;
   display: block;
-  width: 60px;
+  // width: 60px;
+  width: 3rem;
   // height: 34px;
-  height: 20px;
+  // height: 20px;
+  height: 1.125rem;
   margin: auto;
 }
 
@@ -109,10 +114,14 @@ $height-pipeline-stage: 1.5rem;
   content: "";
   // height: 26px;
   // width: 26px;
-  height: 12px;
-  width: 12px;
-  left: 4px;
-  bottom: 4px;
+  // height: 12px;
+  height: 0.75rem;
+  // width: 12px;
+  width: 0.75rem;
+  // left: 4px;
+  // bottom: 4px;
+  left: 0.1875rem;
+  bottom: 0.1875rem;
   border-radius: 50%;
   background-color: white;
   transition: .3s;
@@ -128,9 +137,12 @@ $height-pipeline-stage: 1.5rem;
 .toggle-switch input:checked + .toggle-slider:before {
   // move circle pseudo-element from left to right 
   // and right to left when the input is checked
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
+  // -webkit-transform: translateX(26px);
+  // -ms-transform: translateX(26px);
+  // transform: translateX(26px);
+  -webkit-transform: translateX(1.875rem);
+  -ms-transform: translateX(1.875rem);
+  transform: translateX(1.875rem);
 }
 
 // not needed for now
@@ -194,32 +206,36 @@ $height-pipeline-stage: 1.5rem;
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    border-right: 1px black solid;
     align-items: center;
-
-    // all column, but the last will have a border on the right side
-    &:last-child {
-      border-right: none;
-    }
 
     // row in each column
     .row {
       height: 1.5rem;
       width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-      // the first row = header
+
       &:first-child {
-        border-bottom: 1px black solid;
         text-align: center;
+        background-color: $color-bg-header;
+        line-height: 1.5rem;
+        font-weight: bold;
       }
 
-      // all actions
-      &.action {
-        border-bottom: 1px black solid;
+      &.action:nth-child(2n+1) {
+        background-color: $color-bg-action-odd;
+      }
+
+      &.action:nth-child(2n) {
+        background-color: $color-bg-action-even;
       }
 
       // objectives are colored based on their states
       &.objective {  
+        border: 0.125rem white solid;
+
         &[data-value="none"] {
           background-color: $color-object-none;
         }
@@ -239,16 +255,28 @@ $height-pipeline-stage: 1.5rem;
 
       // confirm button for each column
       &.confirm {
-        height: 1.5rem;
-        width: 90%;
-        background-color: $color-toggle-gray;
-        cursor: pointer;
+        height: 3rem;
       }
 
-      // the toogle switches of the actions
-      .toggle-switch {
-        margin-top: 1px;
+      .confirm-btn {
+        height: 1.5rem;
+        line-height: 1.5rem;
+        width: calc(100% - 0.25rem);
+        background-color: $color-toggle-gray;
+        border-radius: 0.25rem;
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+          background-color: darken($color-toggle-gray,10%);
+        }
+
+        &.disabled {
+          pointer-events: none;
+          background-color: lighten($color-toggle-gray,10%);
+        }
       }
+
     }
   }
 }

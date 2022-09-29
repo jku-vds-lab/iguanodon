@@ -1,7 +1,7 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { ObjectiveState } from "./Objective";
 import { createToggleSwitch, getColumnTypesFromArqueroTable } from "./util";
-import {  VisualizationBase } from "./visualizations";
+import {  IAction, VisualizationBase } from "./visualizations";
 
 export interface IGameDescription {
   gameId: number,
@@ -23,6 +23,7 @@ export class Game {
   
   dataset: ColumnTable;
   visualization: VisualizationBase;
+  shownActions: IAction[];
 
   constructor(cntrMain: HTMLDivElement, game: IGameDescription, dataset: ColumnTable, isFreeMode: boolean) {
     this.$container = cntrMain;
@@ -38,6 +39,8 @@ export class Game {
     // - the axis and color encodings
     // - and the optimal solution 
     this.visualization = game.visualization;
+
+    this.shownActions = this.visualization.actions;
 
 
     this.createGameSetup();
@@ -99,13 +102,25 @@ export class Game {
     headerElemLabel.classList.add('row','header');
     colLabel.appendChild(headerElemLabel);
     // actions
-    for(const act of this.visualization.actions) {
+    for(const act of this.shownActions) {
       const actElem = document.createElement('div');
       actElem.innerText = act.label;
       actElem.dataset.action = act.id;
       actElem.classList.add('row','action');
       colLabel.appendChild(actElem);
     }
+
+    // confirm container + button
+    const confirmElemLabel = document.createElement('div');
+    confirmElemLabel.classList.add('row','confirm','hide');
+    // const confirmBtn = document.createElement('button');
+    // confirmBtn.innerText = 'Confirm';
+    // confirmBtn.classList.add('confirm-btn');
+    // confirmBtn.addEventListener('click', (event) => this.clickConfirmHandler(event));
+    // confirmElem.appendChild(confirmBtn);
+    colLabel.appendChild(confirmElemLabel);
+
+
     // objectives
     for(const obj of this.visualization.objectives) {
       const objElem = document.createElement('div');
@@ -128,7 +143,7 @@ export class Game {
       headerElem.classList.add('row','header');
       colAttempt.appendChild(headerElem);
       // actions
-      for(const act of this.visualization.actions) {
+      for(const act of this.shownActions) {
         const actElem = document.createElement('div');
         const toggle = this.createActionableToggleSwitch();
         toggle.classList.add('hide');
@@ -137,6 +152,17 @@ export class Game {
         actElem.classList.add('row','action');
         colAttempt.appendChild(actElem);
       }
+
+      // confirm container + button
+      const confirmElem = document.createElement('div');
+      confirmElem.classList.add('row','confirm','hide');
+      const confirmBtn = document.createElement('div');
+      confirmBtn.innerText = 'Confirm';
+      confirmBtn.classList.add('confirm-btn');
+      confirmBtn.addEventListener('click', (event) => this.clickConfirmHandler(event));
+      confirmElem.appendChild(confirmBtn);
+      colAttempt.appendChild(confirmElem);
+
       // objectives
       for(const obj of this.visualization.objectives) {
         const objElem = document.createElement('div');
@@ -145,13 +171,6 @@ export class Game {
         objElem.classList.add('row','objective');
         colAttempt.appendChild(objElem);
       }
-
-      // confirm button
-      const confirmElem = document.createElement('button');
-      confirmElem.innerText = 'Confirm';
-      confirmElem.classList.add('row','confirm','hide');
-      confirmElem.addEventListener('click', (event) => this.clickConfirmHandler(event));
-      colAttempt.appendChild(confirmElem);
 
       // add attempt column to table
       table.appendChild(colAttempt);
@@ -166,7 +185,7 @@ export class Game {
     headerElemSolution.classList.add('row','header');
     colSolution.appendChild(headerElemSolution);
     // actions
-    for(const act of this.visualization.actions) {
+    for(const act of this.shownActions) {
       const actElem = document.createElement('div');
       const toggle = createToggleSwitch();
       toggle.classList.add('hide');
@@ -175,6 +194,17 @@ export class Game {
       actElem.classList.add('row','action');
       colSolution.appendChild(actElem);
     }
+
+    // confirm container + button
+    const confirmElemSolution = document.createElement('div');
+    confirmElemSolution.classList.add('row','confirm','hide');
+    // const confirmBtn = document.createElement('button');
+    // confirmBtn.innerText = 'Confirm';
+    // confirmBtn.classList.add('confirm-btn');
+    // confirmBtn.addEventListener('click', (event) => this.clickConfirmHandler(event));
+    // confirmElem.appendChild(confirmBtn);
+    colSolution.appendChild(confirmElemSolution);
+
     // objectives
     for(const obj of this.visualization.objectives) {
       const objElem = document.createElement('div');
@@ -207,9 +237,11 @@ export class Game {
       }
 
        // disable confirm
-       const confirm = colCurrAct.querySelector('.confirm') as HTMLButtonElement;
-       if(confirm) {
-        confirm.disabled = true;
+      //  const confirmBtn = colCurrAct.querySelector('.confirm-btn') as HTMLButtonElement;
+       const confirmBtn = colCurrAct.querySelector('.confirm-btn') as HTMLDivElement;
+       if(confirmBtn) {
+        // confirmBtn.disabled = true;
+        confirmBtn.classList.add('disabled');
        }
        
     }
@@ -265,10 +297,10 @@ export class Game {
         checkbox.checked = currValue;
       }
 
-       // show confirm button
-       const confirm = colNext.querySelector('.confirm')
-       if(confirm) {
-        confirm.classList.remove('hide');
+       // show confirm div
+       const confirmCntr = colNext.querySelector('.confirm')
+       if(confirmCntr) {
+        confirmCntr.classList.remove('hide');
        }
        
     }

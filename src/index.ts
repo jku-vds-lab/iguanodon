@@ -24,8 +24,24 @@ document.title = TITLE;
 const $header = document.getElementById('header') as HTMLDivElement;
 // nav
 const $nav = document.getElementById('nav') as HTMLDivElement;
+
+
+// nav -> help
+const navHelp = $nav.querySelector('.nav-help') as HTMLDivElement;
+navHelp.addEventListener('click', (event) => {
+  const elem = event.target as HTMLDivElement;
+  // elem.classList.toggle('active');
+  //TODO show and hide modal
+  const modalHelp = document.body.querySelector('#modal-help');
+  modalHelp.classList.add('show');
+}); 
+
 // main
 const $main = document.getElementById('main') as HTMLDivElement;
+
+// create modals
+createHelpModal();
+createGameEndModal();
 
 
 // const visPipeline = document.getElementById('vis-pipeline') as HTMLDivElement;
@@ -44,7 +60,7 @@ const aqDataset = aq.from(dataset);
 // scatterplot
 const scatter = new Scatterplot(aqDataset, 'Miles_per_Gallon', 'Horsepower', 'Origin');
 
-// game
+// game config
 const gameDescr: IGameDescription = {
   gameId: 1,
   visualization: scatter
@@ -54,12 +70,53 @@ const gameDescr: IGameDescription = {
 const game = new Game($main, gameDescr, aqDataset, false);
 
 
+
+function createHelpModal() {
+  const modalHelp = document.createElement('div');
+  modalHelp.id = 'modal-help';
+  modalHelp.style.display = 'none';
+  document.body.appendChild(modalHelp);
+
+  const btnCross = document.createElement('div');
+  btnCross.innerHTML = '&times;';
+  btnCross.classList.add('modal-btn','btn-cross')
+  modalHelp.addEventListener('click', (event) => {
+    modalHelp.classList.remove('show');
+  })
+  modalHelp.appendChild(btnCross);
+
+
+  const btnClose = document.createElement('div');
+  btnClose.innerHTML = 'Close';
+  btnClose.classList.add('modal-btn','btn-close')
+  btnClose.addEventListener('click', (event) => {
+    modalHelp.classList.remove('show');
+  })
+  modalHelp.appendChild(btnClose);
+}
+
+function createGameEndModal() {
+  const modalGameEnd = document.createElement('div');
+  modalGameEnd.id = 'modal-game-end';
+  modalGameEnd.style.display = 'none';
+  document.body.appendChild(modalGameEnd);
+
+  const btnCross = document.createElement('div');
+  btnCross.innerHTML = '&times;';
+  btnCross.addEventListener('click', (event) => {
+    modalGameEnd.classList.remove('show');
+  })
+  modalGameEnd.appendChild(btnCross);
+}
+
+
+// --------- OLD CODE: BEGIN ---------
 // const testInvestigation = new Investigation($main, isFreeMode, aqDataset);
 
-function clearInvestigation() {
-  $main.replaceChildren();
-  const investigationTwo = new Investigation($main, isFreeMode, aqDataset);
-}
+// function clearInvestigation() {
+//   $main.replaceChildren();
+//   const investigationTwo = new Investigation($main, isFreeMode, aqDataset);
+// }
 
 // function clearSelectedVisualization() {
 //   // clear endcoding selections

@@ -94,9 +94,67 @@ $height-pipeline-stage: 1.5rem;
   flex-direction: column;
   position: absolute;
   top: 15%;
-  left: 35%;
-  width: 30%;
+  left: 30%;
+  width: 40%;
   height: 70%;
+  background-color: white;
+  border: 1px black solid;
+  border-radius: 1rem;
+ 
+  .btn-cross {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-weight: bold;
+    margin-left: auto;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .content-area {
+    padding: 1rem;
+    overflow-y: auto;
+    flex-grow: 1;
+
+    .modal-heading {
+      font-size: 1rem;
+      font-weight: bold; 
+      margin-top: 0;
+    }
+
+    p {
+      font-size: 0.875rem;
+    }
+  }
+
+  .btn-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-close {
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    margin: 0 0.5rem;
+    line-height: 1.5rem;
+    cursor: pointer;
+  }
+}
+
+#modal-game-end {
+  flex-direction: column;
+  position: absolute;
+  top: 25%;
+  left: 41%;
+  width: 18%;
+  height: 40%;
   background-color: white;
   border: 1px black solid;
  
@@ -112,31 +170,21 @@ $height-pipeline-stage: 1.5rem;
     cursor: pointer;
   }
 
-  .btn-close {
+  .btn-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 1.5rem;
     padding: 0 0.5rem;
-    margin-top: auto;
-    margin-left: auto;
-    margin-right: auto;
+    margin-top: 0.5rem;
     margin-bottom: 0.5rem;
-    line-height: 1.5rem;
-    cursor: pointer;
   }
-}
 
-#modal-game-end {
-  flex-direction: column;
-  position: absolute;
-  top: 25%;
-  left: 25%;
-  width: 50%;
-  height: 50%;
-  background-color: white;
-  border: 1px black solid;
- 
-  .btn-cross {
-    margin-left: auto;
-    padding: 0.5rem;
+  .btn-retry, .btn-next {
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    margin: 0 0.5rem;
+    line-height: 1.5rem;
     cursor: pointer;
   }
 }

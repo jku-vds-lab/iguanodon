@@ -38,7 +38,7 @@ export class Game {
     // - the visualization 
     // - the axis and color encodings
     // - and the optimal solution 
-    this.visualization = game.visualization;
+    this.visualization = game.visualization.getCopyofVisualization();
 
     this.shownActions = this.visualization.actions;
 
@@ -49,6 +49,8 @@ export class Game {
   }
 
   createGameSetup() {
+    // clear game
+    this.$container.innerText = '';
     // with all the actions and objectives
     // last vis
     this.$lastVis = document.createElement('div');
@@ -272,37 +274,45 @@ export class Game {
 
 
     // TODO check for all correct objectives or last attempt
+    if(this._currAttempt === this._numbAttempts) {
+      const modalGameEnd = document.body.querySelector('#modal-game-end');
+      modalGameEnd.classList.add('show');
 
-    // ----- NEXT ATTEMPT
-    this._currAttempt++;
-    // copy vis 
-    const copyVis = this.visualization.getCopyofVisualization();
-    this.visualization = copyVis;
-    // show actions & set actions
-    // show confirm
-    const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
-    if(colNext) {
-      // set actions
-      const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
-      for(const aRow of actRows) {
+      // TODO show solution
+    } else {
+
+      // ----- NEXT ATTEMPT
+      this._currAttempt++;
+      // copy vis 
+      const copyVis = this.visualization.getCopyofVisualization();
+      this.visualization = copyVis;
+      // show actions & set actions
+      // show confirm
+      const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
+      if(colNext) {
+        // set actions
+        const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
+        for(const aRow of actRows) {
+          
+          const aid = aRow.dataset.action;
+          const currAction = this.visualization.getAction(aid);
+          const currValue = currAction.value;
+    
+          const label = aRow.querySelector('label') as HTMLLabelElement;
+          label.classList.remove('hide');
+
+          const checkbox = aRow.querySelector('input') as HTMLInputElement;
+          checkbox.checked = currValue;
+        }
+
+        // show confirm div
+        const confirmCntr = colNext.querySelector('.confirm')
+        if(confirmCntr) {
+          confirmCntr.classList.remove('hide');
+        }
         
-        const aid = aRow.dataset.action;
-        const currAction = this.visualization.getAction(aid);
-        const currValue = currAction.value;
-  
-        const label = aRow.querySelector('label') as HTMLLabelElement;
-        label.classList.remove('hide');
-
-        const checkbox = aRow.querySelector('input') as HTMLInputElement;
-        checkbox.checked = currValue;
+        
       }
-
-       // show confirm div
-       const confirmCntr = colNext.querySelector('.confirm')
-       if(confirmCntr) {
-        confirmCntr.classList.remove('hide');
-       }
-       
     }
     // update current vis
     this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);

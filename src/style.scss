@@ -71,11 +71,14 @@ $height-pipeline-stage: 1.5rem;
 }
 
 .hide {
-  // display: none !important;
   visibility: hidden !important;
 }
 
-.show {
+.display-none {
+  display: none !important;
+}
+
+.show-modal {
   display: flex !important;
 }
 
@@ -167,6 +170,22 @@ $height-pipeline-stage: 1.5rem;
     line-height: 1.5rem;
     text-align: center;
     cursor: pointer;
+  }
+
+  .content-area {
+    padding: 1rem;
+    overflow-y: auto;
+    flex-grow: 1;
+
+    .modal-heading {
+      font-size: 1rem;
+      font-weight: bold; 
+      margin-top: 0;
+    }
+
+    p {
+      font-size: 0.875rem;
+    }
   }
 
   .btn-area {

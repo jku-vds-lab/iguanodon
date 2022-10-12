@@ -894,9 +894,9 @@ export class Scatterplot extends VisualizationBase {
     // console.log('Overplotting -> Visualization container: ', { cntr: this.visContainer, children: this.visContainer.childNodes });
 
     // get svg element that has all points
-    // const svgElement = this.visContainer.querySelector('.marks');
+    const svgElement = this.visContainer.querySelector('svg');
     // const svgElement = this.visContainer.childNodes[0];
-    // console.log('svg container: ', svgElement);
+    console.log('svg container: ', svgElement);
     // 'g' element with the classes=.mark-symbol.role-mark.marks
     const groupWithAllMarks = this.visContainer.querySelector('.mark-symbol.role-mark.marks') as SVGGElement;
     // console.log('all marks container: ', groupWithAllMarks);

@@ -256,6 +256,21 @@ export abstract class VisualizationBase {
     return stateObjectives;
   }
 
+  areAllObjectivesFulfilled(): boolean {
+    let fulfill: boolean = true;
+
+    const objs = this.getObjectivesState();
+    for(const obj of objs) {
+      if(obj.state === ObjectiveState.correct) {
+        fulfill = fulfill && true;
+      }else {
+        fulfill = fulfill && false;
+      }
+    }
+
+    return fulfill;
+  }
+
   // getLowLevelObjectiveById(id: string): lowLevelObjective {
   //   return this.objectives.filter((elem) => elem.id === id)[0];
   // }

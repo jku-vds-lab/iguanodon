@@ -31,7 +31,7 @@ navHelp.addEventListener('click', (event) => {
   const elem = event.target as HTMLElement;
   // elem.classList.toggle('active');
   const modalHelp = document.body.querySelector('#modal-help');
-  modalHelp.classList.add('show');
+  modalHelp.classList.add('show-modal');
 }); 
 
 
@@ -63,21 +63,59 @@ const scatter = new Scatterplot(aqDataset, 'Miles_per_Gallon', 'Horsepower', 'Or
 // game config
 const gameDescr: IGameDescription = {
   gameId: 1,
+  // dataset
+  // vistype
+  // encodings
+  // initalState
+  // solutions: as array of action values 
   visualization: scatter
 }
 
+// scatterplot
+const scatter2 = new Scatterplot(aqDataset, 'Weight_in_lbs', 'Acceleration',null);
+
+// game config
+const gameDescr2: IGameDescription = {
+  gameId: 2,
+  // dataset
+  // vistype
+  // encodings
+  // initalState
+  // solutions: as array of action values 
+  visualization: scatter2
+}
+
+
 // new game
-const game = new Game($main, gameDescr, aqDataset, false);
+let currGameId = gameDescr.gameId;
+// let currGame = new Game($main, gameDescr, aqDataset, false);
+new Game($main, gameDescr, aqDataset, false);
+$main.dataset.gameId = `${currGameId}`;
 
 // nav -> retry
 const navRetry = $nav.querySelector('.nav-retry') as HTMLDivElement;
 navRetry.addEventListener('click', (event) => {
   const elem = event.target as HTMLElement;
   // elem.classList.toggle('active');
+  // const gameId = $main.dataset.gameId;
   //TODO retry game
-  console.log('old game: ', game);
-  new Game($main, gameDescr, aqDataset, false);
+  console.log('old game: ', currGameId);
+  // new Game($main, gameDescr, aqDataset, false);
+  restartGame();
 }); 
+
+// nav -> next
+const navNext = $nav.querySelector('.nav-next') as HTMLDivElement;
+navNext.addEventListener('click', (event) => {
+  const elem = event.target as HTMLElement;
+  // elem.classList.toggle('active');
+  // const gameId = $main.dataset.gameId;
+  //TODO retry game
+  console.log('old game: ', currGameId);
+  // new Game($main, gameDescr, aqDataset, false);
+  nextGame();
+}); 
+
 
 function createHelpModal() {
   const modalHelp = document.createElement('div');
@@ -90,7 +128,7 @@ function createHelpModal() {
   btnCross.innerHTML = '&times;';
   btnCross.classList.add('modal-btn','btn-cross');
   modalHelp.addEventListener('click', (event) => {
-    modalHelp.classList.remove('show');
+    modalHelp.classList.remove('show-modal');
   })
   modalHelp.appendChild(btnCross);
 
@@ -152,7 +190,7 @@ function createHelpModal() {
   btnClose.innerHTML = 'Close';
   btnClose.classList.add('modal-btn','btn-close')
   btnClose.addEventListener('click', (event) => {
-    modalHelp.classList.remove('show');
+    modalHelp.classList.remove('show-modal');
   })
   btnArea.appendChild(btnClose);
 }
@@ -168,7 +206,7 @@ function createGameEndModal() {
   btnCross.innerHTML = '&times;';
   btnCross.classList.add('modal-btn','btn-cross');
   btnCross.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show');
+    modalGameEnd.classList.remove('show-modal');
   })
   modalGameEnd.appendChild(btnCross);
 
@@ -178,6 +216,40 @@ function createGameEndModal() {
   contentArea.classList.add('content-area');
   modalGameEnd.appendChild(contentArea);
 
+  // game win content
+  const contentWin = document.createElement('div');
+  contentWin.classList.add('content-win','display-none');
+  contentArea.appendChild(contentWin);
+
+  // pHeadWin - heading
+  const pHeadWin = document.createElement('p');
+  pHeadWin.classList.add('modal-heading');
+  pHeadWin.innerText = 'YOU WIN!';
+  contentWin.appendChild(pHeadWin);
+
+  // p1Win - message
+  const p1Win = document.createElement('p');
+  p1Win.innerText = `Congratulation on your accomplishment!
+  You can try again or try another game.`;
+  contentWin.appendChild(p1Win);
+
+  // game lose content
+  const contentLose = document.createElement('div');
+  contentLose.classList.add('content-lose','display-none');
+  contentArea.appendChild(contentLose);
+
+  // pHeadLose - heading
+  const pHeadLose = document.createElement('p');
+  pHeadLose.classList.add('modal-heading');
+  pHeadLose.innerText = 'YOU LOSE!';
+  contentLose.appendChild(pHeadLose);
+
+  // p1Lose - message
+  const p1Lose = document.createElement('p');
+  p1Lose.innerText = `It's just a game. Sometimes you win, sometimes you lose.
+  You can try again or try another game.`;
+  contentLose.appendChild(p1Lose);
+
   // button area
   const btnArea = document.createElement('div');
   btnArea.classList.add('btn-area');
@@ -185,27 +257,54 @@ function createGameEndModal() {
 
   // button retry
   const btnRetry = document.createElement('div');
-  btnRetry.innerHTML = 'Retry';
+  btnRetry.innerHTML = '&#10226;  Retry';
   btnRetry.classList.add('modal-btn','btn-retry')
   btnRetry.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show');
+    modalGameEnd.classList.remove('show-modal');
     // TODO restart game
-    new Game($main, gameDescr, aqDataset, false);
+    // new Game($main, gameDescr, aqDataset, false);
+    restartGame();
   })
   btnArea.appendChild(btnRetry);
 
 
   // button next
   const btnNext = document.createElement('div');
-  btnNext.innerHTML = 'Next';
+  btnNext.innerHTML = '&#10132; Next';
   btnNext.classList.add('modal-btn','btn-next')
   btnNext.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show');
+    modalGameEnd.classList.remove('show-modal');
     // TODO start different game
+    nextGame();
   })
   btnArea.appendChild(btnNext);
 }
 
+function restartGame() {
+  const gameId = Number($main.dataset.gameId);
+  if(gameId === gameDescr.gameId) {
+    new Game($main, gameDescr, aqDataset, false);
+    currGameId = gameDescr.gameId;
+    $main.dataset.gameId = `${currGameId}`;
+  } else {
+    new Game($main, gameDescr2, aqDataset, false);
+    currGameId = gameDescr2.gameId;
+    $main.dataset.gameId = `${currGameId}`;
+  }
+}
+
+function nextGame() {
+  const gameId = Number($main.dataset.gameId);
+  if(gameId === gameDescr.gameId) {
+    new Game($main, gameDescr2, aqDataset, false);
+    currGameId = gameDescr2.gameId;
+    $main.dataset.gameId = `${currGameId}`;
+  } else {
+    new Game($main, gameDescr, aqDataset, false);
+    currGameId = gameDescr.gameId;
+    $main.dataset.gameId = `${currGameId}`;
+  }
+}
 
 // --------- OLD CODE: BEGIN ---------
 // const testInvestigation = new Investigation($main, isFreeMode, aqDataset);

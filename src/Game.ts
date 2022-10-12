@@ -20,6 +20,7 @@ export class Game {
   // private _dataColumns: {label: string, type: string}[]
   private _numbAttempts: number = 10;
   private _currAttempt: number = 0;
+  private _gameId: number;
   
   dataset: ColumnTable;
   visualization: VisualizationBase;
@@ -33,6 +34,7 @@ export class Game {
     // this._dataColumns = getColumnTypesFromArqueroTable(dataset);
     // console.log('data columns: ', this._dataColumns);
 
+    this._gameId = game.gameId;
     // TODO constructor parameter: gameID
     // with gameID: 
     // - the visualization 
@@ -46,6 +48,10 @@ export class Game {
     this.createGameSetup();
     this.setInitalVisualizationState();
     
+  }
+
+  getGameId(): number {
+    return this._gameId;
   }
 
   createGameSetup() {
@@ -248,6 +254,7 @@ export class Game {
        
     }
     // show objectives
+    const fulfilledObjectives = this.visualization.areAllObjectivesFulfilled();
     const colCurrObj = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
     if(colCurrObj) {
       const visObjStates = this.visualization.getObjectivesState();
@@ -274,49 +281,67 @@ export class Game {
 
 
     // TODO check for all correct objectives or last attempt
-    if(this._currAttempt === this._numbAttempts) {
+    console.log('visualization all objecitve states: ',fulfilledObjectives);
+    if(fulfilledObjectives) {
+      // all objective fulfilled -> WIN
       const modalGameEnd = document.body.querySelector('#modal-game-end');
-      modalGameEnd.classList.add('show');
+      modalGameEnd.classList.add('show-modal');
 
-      // TODO show solution
+      const gameLose =  modalGameEnd.querySelector('.content-lose');
+      gameLose.classList.add('display-none');
+      const gameWin =  modalGameEnd.querySelector('.content-win');
+      gameWin.classList.remove('display-none');
+
+      // TODO show solution in current vis (actions + vis)
+
     } else {
+      // not all objectives fulfilled
+      if(this._currAttempt === this._numbAttempts) {
+        // all attempts used -> LOSE
+        const modalGameEnd = document.body.querySelector('#modal-game-end');
+        modalGameEnd.classList.add('show-modal');
 
-      // ----- NEXT ATTEMPT
-      this._currAttempt++;
-      // copy vis 
-      const copyVis = this.visualization.getCopyofVisualization();
-      this.visualization = copyVis;
-      // show actions & set actions
-      // show confirm
-      const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
-      if(colNext) {
-        // set actions
-        const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
-        for(const aRow of actRows) {
-          
-          const aid = aRow.dataset.action;
-          const currAction = this.visualization.getAction(aid);
-          const currValue = currAction.value;
-    
-          const label = aRow.querySelector('label') as HTMLLabelElement;
-          label.classList.remove('hide');
+        const gameWin =  modalGameEnd.querySelector('.content-win');
+        gameWin.classList.add('display-none');
+        const gameLose =  modalGameEnd.querySelector('.content-lose');
+        gameLose.classList.remove('display-none');
+        // TODO show solution in current vis (actions + vis)
 
-          const checkbox = aRow.querySelector('input') as HTMLInputElement;
-          checkbox.checked = currValue;
+      } else {
+        // attempts still possible -> NEXT ATTEMPT
+        this._currAttempt++;
+        // copy vis 
+        const copyVis = this.visualization.getCopyofVisualization();
+        this.visualization = copyVis;
+        // show actions & set actions
+        // show confirm
+        const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
+        if(colNext) {
+          // set actions
+          const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
+          for(const aRow of actRows) {
+            
+            const aid = aRow.dataset.action;
+            const currAction = this.visualization.getAction(aid);
+            const currValue = currAction.value;
+      
+            const label = aRow.querySelector('label') as HTMLLabelElement;
+            label.classList.remove('hide');
+
+            const checkbox = aRow.querySelector('input') as HTMLInputElement;
+            checkbox.checked = currValue;
+          }
+
+          // show confirm div
+          const confirmCntr = colNext.querySelector('.confirm')
+          if(confirmCntr) {
+            confirmCntr.classList.remove('hide');
+          }    
         }
-
-        // show confirm div
-        const confirmCntr = colNext.querySelector('.confirm')
-        if(confirmCntr) {
-          confirmCntr.classList.remove('hide');
-        }
-        
-        
+        // update current vis
+        this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
       }
     }
-    // update current vis
-    this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
-
 
   }
 

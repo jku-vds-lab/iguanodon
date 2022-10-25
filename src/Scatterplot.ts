@@ -4,7 +4,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from 'vega-embed';
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable, getRandomBoolean, uniqueFilter } from "./util";
+import { caculateAreaPolygone, calculatePointsOverlap, convexHull, getColumnTypesFromArqueroTable, getRandomBoolean, niceName, uniqueFilter } from "./util";
 import { highLevelObjective, IAction, IEncoding, IObjective, IObjectiveState, VisType, VisualizationBase } from "./visualizations";
 
 // export enum ScatterplotActions {
@@ -73,35 +73,35 @@ export class Scatterplot extends VisualizationBase {
 
     // option actions
     // sample data
-    const aSample = this.createActionObject('sample_data','Sample Data (25%)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
+    const aSample = this.createActionObject('sample_data','Sample data randomly(25%)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
     this.actions.push(aSample);
     // aggregation (mean)
-    const aAggregation = this.createActionObject('aggregate','Aggregate Data (Mean)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
+    const aAggregation = this.createActionObject('aggregate','Aggregate data (mean)', getRandomBoolean(), VisPiplineStage.dataTransform, ActionType.Option);
     this.actions.push(aAggregation);
     // lower mark opacity
-    const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
+    const aOpacity = this.createActionObject('lower_opacity','Set lower opacity for marks', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
     this.actions.push(aOpacity);
     // decrese mark size
-    const aSize = this.createActionObject('decrease_size','Decreased Mark Size', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
+    const aSize = this.createActionObject('decrease_size','Decreased mark size', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option);
     this.actions.push(aSize);
     // start x with 0
-    const aXZero = this.createActionObject('x_axis_zero','Start x-Axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
+    const aXZero = this.createActionObject('x_axis_zero','Start x-axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aXZero);
     // start y with 0
-    const aYZero = this.createActionObject('y_axis_zero','Start y-Axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
+    const aYZero = this.createActionObject('y_axis_zero','Start y-axis with 0', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aYZero);
     // background color
-    const aBackground = this.createActionObject('background_color','Add Background Color', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
+    const aBackground = this.createActionObject('background_color','Add background color', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aBackground);
 
 
     // conditional option actions
     if(this._hasColorEncoding) {
       // legend
-      const aLegend = this.createActionObject('legend','Add Legend', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option)
+      const aLegend = this.createActionObject('legend','Add legend', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option)
       this.actions.push(aLegend);
       // nomnal color scale
-      const aNominalColors = this.createActionObject('nominal_colors','Nominal Color Scale', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option)
+      const aNominalColors = this.createActionObject('nominal_colors','Apply nominal color scale', getRandomBoolean(), VisPiplineStage.visualMapping, ActionType.Option)
       this.actions.push(aNominalColors);
     }
   }
@@ -298,6 +298,7 @@ export class Scatterplot extends VisualizationBase {
       vegaSpecBuildUp.encoding.x = {
         field: this.xEncoding,
         type: 'quantitative',
+        // titel: `${niceName(this.yEncoding)}`,
         scale: { zero: zeroXAxis } // start x-axis with 0
       };
 
@@ -310,6 +311,7 @@ export class Scatterplot extends VisualizationBase {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,
         type: 'quantitative',
+        // titel: `${niceName(this.yEncoding)}`,
         scale: { zero: zeroYAxis } // start y-axis with 0
       };
 

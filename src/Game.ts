@@ -6,6 +6,7 @@ import {  IAction, VisualizationBase } from "./visualizations";
 export interface IGameDescription {
   gameId: number,
   visualization: VisualizationBase,
+  solution: VisualizationBase
 }
 export class Game {
   
@@ -24,6 +25,7 @@ export class Game {
   
   dataset: ColumnTable;
   visualization: VisualizationBase;
+  solution: VisualizationBase;
   shownActions: IAction[];
 
   constructor(cntrMain: HTMLDivElement, game: IGameDescription, dataset: ColumnTable, isFreeMode: boolean) {
@@ -41,6 +43,7 @@ export class Game {
     // - the axis and color encodings
     // - and the optimal solution 
     this.visualization = game.visualization.getCopyofVisualization();
+    this.solution = game.solution.getCopyofVisualization();
 
     this.shownActions = this.visualization.actions;
 
@@ -104,17 +107,17 @@ export class Game {
     // label column
     const colLabel = document.createElement('div');
     colLabel.classList.add('column','label');
-    // header 
-    const headerElemLabel = document.createElement('div');
-    headerElemLabel.innerText = 'Actions & Objectives';
-    headerElemLabel.classList.add('row','header');
-    colLabel.appendChild(headerElemLabel);
+    // header action
+    const headerActionLabel = document.createElement('div');
+    headerActionLabel.innerText = 'Actions';
+    headerActionLabel.classList.add('row','header', 'label');
+    colLabel.appendChild(headerActionLabel);
     // actions
     for(const act of this.shownActions) {
       const actElem = document.createElement('div');
       actElem.innerText = act.label;
       actElem.dataset.action = act.id;
-      actElem.classList.add('row','action');
+      actElem.classList.add('row','action','label');
       colLabel.appendChild(actElem);
     }
 
@@ -129,12 +132,17 @@ export class Game {
     colLabel.appendChild(confirmElemLabel);
 
 
+    // header objective
+    const headerObjectiveLabel = document.createElement('div');
+    headerObjectiveLabel.innerText = 'Objectives';
+    headerObjectiveLabel.classList.add('row','header', 'label');
+    colLabel.appendChild(headerObjectiveLabel);
     // objectives
     for(const obj of this.visualization.objectives) {
       const objElem = document.createElement('div');
       objElem.innerText = obj.label;
       objElem.dataset.objective = obj.id;
-      objElem.classList.add('row','objective');
+      objElem.classList.add('row','objective','label');
       colLabel.appendChild(objElem);
     }
     // add label column to table
@@ -145,11 +153,11 @@ export class Game {
       const colAttempt = document.createElement('div');
       colAttempt.classList.add('column','attempt');
       colAttempt.dataset.attempt = `${i}`;
-      // header 
-      const headerElem = document.createElement('div');
-      headerElem.innerText = `Attempt ${i}`;
-      headerElem.classList.add('row','header');
-      colAttempt.appendChild(headerElem);
+      // header action
+      const headerAction = document.createElement('div');
+      headerAction.innerText = `Attempt ${i}`;
+      headerAction.classList.add('row','header');
+      colAttempt.appendChild(headerAction);
       // actions
       for(const act of this.shownActions) {
         const actElem = document.createElement('div');
@@ -167,16 +175,24 @@ export class Game {
       const confirmBtn = document.createElement('div');
       confirmBtn.innerText = 'Confirm';
       confirmBtn.classList.add('confirm-btn');
-      confirmBtn.addEventListener('click', (event) => this.clickConfirmHandler(event));
+      confirmBtn.addEventListener('click', async (event) => this.clickConfirmHandler(event));
       confirmElem.appendChild(confirmBtn);
       colAttempt.appendChild(confirmElem);
 
+      // header objective
+      const headerObjective = document.createElement('div');
+      headerObjective.innerText = '';
+      headerObjective.classList.add('row','header');
+      colAttempt.appendChild(headerObjective);
       // objectives
       for(const obj of this.visualization.objectives) {
         const objElem = document.createElement('div');
         objElem.dataset.objective = obj.id;
-        objElem.dataset.value = 'none';
-        objElem.classList.add('row','objective');
+        objElem.classList.add('row','objective','result');
+        const objElemIdicator = document.createElement('div');
+        objElemIdicator.classList.add('obj_indicator');
+        objElemIdicator.dataset.value = 'none';
+        objElem.appendChild(objElemIdicator);
         colAttempt.appendChild(objElem);
       }
 
@@ -187,11 +203,11 @@ export class Game {
     // solution column
     const colSolution = document.createElement('div');
     colSolution.classList.add('column','solution');
-    // header 
-    const headerElemSolution = document.createElement('div');
-    headerElemSolution.innerText = 'Solution';
-    headerElemSolution.classList.add('row','header');
-    colSolution.appendChild(headerElemSolution);
+    // header action 
+    const headerActionSolution = document.createElement('div');
+    headerActionSolution.innerText = 'Solution';
+    headerActionSolution.classList.add('row','header');
+    colSolution.appendChild(headerActionSolution);
     // actions
     for(const act of this.shownActions) {
       const actElem = document.createElement('div');
@@ -213,12 +229,20 @@ export class Game {
     // confirmElem.appendChild(confirmBtn);
     colSolution.appendChild(confirmElemSolution);
 
+    // header objective 
+    const headerObjectiveSolution = document.createElement('div');
+    headerObjectiveSolution.innerText = '';
+    headerObjectiveSolution.classList.add('row','header');
+    colSolution.appendChild(headerObjectiveSolution);
     // objectives
     for(const obj of this.visualization.objectives) {
       const objElem = document.createElement('div');
       objElem.dataset.objective = obj.id;
-      objElem.dataset.value = 'none';
-      objElem.classList.add('row','objective');
+      objElem.classList.add('row','objective','result');
+      const objElemIdicator = document.createElement('div');
+      objElemIdicator.classList.add('obj_indicator');
+      objElemIdicator.dataset.value = 'none';
+      objElem.appendChild(objElemIdicator);
       colSolution.appendChild(objElem);
     }
     // add attempt column to table
@@ -228,7 +252,7 @@ export class Game {
   }
 
 
-  clickConfirmHandler(event: MouseEvent) {
+  async clickConfirmHandler(event: MouseEvent) {
     event.stopPropagation();
     // ----- CURRENT ATTEMPT
     // add current attempt to visHistory
@@ -242,6 +266,8 @@ export class Game {
       for(const aRow of actRows) {
         const checkbox = aRow.querySelector('input') as HTMLInputElement;
         checkbox.disabled = true;
+        const span = aRow.querySelector('span') as HTMLSpanElement;
+        span.dataset.disabled = 'true';
       }
 
        // disable confirm
@@ -249,41 +275,62 @@ export class Game {
        const confirmBtn = colCurrAct.querySelector('.confirm-btn') as HTMLDivElement;
        if(confirmBtn) {
         // confirmBtn.disabled = true;
-        confirmBtn.classList.add('disabled');
+        confirmBtn.classList.add('disabled','hide');
        }
        
     }
     // show objectives
     const fulfilledObjectives = this.visualization.areAllObjectivesFulfilled();
-    const colCurrObj = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
-    if(colCurrObj) {
-      const visObjStates = this.visualization.getObjectivesState();
-      console.log('visObjStates',visObjStates);
-      // get row objective
-      const objRows = Array.from(colCurrObj.querySelectorAll('.objective')) as HTMLDivElement[];
-      console.log('objRows',objRows);
-      for(const oRow of objRows) {
-        const oid = oRow.dataset.objective;
+    const colCurrObj = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`) as HTMLDivElement;
+    this.setTableColumnObjectives(colCurrObj, this.visualization);
+    // if(colCurrObj) {
+    //   const visObjStates = this.visualization.getObjectivesState();
+    //   console.log('visObjStates',visObjStates);
+    //   console.log('visActionStates',this.visualization.actions);
+    //   // get row objective
+    //   const objRows = Array.from(colCurrObj.querySelectorAll('.objective')) as HTMLDivElement[];
+    //   console.log('objRows',objRows);
+    //   for(const oRow of objRows) {
+    //     const oid = oRow.dataset.objective;
         
-        // check if objective exists
-        const currObjState = visObjStates.filter((elem) => elem.id === oid);
+    //     // check if objective exists
+    //     const currObjState = visObjStates.filter((elem) => elem.id === oid);
 
-        if(currObjState.length === 1)  {
-          const currState = currObjState[0];
-          // set objetive value
-          oRow.dataset.value = `${this.convertObjStateToString(currState.state)}`;
-        }
-      }
-    }
+    //     if(currObjState.length === 1)  {
+    //       const currState = currObjState[0];
+    //       // get objecive idicator
+    //       const oRowIndicator = oRow.querySelector('.obj_indicator') as HTMLDivElement;
+    //       // set objetive value
+    //       oRowIndicator.dataset.value = `${this.convertObjStateToString(currState.state)}`;
+    //       oRowIndicator.title = `${this.convertObjStateToTooltip(currState.state)}`;
+    //     }
+    //   }
+    // }
 
     // update last vis
-    this.updateVisualizationContainer(this.$lastVis,this._currAttempt,this.visualization);
+    const heading = `Attempt ${this._currAttempt}`;
+    this.updateVisualizationContainer(this.$lastVis,this.visualization, heading);
 
 
-    // TODO check for all correct objectives or last attempt
+    // check for all correct objectives or last attempt
     console.log('visualization all objecitve states: ',fulfilledObjectives);
     if(fulfilledObjectives) {
       // all objective fulfilled -> WIN
+      
+      // show solution in current vis (actions + vis)
+      // copy current correct vis as solution 
+      const currSolution = this.visualization.getCopyofVisualization();
+      // get solution column
+      const solutionCol = this.$gameTable.querySelector(`.column.solution`) as HTMLDivElement;
+      // set solution column action
+      this.setTableColumnActions(solutionCol,currSolution);
+      // show solution -> update current vis: solution
+      const heading = `Solution`;
+      await this.updateVisualizationContainer(this.$currVis,currSolution, heading);
+      // set solution column objectives
+      this.setTableColumnObjectives(solutionCol, currSolution);
+
+      // show WIN modal
       const modalGameEnd = document.body.querySelector('#modal-game-end');
       modalGameEnd.classList.add('show-modal');
 
@@ -292,12 +339,25 @@ export class Game {
       const gameWin =  modalGameEnd.querySelector('.content-win');
       gameWin.classList.remove('display-none');
 
-      // TODO show solution in current vis (actions + vis)
-
     } else {
       // not all objectives fulfilled
       if(this._currAttempt === this._numbAttempts) {
         // all attempts used -> LOSE
+
+        // show solution in current vis (actions + vis)
+        // copy current correct vis as solution 
+        const currSolution = this.solution;
+        // get solution column
+        const solutionCol = this.$gameTable.querySelector(`.column.solution`) as HTMLDivElement;
+        // set solution column actions
+        this.setTableColumnActions(solutionCol,currSolution);
+        // show solution -> update current vis: solution
+        const heading = `Solution`;
+        await this.updateVisualizationContainer(this.$currVis,currSolution, heading);
+        // set solution column objectives
+        this.setTableColumnObjectives(solutionCol, currSolution);
+
+        // show LOSE modal
         const modalGameEnd = document.body.querySelector('#modal-game-end');
         modalGameEnd.classList.add('show-modal');
 
@@ -305,7 +365,6 @@ export class Game {
         gameWin.classList.add('display-none');
         const gameLose =  modalGameEnd.querySelector('.content-lose');
         gameLose.classList.remove('display-none');
-        // TODO show solution in current vis (actions + vis)
 
       } else {
         // attempts still possible -> NEXT ATTEMPT
@@ -315,47 +374,106 @@ export class Game {
         this.visualization = copyVis;
         // show actions & set actions
         // show confirm
-        const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
-        if(colNext) {
-          // set actions
-          const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
-          for(const aRow of actRows) {
+        const colNext = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`) as HTMLDivElement;
+        this.setTableColumnActions(colNext,this.visualization);
+        // if(colNext) {
+        //   // set actions
+        //   const actRows = Array.from(colNext.querySelectorAll('.action')) as HTMLDivElement[];
+        //   for(const aRow of actRows) {
             
-            const aid = aRow.dataset.action;
-            const currAction = this.visualization.getAction(aid);
-            const currValue = currAction.value;
+        //     const aid = aRow.dataset.action;
+        //     const currAction = this.visualization.getAction(aid);
+        //     const currValue = currAction.value;
       
-            const label = aRow.querySelector('label') as HTMLLabelElement;
-            label.classList.remove('hide');
+        //     const label = aRow.querySelector('label') as HTMLLabelElement;
+        //     label.classList.remove('hide');
 
-            const checkbox = aRow.querySelector('input') as HTMLInputElement;
-            checkbox.checked = currValue;
-          }
+        //     const checkbox = aRow.querySelector('input') as HTMLInputElement;
+        //     checkbox.checked = currValue;
+        //   }
 
-          // show confirm div
-          const confirmCntr = colNext.querySelector('.confirm')
-          if(confirmCntr) {
-            confirmCntr.classList.remove('hide');
-          }    
-        }
+        //   // show confirm div
+        //   const confirmCntr = colNext.querySelector('.confirm')
+        //   if(confirmCntr) {
+        //     confirmCntr.classList.remove('hide');
+        //   }    
+        // }
         // update current vis
-        this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
+        const heading = `Attempt ${this._currAttempt} Preview`;
+        this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
       }
     }
 
   }
 
-  updateVisualizationContainer(visContainer: HTMLDivElement, attempt: number, vis: VisualizationBase) {
+  setTableColumnActions(column: HTMLDivElement, vis: VisualizationBase) {
+    if(column) {
+      // set actions
+      const actRows = Array.from(column.querySelectorAll('.action')) as HTMLDivElement[];
+      for(const aRow of actRows) {
+        
+        const aid = aRow.dataset.action;
+        const currAction = vis.getAction(aid);
+        const currValue = currAction.value;
+  
+        const label = aRow.querySelector('label') as HTMLLabelElement;
+        label.classList.remove('hide');
+
+        const checkbox = aRow.querySelector('input') as HTMLInputElement;
+        checkbox.checked = currValue;
+      }
+
+      // show confirm div
+      const confirmCntr = column.querySelector('.confirm')
+      if(confirmCntr) {
+        confirmCntr.classList.remove('hide');
+      }    
+    }
+  }
+
+  setTableColumnObjectives(column: HTMLDivElement, vis: VisualizationBase) {
+    if(column) {
+      const visObjStates = vis.getObjectivesState();
+      console.log('visObjStates',visObjStates);
+      console.log('visActionStates',vis.actions);
+      // get row objective
+      const objRows = Array.from(column.querySelectorAll('.objective')) as HTMLDivElement[];
+      console.log('objRows',objRows);
+      for(const oRow of objRows) {
+        const oid = oRow.dataset.objective;
+        
+        // check if objective exists
+        const currObjState = visObjStates.filter((elem) => elem.id === oid);
+
+        if(currObjState.length === 1)  {
+          const currState = currObjState[0];
+          // get objecive idicator
+          const oRowIndicator = oRow.querySelector('.obj_indicator') as HTMLDivElement;
+          // set objetive value
+          oRowIndicator.dataset.value = `${this.convertObjStateToString(currState.state)}`;
+          oRowIndicator.title = `${this.convertObjStateToTooltip(currState.state)}`;
+        }
+      }
+    }
+  }
+
+  async updateVisualizationContainer(visContainer: HTMLDivElement, vis: VisualizationBase, heading: string) {
     const divLabel = visContainer.querySelector('.vis-label') as HTMLDivElement;
-    divLabel.innerText = `Attempt ${attempt}`;
+    divLabel.innerText = `${heading}`;
     const divPlot = visContainer.querySelector('.vis-plot') as HTMLDivElement;
-    vis.showVisualization(divPlot);
+    await vis.showVisualization(divPlot);
   }
 
   convertObjStateToString(objState: ObjectiveState): string {
     if(objState === ObjectiveState.correct) return 'correct';
     if(objState === ObjectiveState.partial) return 'partial';
     if(objState === ObjectiveState.wrong) return 'wrong';
+  }
+
+  convertObjStateToTooltip(objState: ObjectiveState): string {
+    if(objState === ObjectiveState.correct) return 'Objective is fulfilled';
+    if(objState === ObjectiveState.partial) return 'Objective is partially fulfilled';
+    if(objState === ObjectiveState.wrong) return 'Objective is unfulfilled';
   }
 
 
@@ -387,7 +505,8 @@ export class Game {
         }
 
         // update current vis
-        this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
+        const heading = `Attempt ${this._currAttempt} Preview`;
+        this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
         
       }
     });
@@ -426,7 +545,8 @@ export class Game {
     }
 
     // update visualization in current visualization div
-    this.updateVisualizationContainer(this.$currVis,this._currAttempt,this.visualization);
+    const heading = `Attempt ${this._currAttempt} Preview`;
+    this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
 
 
   }

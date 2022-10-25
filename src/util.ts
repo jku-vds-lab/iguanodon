@@ -32,6 +32,16 @@ export const deepCopy = <T>(target: T): T => {
   return target;
 };
 
+export function niceName(label: string): string {
+  const niceLabel =  label
+    .split('_')
+    .map((l) => l[0].toLowerCase() + l.slice(1))
+    .join(' ');
+
+
+  return niceLabel[0].toUpperCase() + niceLabel.slice(1);
+}
+
 /**
  * SOURCE: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random 
  * Function that returns integer values from 0 to may (inclusive 0, exclusive max)
@@ -286,6 +296,7 @@ export function createToggleSwitch(): HTMLLabelElement {
 
   const htmlInput = document.createElement('input');
   htmlInput.type = 'checkbox';
+  htmlInput.classList.add('hide');
   htmlLabel.appendChild(htmlInput);
 
   const htmlSpan = document.createElement('span');

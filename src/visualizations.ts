@@ -284,6 +284,15 @@ export abstract class VisualizationBase {
     return null;
   }
 
+  setMutlipleActions(actions: {id: string, value:boolean}[]) {
+    for(const a of actions) {
+      const currAction = this.getAction(a.id);
+      if(currAction) {
+        currAction.value = a.value
+      }
+    }
+  }
+
   getMultipleAction(ids: string[]): IAction[] {
     const actions = [];
     for(const id of ids) {
@@ -322,6 +331,7 @@ export abstract class VisualizationBase {
 
   abstract getEncodings(): IEncoding[];
 
+  
   abstract setEncodings(encodinds: IEncoding[]);
   
   abstract getCopyofVisualization(): VisualizationBase;

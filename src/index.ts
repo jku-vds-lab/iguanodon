@@ -8,7 +8,7 @@ import { Linechart } from './LineChart';
 import { Scatterplot } from './Scatterplot';
 import { Strip } from './Strip';
 import './style.scss'; // import styles as described https://github.com/webpack-contrib/sass-loader
-import { getColumnTypesFromArqueroTable } from './util';
+import { getColumnTypesFromArqueroTable, niceName } from './util';
 import { VisType } from './visualizations';
 
 var TITLE = 'Iguanodon'
@@ -18,6 +18,18 @@ document.title = TITLE;
 // console.log('Hello World');
 // const visualizations: VisualizationBase[] = [];
 // setupSidebarMenu(); //HACK
+
+// URL parameters
+const queryString = window.location.search;
+console.log('queryString:', queryString);
+
+const urlParams = new URLSearchParams(queryString);
+// check if url parameter exists
+console.log('has id: ',urlParams.has('id'));
+
+// get id
+const urlId = urlParams.get('id')
+console.log('id: ', urlId);
 
 // get all relevant HTML DOM elements
 // header
@@ -33,7 +45,6 @@ navHelp.addEventListener('click', (event) => {
   const modalHelp = document.body.querySelector('#modal-help');
   modalHelp.classList.add('show-modal');
 }); 
-
 
 
 // main
@@ -55,11 +66,39 @@ const dataset = getDataCars();
 
 // variable for Free mode vs explanatory mode
 let isFreeMode = false;
-const aqDataset = aq.from(dataset);
+let aqDataset = aq.from(dataset);
 
+// get column names
+const colNames = aqDataset.columnNames();
+const colNiceNames = colNames.map((elem) => {return {[elem]: niceName(elem)}});
+// console.log('names: ', {colNames,colNiceNames});
+
+// rename columns
+// aq.names(colNiceNames);
+aqDataset = aqDataset.rename(colNiceNames);
+
+// console.log('aqDataset',aqDataset);
+// console.log('values: ',aqDataset.objects());
+
+
+// GAME 1
 // scatterplot
-const scatter = new Scatterplot(aqDataset, 'Miles_per_Gallon', 'Horsepower', 'Origin');
+const scatter = new Scatterplot(aqDataset, 'Miles per gallon', 'Horsepower', 'Origin');
 
+const solutionActions = [
+  { id: "sample_data", value: false },
+  { id: "aggregate", value: false },
+  { id: "lower_opacity", value: true },
+  { id: "decrease_size", value: false },
+  { id: "x_axis_zero", value: true },
+  { id: "y_axis_zero", value: true },
+  { id: "background_color", value: false },
+  { id: "legend", value: true },
+  { id: "nominal_colors", value: true }
+];
+
+const solution = scatter.getCopyofVisualization()
+solution.setMutlipleActions(solutionActions);
 // game config
 const gameDescr: IGameDescription = {
   gameId: 1,
@@ -67,13 +106,27 @@ const gameDescr: IGameDescription = {
   // vistype
   // encodings
   // initalState
-  // solutions: as array of action values 
-  visualization: scatter
+  visualization: scatter,
+  solution: solution
 }
 
-// scatterplot
-const scatter2 = new Scatterplot(aqDataset, 'Weight_in_lbs', 'Acceleration',null);
 
+// GAME 2
+// scatterplot
+const scatter2 = new Scatterplot(aqDataset, 'Weight in lbs', 'Acceleration',null);
+
+const solutionActions2 = [
+  { id: "sample_data", value: false },
+  { id: "aggregate", value: false },
+  { id: "lower_opacity", value: true },
+  { id: "decrease_size", value: false },
+  { id: "x_axis_zero", value: true },
+  { id: "y_axis_zero", value: true },
+  { id: "background_color", value: false }
+]
+
+const solution2 = scatter.getCopyofVisualization()
+solution2.setMutlipleActions(solutionActions2);
 // game config
 const gameDescr2: IGameDescription = {
   gameId: 2,
@@ -81,8 +134,8 @@ const gameDescr2: IGameDescription = {
   // vistype
   // encodings
   // initalState
-  // solutions: as array of action values 
-  visualization: scatter2
+  visualization: scatter2,
+  solution: solution2
 }
 
 
@@ -122,6 +175,7 @@ function createHelpModal() {
   modalHelp.id = 'modal-help';
   modalHelp.style.display = 'none';
   document.body.appendChild(modalHelp);
+  modalHelp.classList.add('show-modal');
 
   // button close-x
   const btnCross = document.createElement('div');
@@ -163,7 +217,7 @@ function createHelpModal() {
   Indicate the objectives of the visualization of each attempt, there are three different states:
   - green: objective is fulfilled
   - orange: objective is partially fulfilled
-  - red: objective in unfulfilled`;
+  - red: objective is unfulfilled`;
   contentArea.appendChild(p2);
 
   // p3 - steps
@@ -270,7 +324,7 @@ function createGameEndModal() {
 
   // button next
   const btnNext = document.createElement('div');
-  btnNext.innerHTML = '&#10132; Next';
+  btnNext.innerHTML = '&#10132; Start new game';
   btnNext.classList.add('modal-btn','btn-next')
   btnNext.addEventListener('click', (event) => {
     modalGameEnd.classList.remove('show-modal');

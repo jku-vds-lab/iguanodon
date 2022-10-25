@@ -4,7 +4,8 @@ $color-header: rgb(0, 0, 0);
 $color-app-background: #ffffff;
 
 $color-bg-sidebar: #EFF0F1;
-$color-font-app: #232629;
+// $color-font-app: #232629; old
+$color-font-app:#212529; // same as Coral
 
 // possible colors
 $color-background-dark: #2A2E32;
@@ -22,6 +23,8 @@ $color-blue-shded: #093952;
 $color-blue-tinted: #9ad5f4;
 $color-blue-transparent: #3DAEE988;
 // $color-pruple: #926EE4;
+
+$color-bg-modal: white;
 
 $color-correct: green;
 $color-partial: orange;
@@ -64,6 +67,7 @@ $height-pipeline-stage: 1.5rem;
   background: $color-app-background;
   height: 100vh;
   color: $color-font-app;
+  font-family: Roboto,sans-serif;
 }
 
 *, *:after, *:before  {
@@ -83,7 +87,7 @@ $height-pipeline-stage: 1.5rem;
 }
 
 .modal-btn {
-  background-color: $color-bg-header;
+  background-color: $color-bg-modal;
   border: $color-bg-header 1px solid;
   border-radius: 0.25rem;
 
@@ -99,9 +103,10 @@ $height-pipeline-stage: 1.5rem;
   left: 30%;
   width: 40%;
   height: 70%;
-  background-color: white;
+  background-color: $color-bg-modal;
   border: 1px black solid;
   border-radius: 1rem;
+  z-index: 100;
  
   .btn-cross {
     width: 1.5rem;
@@ -112,7 +117,13 @@ $height-pipeline-stage: 1.5rem;
     margin-right: 0.5rem;
     line-height: 1.5rem;
     text-align: center;
+    background-color: $color-bg-modal;
+    border: none;
     cursor: pointer;
+
+    &:hover {
+      background-color: $color-bg-modal;
+    }
   }
 
   .content-area {
@@ -157,8 +168,9 @@ $height-pipeline-stage: 1.5rem;
   left: 41%;
   width: 18%;
   height: 40%;
-  background-color: white;
+  background-color: $color-bg-modal;
   border: 1px black solid;
+  z-index: 100;
  
   .btn-cross {
     width: 1.5rem;
@@ -169,7 +181,13 @@ $height-pipeline-stage: 1.5rem;
     margin-right: 0.5rem;
     line-height: 1.5rem;
     text-align: center;
+    background-color: $color-bg-modal;
+    text-align: center;
     cursor: pointer;
+
+    &:hover {
+      background-color: $color-bg-modal;
+    }
   }
 
   .content-area {
@@ -237,6 +255,10 @@ $height-pipeline-stage: 1.5rem;
   background-color: $color-toggle-gray;
   transition: .3s;
   -webkit-transition: .3s;
+
+  &[data-disabled="true"] {
+    cursor: default;
+  }
 }
 
 // New selector for the circle pseudo-element
@@ -349,6 +371,7 @@ $height-pipeline-stage: 1.5rem;
 }
 
 .vis-container {
+  margin-bottom: 1rem;
   .vis-label {
     margin-top: 1rem;
     height: 2rem;
@@ -367,6 +390,7 @@ $height-pipeline-stage: 1.5rem;
   display: flex;
   width: 100%;
   height: 100%;
+  overflow-x: auto;
 
   .column {
     display: flex;
@@ -381,13 +405,22 @@ $height-pipeline-stage: 1.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
+      flex: 0 0 auto;
+
+      &.label {
+        justify-content: left;
+        padding-left: 1rem;
+      }
 
 
-      &:first-child {
+      &.header {
         text-align: center;
         background-color: $color-bg-header;
         line-height: 1.5rem;
+        position: sticky;
+        top: 0;
         font-weight: bold;
+        z-index: 10;
       }
 
       &.action:nth-child(2n+1) {
@@ -399,23 +432,29 @@ $height-pipeline-stage: 1.5rem;
       }
 
       // objectives are colored based on their states
-      &.objective {  
-        border: 0.125rem white solid;
+      &.objective.result {  
+        background-color: $color-app-background;
+        padding: 0.125rem;
 
-        &[data-value="none"] {
-          background-color: $color-object-none;
-        }
-        
-        &[data-value="correct"] {
-          background-color: $color-object-correct;
-        }
-    
-        &[data-value="partial"] {
-          background-color: $color-object-partial;
-        }
-    
-        &[data-value="wrong"] {
-          background-color: $color-object-wrong;
+        .obj_indicator {
+          width: 100%;
+          height: 100%;
+
+          &[data-value="none"] {
+            background-color: $color-object-none;
+          }
+          
+          &[data-value="correct"] {
+            background-color: $color-object-correct;
+          }
+      
+          &[data-value="partial"] {
+            background-color: $color-object-partial;
+          }
+      
+          &[data-value="wrong"] {
+            background-color: $color-object-wrong;
+          }
         }
       }
 

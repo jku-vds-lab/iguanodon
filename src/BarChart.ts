@@ -3,7 +3,7 @@ import { VisualizationSpec } from "vega-embed";
 import { getDataCars } from "./dataCars";
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { getRandomBoolean } from "./util";
+import { deepCopy, getRandomBoolean } from "./util";
 import { highLevelObjective, IEncoding, IObjective, VisType, VisualizationBase } from "./visualizations";
 
 export class Barchart extends VisualizationBase {
@@ -14,8 +14,8 @@ export class Barchart extends VisualizationBase {
   private _hasColorEncoding: boolean;
 
 
-  constructor(dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
-    super(dataset, VisType.Bar);
+  constructor(fullDataset: ColumnTable, sampledDataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
+    super(fullDataset, sampledDataset, VisType.Bar);
     this.xEncoding = this.convertNullEncoding(xEncoding); 
     this.yEncoding = this.convertNullEncoding(yEncoding); 
     this.colorEncoding = this.convertNullEncoding(colorEncoding); 
@@ -26,9 +26,9 @@ export class Barchart extends VisualizationBase {
     console.log('BC enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding, hasColorEncoding: this._hasColorEncoding});
 
     // 1. create the actions based on encodings
-    this.updateActions();
+    this.createActions();
     // 2. create objectives based on encodings
-    this.updateObjectives();
+    this.createObjectives();
     // 3. create Vega spec based on encodings & actions
     this.updateVegaSpec();
 
@@ -41,7 +41,7 @@ export class Barchart extends VisualizationBase {
     // this.updateObjectives();
   }
 
-  updateActions() {
+  createActions() {
     this.actions = [];
     // // encoding actions
     // // x
@@ -51,6 +51,7 @@ export class Barchart extends VisualizationBase {
     // const yEnc = this.createActionObject('y_encoding','y-Axis Encoding', this.yEncoding, VisPiplineStage.visualMapping, ActionType.Encoding);
     // this.actions.push(yEnc);
 
+    /*
     // option actions
     // FIXME
     // // improve scaleability
@@ -68,11 +69,11 @@ export class Barchart extends VisualizationBase {
     // background color
     const aBackground = this.createActionObject('background_color','Add Background Color', getRandomBoolean(), VisPiplineStage.viewTransform, ActionType.Option);
     this.actions.push(aBackground);
-
+    */
 
   }
 
-  updateObjectives() {
+  createObjectives() {
     const avoidMIObjectives: IObjective[] = [];
     const reduceMLObjectives: IObjective[] = [];
 
@@ -86,7 +87,7 @@ export class Barchart extends VisualizationBase {
       actions: this.getMultipleAction(['y_axis_zero']),
       state: null,
       corrActions: 0,
-      numActions: 1
+      // numActions: 1
     }
     this.objectives.push(avoidNZAD);
     // add objective to HL objective
@@ -100,7 +101,7 @@ export class Barchart extends VisualizationBase {
       actions: this.getMultipleAction(['background_color']),
       state: null,
       corrActions: 0,
-      numActions: 1
+      // numActions: 1
     }
     this.objectives.push(avoidDisEm);
     // add objective to HL objective
@@ -129,7 +130,7 @@ export class Barchart extends VisualizationBase {
       actions: this.getMultipleAction(['no_round_bars']),
       state: null,
       corrActions: 0,
-      numActions: 1
+      // numActions: 1
     }
     this.objectives.push(avoidHTRValues);
     // add objective to HL objective
@@ -143,7 +144,7 @@ export class Barchart extends VisualizationBase {
       actions: this.getMultipleAction(['order_bars']),
       state: null,
       corrActions: 0,
-      numActions: 1
+      // numActions: 1
     }
     this.objectives.push(makeSizeCompEasier);
     // add objective to HL objective
@@ -176,7 +177,7 @@ export class Barchart extends VisualizationBase {
 
   updateVegaSpec() {
     // get number of data items
-    const dataTotalSize = this.dataset.numRows();
+    const dataTotalSize = this.fullDataset.numRows();
 
     // get action values
     // background color
@@ -204,7 +205,7 @@ export class Barchart extends VisualizationBase {
     let vegaSpecBuildUp: any = {
       $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
       //data: { url: './assets/cars.json' },
-      data: { values: this.dataset.objects() }, // TODO replace with link to file 
+      data: { values: this.fullDataset.objects() }, // TODO replace with link to file 
       width: 'container', //responsive width
       height: 'container', //responsive height
       autosize: {type: 'fit', contains: 'padding'},
@@ -251,13 +252,15 @@ export class Barchart extends VisualizationBase {
   }
 
   getCopyofVisualization(): VisualizationBase {
-    const copy = new Barchart(this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
-    copy.setActionsBasedOnVisualization(this);
+    const copy = new Barchart(this.fullDataset, this.sampledDataset,  this.xEncoding, this.yEncoding, this.colorEncoding);
+    // copy.setActionsBasedOnVisualization(this);
+    copy.actions = deepCopy(this.actions);
+    copy.objectives = deepCopy(this.objectives);
     return copy;
   }
 
   // getCopyofVisualization(copyId: string): VisualizationBase {
-  //   const copyScatter = new Barchart(copyId, this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
+  //   const copyScatter = new Barchart(copyId, this.fullDataset, this.xEncoding, this.yEncoding, this.colorEncoding);
   //   copyScatter.baseDesignChoicesOnVisualization(this);
 
   //   // copyScatter.vegaSpec = deepCopy(this.vegaSpec);
@@ -269,26 +272,28 @@ export class Barchart extends VisualizationBase {
   //   return copyScatter;
   // }
 
-  getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase{
-    let xEnc = '';
-    let yEnc = '';
-    let cEnc = '';
+  // getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase{
+  //   let xEnc = '';
+  //   let yEnc = '';
+  //   let cEnc = '';
 
-    for(const e of encodings) {
-      const val = this.convertNullEncoding(e.value); 
-      if(e.field === 'x') {
-        xEnc = val;
-      } else if (e.field === 'y') {
-        yEnc = val;
-      } else if (e.field === 'color') {
-        cEnc = val;
-      }
-    }
+  //   for(const e of encodings) {
+  //     const val = this.convertNullEncoding(e.value); 
+  //     if(e.field === 'x') {
+  //       xEnc = val;
+  //     } else if (e.field === 'y') {
+  //       yEnc = val;
+  //     } else if (e.field === 'color') {
+  //       cEnc = val;
+  //     }
+  //   }
 
-    const copy = new Barchart(this.dataset, xEnc, yEnc, cEnc);
-    copy.setActionsBasedOnVisualization(this);
-    return copy;
-  }
+  //   const copy = new Barchart(this.fullDataset, this.sampledDataset, xEnc, yEnc, cEnc);
+  //   // copy.setActionsBasedOnVisualization(this);
+  //   copy.actions = deepCopy(this.actions);
+  //   copy.objectives = deepCopy(this.objectives);
+  //   return copy;
+  // }
 
   // getVisualizationCopyWithEncodingsAndActions(copyId: string, encodinds: {field: string, value: string}[]): VisualizationBase {
   //   let xEnc = '';
@@ -306,63 +311,63 @@ export class Barchart extends VisualizationBase {
   //     }
   //   }
 
-  //   const copyScatter = new Barchart(copyId, this.dataset, xEnc, xEnc, cEnc);
+  //   const copyScatter = new Barchart(copyId, this.fullDataset, xEnc, xEnc, cEnc);
   //   copyScatter.baseDesignChoicesOnVisualization(this);
 
   //   return copyScatter;
 
   // }
 
-  getEncodings(): IEncoding[] {
-    const encodings = [];
-    encodings.push({field: 'x', value: this.xEncoding});
-    encodings.push({field: 'y', value: this.yEncoding});
+  // getEncodings(): IEncoding[] {
+  //   const encodings = [];
+  //   encodings.push({field: 'x', value: this.xEncoding});
+  //   encodings.push({field: 'y', value: this.yEncoding});
 
-    return encodings;
-  }
+  //   return encodings;
+  // }
 
-  setEncodings(encodinds: IEncoding[]) {
-    for(const e of encodinds) {
-      const val = this.convertNullEncoding(e.value); 
-      if(e.field === 'x') {
-        const xEnc = this.getAction('x_encoding');
-        xEnc.value = val;
-        this.xEncoding = val;
-      } else if (e.field === 'y') {
-        const yEnc = this.getAction('y_encoding');
-        yEnc.value = val;
-        this.yEncoding = val;
-      } 
-      // else if (e.field === 'color') {
-      //   const cEnc = this.getAction('color_encoding');
-      //   cEnc.value = val;
-      //   this.colorEncoding = val;
-      // }
-    }
-    this._hasColorEncoding = this.colorEncoding !== '';
+  // setEncodings(encodinds: IEncoding[]) {
+  //   for(const e of encodinds) {
+  //     const val = this.convertNullEncoding(e.value); 
+  //     if(e.field === 'x') {
+  //       const xEnc = this.getAction('x_encoding');
+  //       xEnc.value = val;
+  //       this.xEncoding = val;
+  //     } else if (e.field === 'y') {
+  //       const yEnc = this.getAction('y_encoding');
+  //       yEnc.value = val;
+  //       this.yEncoding = val;
+  //     } 
+  //     // else if (e.field === 'color') {
+  //     //   const cEnc = this.getAction('color_encoding');
+  //     //   cEnc.value = val;
+  //     //   this.colorEncoding = val;
+  //     // }
+  //   }
+  //   this._hasColorEncoding = this.colorEncoding !== '';
 
-    // create the actions based on encodings
-    this.updateActions();
-    // create objectives based on encodings
-    this.updateObjectives();
-    // create Vega spec based on encodings & actions
-    this.updateVegaSpec();
+  //   // create the actions based on encodings
+  //   this.createActions();
+  //   // create objectives based on encodings
+  //   this.createObjectives();
+  //   // create Vega spec based on encodings & actions
+  //   this.updateVegaSpec();
 
-    // this.setupVegaSpecification();
-    // this.setupDesignChoices();
-    // this.setupObjectives();
-    // this.updateVegaSpecBasedOnDesignChoices();
-  }
+  //   // this.setupVegaSpecification();
+  //   // this.setupDesignChoices();
+  //   // this.setupObjectives();
+  //   // this.updateVegaSpecBasedOnDesignChoices();
+  // }
   
   // setupVegaSpecification() {
   //   // TODO remove when data can be changed
   //   const data = getDataCars();
-  //   const dataLen = this.dataset.numRows();
+  //   const dataLen = this.fullDataset.numRows();
 
   //   this.vegaSpec = {
   //     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   //     //data: { url: './assets/cars.json' },
-  //     data: { values: this.dataset.objects() },
+  //     data: { values: this.fullDataset.objects() },
   //     transform: [{ sample: dataLen }],
   //     width: 'container', //responsive width
   //     height: 'container', //responsive height

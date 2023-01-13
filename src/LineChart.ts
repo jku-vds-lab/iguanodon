@@ -2,7 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { VisualizationSpec } from "vega-embed";
 import { ActionType, VisPiplineStage } from "./designChoices";
 import { ObjectiveState } from "./Objective";
-import { getColumnTypesFromArqueroTable, uniqueFilter } from "./util";
+import { deepCopy, getColumnTypesFromArqueroTable, uniqueFilter } from "./util";
 import { highLevelObjective, IEncoding, IObjective, VisType, VisualizationBase } from "./visualizations";
 
 export class Linechart extends VisualizationBase {
@@ -13,8 +13,8 @@ export class Linechart extends VisualizationBase {
   private _hasColorEncoding: boolean;
 
 
-  constructor(dataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
-    super(dataset, VisType.Line);
+  constructor(fullDataset: ColumnTable, sampledDataset: ColumnTable, xEncoding: string, yEncoding: string, colorEncoding: string) {
+    super(fullDataset, sampledDataset, VisType.Line);
     this.xEncoding = this.convertNullEncoding(xEncoding); 
     this.yEncoding = this.convertNullEncoding(yEncoding); 
     this.colorEncoding = this.convertNullEncoding(colorEncoding); 
@@ -24,9 +24,9 @@ export class Linechart extends VisualizationBase {
     console.log('LC enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding, hasColorEncoding: this._hasColorEncoding});
 
     // 1. create the actions based on encodings
-    this.updateActions();
+    this.createActions();
     // 2. create objectives based on encodings
-    this.updateObjectives();
+    this.createObjectives();
     // 3. create Vega spec based on encodings & actions
     this.updateVegaSpec();
 
@@ -40,7 +40,7 @@ export class Linechart extends VisualizationBase {
     // this.updateObjectives();
   }
 
-  updateActions() {
+  createActions() {
     this.actions = [];
     // TODO create all actions
     // // encoding actions
@@ -62,6 +62,7 @@ export class Linechart extends VisualizationBase {
     // const aAggregation = this.createActionObject('aggregate','Aggregate Data (Mean)', false, VisPiplineStage.dataTransform, ActionType.Option);
     // this.actions.push(aAggregation);
 
+    /*
     // lower mark opacity
     const aOpacity = this.createActionObject('lower_opacity','Lower Opacity for Marks', false, VisPiplineStage.visualMapping, ActionType.Option);
     this.actions.push(aOpacity);
@@ -94,9 +95,10 @@ export class Linechart extends VisualizationBase {
       // this.actions.push(aDirectLabels);
 
     }
+    */
   }
 
-  updateObjectives() {
+  createObjectives() {
     // TODO create objectives
     const avoidMIObjectives: IObjective[] = [];
     const reduceMLObjectives: IObjective[] = [];
@@ -111,7 +113,7 @@ export class Linechart extends VisualizationBase {
       actions: this.getMultipleAction(['lower_opacity', 'decrease_size']),
       state: null,
       corrActions: 0,
-      numActions: 4
+      // numActions: 4
     }
     this.objectives.push(reduceOP);
     // add objective to HL objective
@@ -125,7 +127,7 @@ export class Linechart extends VisualizationBase {
       actions: this.getMultipleAction(['x_axis_zero', 'y_axis_zero']),
       state: null,
       corrActions: 0,
-      numActions: 2
+      // numActions: 2
     }
     this.objectives.push(avoidNZAD);
     // add objective to HL objective
@@ -139,7 +141,7 @@ export class Linechart extends VisualizationBase {
       actions: this.getMultipleAction(['background_color']),
       state: null,
       corrActions: 0,
-      numActions: 1
+      // numActions: 1
     }
     this.objectives.push(avoidDisEm);
     // add objective to HL objective
@@ -155,7 +157,7 @@ export class Linechart extends VisualizationBase {
         actions: this.getMultipleAction(['legend']),
         state: null,
         corrActions: 0,
-        numActions: 1
+        // numActions: 1
       }
       this.objectives.push(addLegend);
       // add objective to HL objective
@@ -169,7 +171,7 @@ export class Linechart extends VisualizationBase {
         actions: this.getMultipleAction(['nominal_colors']),
         state: null,
         corrActions: 0,
-        numActions: 1
+        // numActions: 1
       }
       this.objectives.push(rightColorEnc);
       // add objective to HL objective
@@ -219,7 +221,7 @@ export class Linechart extends VisualizationBase {
 
   updateVegaSpec() {
     // get number of data items
-    const dataTotalSize = this.dataset.numRows();
+    const dataTotalSize = this.fullDataset.numRows();
 
     // get action values
     // background color
@@ -250,12 +252,12 @@ export class Linechart extends VisualizationBase {
     const showLegend = legendAction !== null ? legendAction.value : false;
     
     // nominal color sale
-    const dataTypes = getColumnTypesFromArqueroTable(this.dataset);
-    const datasetAttr = dataTypes.filter((elem) => elem.label === this.colorEncoding)[0];
+    const dataTypes = getColumnTypesFromArqueroTable(this.fullDataset);
+    const fullDatasetAttr = dataTypes.filter((elem) => elem.label === this.colorEncoding)[0];
     let colorTypeNotNominal = 'ordinal';
-    if (datasetAttr?.type === 'continuous') {
+    if (fullDatasetAttr?.type === 'continuous') {
       // values of the attribute
-      const data = this.dataset.array(this.colorEncoding);
+      const data = this.fullDataset.array(this.colorEncoding);
       const uniqueData = data.filter(uniqueFilter); // get unique values
       if (uniqueData.length > 10) {
         colorTypeNotNominal = 'quantitative';
@@ -277,7 +279,7 @@ export class Linechart extends VisualizationBase {
     let vegaSpecBuildUp: any = {
       $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
       //data: { url: './assets/cars.json' },
-      data: { values: this.dataset.objects() }, // TODO replace with link to file 
+      data: { values: this.fullDataset.objects() }, // TODO replace with link to file 
       // transform: [{ sample: sampledSize }],
       width: 'container', //responsive width
       height: 'container', //responsive height
@@ -332,34 +334,38 @@ export class Linechart extends VisualizationBase {
 
 
   getCopyofVisualization(): VisualizationBase {
-    const copy = new Linechart(this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
-    copy.setActionsBasedOnVisualization(this);
+    const copy = new Linechart(this.fullDataset, this.sampledDataset, this.xEncoding, this.yEncoding, this.colorEncoding);
+    // copy.setActionsBasedOnVisualization(this);
+    copy.actions = deepCopy(this.actions);
+    copy.objectives = deepCopy(this.objectives);
     return copy;
   }
 
-  getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase{
-    let xEnc = '';
-    let yEnc = '';
-    let cEnc = '';
+  // getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase{
+  //   let xEnc = '';
+  //   let yEnc = '';
+  //   let cEnc = '';
 
-    for(const e of encodings) {
-      const val = this.convertNullEncoding(e.value); 
-      if(e.field === 'x') {
-        xEnc = val;
-      } else if (e.field === 'y') {
-        yEnc = val;
-      } else if (e.field === 'color') {
-        cEnc = val;
-      }
-    }
+  //   for(const e of encodings) {
+  //     const val = this.convertNullEncoding(e.value); 
+  //     if(e.field === 'x') {
+  //       xEnc = val;
+  //     } else if (e.field === 'y') {
+  //       yEnc = val;
+  //     } else if (e.field === 'color') {
+  //       cEnc = val;
+  //     }
+  //   }
 
-    const copy = new Linechart(this.dataset, xEnc, yEnc, cEnc);
-    copy.setActionsBasedOnVisualization(this);
-    return copy;
-  }
+  //   const copy = new Linechart(this.fullDataset, this.sampledDataset, xEnc, yEnc, cEnc);
+  //   // copy.setActionsBasedOnVisualization(this);
+  //   copy.actions = deepCopy(this.actions);
+  //   copy.objectives = deepCopy(this.objectives);
+  //   return copy;
+  // }
 
   // getCopyofVisualization(copyId: string): VisualizationBase {
-  //   const copyScatter = new Linechart(copyId, this.dataset, this.xEncoding, this.yEncoding, this.colorEncoding);
+  //   const copyScatter = new Linechart(copyId, this.fullDataset, this.xEncoding, this.yEncoding, this.colorEncoding);
   //   copyScatter.baseDesignChoicesOnVisualization(this);
 
     // copyScatter.vegaSpec = deepCopy(this.vegaSpec);
@@ -387,53 +393,53 @@ export class Linechart extends VisualizationBase {
   //     }
   //   }
 
-  //   const copyScatter = new Linechart(copyId, this.dataset, xEnc, xEnc, cEnc);
+  //   const copyScatter = new Linechart(copyId, this.fullDataset, xEnc, xEnc, cEnc);
   //   copyScatter.baseDesignChoicesOnVisualization(this);
 
   //   return copyScatter;
 
   // }
 
-  getEncodings(): IEncoding[] {
-    const encodings = [];
-    encodings.push({field: 'x', value: this.xEncoding});
-    encodings.push({field: 'y', value: this.yEncoding});
-    encodings.push({field: 'color', value: this.colorEncoding});
+  // getEncodings(): IEncoding[] {
+  //   const encodings = [];
+  //   encodings.push({field: 'x', value: this.xEncoding});
+  //   encodings.push({field: 'y', value: this.yEncoding});
+  //   encodings.push({field: 'color', value: this.colorEncoding});
 
-    return encodings;
-  }
+  //   return encodings;
+  // }
 
-  setEncodings(encodinds: IEncoding[]) {
-    for(const e of encodinds) {
-      const val = this.convertNullEncoding(e.value); 
-      if(e.field === 'x') {
-        const xEnc = this.getAction('x_encoding');
-        xEnc.value = val;
-        this.xEncoding = val;
-      } else if (e.field === 'y') {
-        const yEnc = this.getAction('y_encoding');
-        yEnc.value = val;
-        this.yEncoding = val;
-      } else if (e.field === 'color') {
-        const cEnc = this.getAction('color_encoding');
-        cEnc.value = val;
-        this.colorEncoding = val;
-      }
-    }
-    this._hasColorEncoding = this.colorEncoding !== '';
+  // setEncodings(encodinds: IEncoding[]) {
+  //   for(const e of encodinds) {
+  //     const val = this.convertNullEncoding(e.value); 
+  //     if(e.field === 'x') {
+  //       const xEnc = this.getAction('x_encoding');
+  //       xEnc.value = val;
+  //       this.xEncoding = val;
+  //     } else if (e.field === 'y') {
+  //       const yEnc = this.getAction('y_encoding');
+  //       yEnc.value = val;
+  //       this.yEncoding = val;
+  //     } else if (e.field === 'color') {
+  //       const cEnc = this.getAction('color_encoding');
+  //       cEnc.value = val;
+  //       this.colorEncoding = val;
+  //     }
+  //   }
+  //   this._hasColorEncoding = this.colorEncoding !== '';
 
-    // create the actions based on encodings
-    this.updateActions();
-    // create objectives based on encodings
-    this.updateObjectives();
-    // create Vega spec based on encodings & actions
-    this.updateVegaSpec();
+  //   // create the actions based on encodings
+  //   this.createActions();
+  //   // create objectives based on encodings
+  //   this.createObjectives();
+  //   // create Vega spec based on encodings & actions
+  //   this.updateVegaSpec();
 
-    // this.setupVegaSpecification();
-    // this.setupDesignChoices();
-    // this.setupObjectives();
-    // this.updateVegaSpecBasedOnDesignChoices();
-  }
+  //   // this.setupVegaSpecification();
+  //   // this.setupDesignChoices();
+  //   // this.setupObjectives();
+  //   // this.updateVegaSpecBasedOnDesignChoices();
+  // }
   
   // setEncodings(encodinds: {field: string, value: string}[]) {
   //   for(const e of encodinds) {
@@ -458,12 +464,12 @@ export class Linechart extends VisualizationBase {
   // setupVegaSpecification() {
   //   // TODO remove when data can be changed
   //   // const data = getDataStock();
-  //   const dataLen = this.dataset.numRows();
+  //   const dataLen = this.fullDataset.numRows();
 
   //   this.vegaSpec = {
   //     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   //     //data: { url: './assets/cars.json' },
-  //     data: { values: this.dataset.objects() },
+  //     data: { values: this.fullDataset.objects() },
   //     transform: [{ sample: dataLen }],
   //     width: 'container', //responsive width
   //     height: 'container', //responsive height

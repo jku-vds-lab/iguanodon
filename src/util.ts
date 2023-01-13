@@ -42,6 +42,33 @@ export function niceName(label: string): string {
   return niceLabel[0].toUpperCase() + niceLabel.slice(1);
 }
 
+export function getAbbreviations(name: string): string {
+  let abbrev: string = name;
+
+  if (name === "Name" ) {
+    abbrev = "N"
+  }else if (name === "Miles per gallon" ) {
+    abbrev = "MPG"
+  }else if (name === "Cylinders" ) {
+    abbrev = "CYL"
+  }else if (name === "Displacement" ) {
+    abbrev = "DISP"
+  }else if (name === "Horsepower" ) {
+    abbrev = "HP"
+  }else if (name === "Weight in lbs" ) {
+    abbrev = "Wt in lbs"
+  }else if (name === "Acceleration" ) {
+    abbrev = "ACCEL"
+  }else if (name === "Year" ) {
+    abbrev = "YR"
+  }else if (name === "Origin" ) {
+    abbrev = "ORIG"
+  }
+
+
+  return abbrev;
+}
+
 /**
  * SOURCE: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random 
  * Function that returns integer values from 0 to may (inclusive 0, exclusive max)
@@ -85,6 +112,17 @@ export function getUniqueRandomValuesFrom0toN(maxNumber: number, numbElements: n
   return res;
 }
 
+export function writeToClipboard(text: string) {
+  navigator.clipboard.writeText(`${text}`).then(
+    () => {
+      /* clipboard successfully set */
+    },
+    () => {
+      /* clipboard write failed */
+    }
+  );
+}
+
 /**
  * 
  * @param arr array with values
@@ -111,9 +149,45 @@ export function getUniqueRandomValuesFromArray(arr: any[], numbElements: number)
 }
 
 
-
 export function isDate(data) {
   return (new Date(data).toString() !== 'Invalid Date');
+}
+/**
+ * Retruns the different parts of the date either as numbers or as labels with a leading 0.
+ * - day: 1-31
+ * - month: 1-12
+ * - year: full year (4 digits)
+ * - weekday: 0 for Sunday, 1 for Monday, 2 for Tuesday, and so on
+ * - hour: 0-23
+ * - minutes: 0-59
+ * - seconds: 0-59
+ * - milliseconds: 0-999
+ * @param date 
+ * @returns 
+ */
+export function getDateParts(date: Date) {
+  return {
+    numbers: {
+      day: date.getDate(),
+      month: (date.getMonth() + 1),
+      year: date.getFullYear(),
+      weekday: date.getDay(),
+      hour: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds(),
+      milliseconds: date.getMilliseconds()
+    },
+    labels: {
+      day: date.getDate() < 10 ? `0${date.getDate()}` : `${date.getDate()}`,
+      month: (date.getMonth() + 1) < 10 ? `0${date.getMonth()+1}` : `${date.getMonth()+1}`,
+      year: `${date.getFullYear()}`,
+      weekday: `${date.getDay()}`,
+      hour: date.getHours() < 10 ? `0${date.getHours()}` : `${date.getHours()}`,
+      minutes: date.getMinutes() < 10 ? `0${date.getMinutes()}` : `${date.getMinutes()}`,
+      seconds: date.getSeconds() < 10 ? `0${date.getSeconds()}` : `${date.getSeconds()}`,
+      milliseconds: date.getMilliseconds() < 100 ?  (date.getMilliseconds() < 10 ? `00${date.getMilliseconds()}` : `0${date.getMilliseconds()}` ) : `${date.getMilliseconds()}`
+    }
+  }
 }
 
 export function getType(data, column) {

@@ -1,14 +1,11 @@
-import * as aq from 'arquero';
-import { Barchart } from './BarChart';
-import { getDataCars } from './dataCars';
-import { getDataStock } from './dataStock';
-import { Game, IGameDescription } from './Game';
-import { Investigation } from './Investigation';
-import { Linechart } from './LineChart';
-import { Scatterplot } from './Scatterplot';
-import { Strip } from './Strip';
 import './style.scss'; // import styles as described https://github.com/webpack-contrib/sass-loader
-import { getColumnTypesFromArqueroTable, niceName } from './util';
+import * as aq from 'arquero';
+import ColumnTable from 'arquero/dist/types/table/column-table';
+import { getDataCars, getSampledDataCars } from './dataCars';
+import { getGameBoardDescriptions } from './Game';
+import { GameBoard, IGameBoardDescription } from './GameBoard';
+import { actionsScatter, Scatterplot } from './Scatterplot';
+import { getColumnTypesFromArqueroTable, getDateParts, niceName } from './util';
 import { VisType } from './visualizations';
 
 var TITLE = 'Iguanodon'
@@ -19,23 +16,53 @@ document.title = TITLE;
 // const visualizations: VisualizationBase[] = [];
 // setupSidebarMenu(); //HACK
 
+export let userId =  null;
+export let isSurvey: boolean = null;
 // URL parameters
 const queryString = window.location.search;
-console.log('queryString:', queryString);
+// console.log('queryString:', queryString);
 
 const urlParams = new URLSearchParams(queryString);
 // check if url parameter exists
-console.log('has id: ',urlParams.has('id'));
+// console.log('has id: ',urlParams.has('id'));
 
 // get id
-const urlId = urlParams.get('id')
-console.log('id: ', urlId);
+const urlId = urlParams.get('id');
+// console.log('id: ', urlId);
+
+if(urlParams.has('id')) {
+  userId = urlParams.get('id');
+}
+
+if(urlParams.has('type')) {
+  const type = urlParams.get('type');
+  isSurvey = type === 'survey';
+}
+
+const dateParts = getDateParts(new Date());
+// console.log("🚀 ~ file: index.ts ~ line 46 ~ dateParts", dateParts)
+const code =`537${dateParts.labels.day}${dateParts.labels.month}${dateParts.labels.hour}${dateParts.labels.minutes}${dateParts.labels.seconds}${dateParts.labels.milliseconds}`;
+// console.log("🚀 ~ file: index.ts ~ line 47 ~ code", code)
+
+if(isSurvey) {
+  // set user id code
+  userId = Number(code);
+}
+console.log("🚀 ~ file: index.ts:51 ~ isSurvey", isSurvey);
+
+
 
 // get all relevant HTML DOM elements
 // header
-const $header = document.getElementById('header') as HTMLDivElement;
+// const $header = document.getElementById('header') as HTMLDivElement;
 // nav
-const $nav = document.getElementById('nav') as HTMLDivElement;
+// const $nav = document.getElementById('nav') as HTMLDivElement;
+const $nav = document.querySelector('nav.navbar') as HTMLDivElement;
+// $nav.classList.remove('hide');
+
+// set vds lab logo
+// const logo = $nav.querySelector('.logo') as HTMLImageElement;
+// logo.src = 
 
 // nav -> help
 const navHelp = $nav.querySelector('.nav-help') as HTMLDivElement;
@@ -54,6 +81,8 @@ const $main = document.getElementById('main') as HTMLDivElement;
 createHelpModal();
 createGameEndModal();
 
+// TODO after page load read JSON file
+
 
 // const visPipeline = document.getElementById('vis-pipeline') as HTMLDivElement;
 // const visStrip = document.getElementById('vis-strip') as HTMLDivElement;
@@ -61,113 +90,381 @@ createGameEndModal();
 // const detailsStrip = document.getElementById('details-strip') as HTMLDivElement;
 // const visMutli = document.getElementById('vis-multiples') as HTMLDivElement;
 // const objectivesCntr = document.getElementById('objectives') as HTMLDivElement;
-const dataset = getDataCars();
-
 
 // variable for Free mode vs explanatory mode
-let isFreeMode = false;
-let aqDataset = aq.from(dataset);
+// let isFreeMode = false;
+
+// ***** Datasets *****
+const fullDataset = getDataCars();
+console.log("🚀 ~ file: index.ts:89 ~ fullDataset", fullDataset)
+const sampledDataset = getSampledDataCars();
+
+// full datasset 
+export let aqFullDataset = aq.from(fullDataset);
+export let aqSampledDataset = aq.from(sampledDataset);
 
 // get column names
-const colNames = aqDataset.columnNames();
+const colNames = aqFullDataset.columnNames();
 const colNiceNames = colNames.map((elem) => {return {[elem]: niceName(elem)}});
+// console.log("🚀 ~ file: index.ts:96 ~ colNiceNames", colNiceNames)
 // console.log('names: ', {colNames,colNiceNames});
 
 // rename columns
-// aq.names(colNiceNames);
-aqDataset = aqDataset.rename(colNiceNames);
-
+aqFullDataset = aqFullDataset.rename(colNiceNames);
 // console.log('aqDataset',aqDataset);
 // console.log('values: ',aqDataset.objects());
+aqSampledDataset = aqSampledDataset.rename(colNiceNames);
+// *******************
 
 
+// *********************************************++
+// get danfo dataframe
+// let dfDataset = new dfd.DataFrame(fullDataset);
+// dfDataset.print();
+// const [dataRows, dataCols] = dfDataset.shape;
+// console.log('data size: ', {dataRows, dataCols});
+// console.log('data types: ', dfDataset.ctypes.print());
+// const colNamesNew = dfDataset.columns;
+// console.log('data column names: ', colNamesNew);
+
+// const colNiceNamesObj = {};
+// colNamesNew.forEach(element => {
+//   colNiceNamesObj[''+element] = niceName(element);
+// });
+// console.log('new column names: ', colNiceNamesObj);
+// dfDataset = dfDataset.rename(colNiceNamesObj);
+// console.log('new data column names: ', dfDataset.columns);
+// *********************************************++
+
+
+// <div class="navbar-item nav-game">
+//           <div class="dropdown">
+//             <div class="dropdown-btn">
+//               <div class="dropdown-btn-label"></div>
+//               <div class="dropdown-btn-icon"></div>
+//             </div>
+//             <div class="dropdown-menu">
+//               <div class="dropdown-content">
+//                 <div class="dropdown-menu-item"></div>
+//                 <div class="dropdown-menu-item"></div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+
+// get game board descriptions (games + attempts) 
+const gameBoardDescr = getGameBoardDescriptions();
+
+// Set start game -> Game 1
+const startGame = gameBoardDescr[0];
+
+// setup dropdown functionality
+addDropdownFunctionality($main, gameBoardDescr, startGame.gameId);
+
+
+// create start Game
+let currentGame = new GameBoard($main, startGame);
+
+
+
+function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoardDescription[], startGame: number) {
+  // get nav game div
+  const $navGame = document.querySelector('.nav-game') as HTMLDivElement;
+  // get dropdown menu
+  const $dropdownMenu = $navGame.querySelector('.dropdown-menu') as HTMLDivElement;
+
+  // get dropdown button
+  const $dropdownBtn = $navGame.querySelector('.dropdown-btn') as HTMLDivElement;
+  // label label to button-item
+  const dropdownBtnLabel = $dropdownBtn.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
+  dropdownBtnLabel.innerHTML = `Game ${gameBoards[0].gameId}`;
+  // add eventlistener to toggle dropdown menu
+  // TODO only make active dropdown when not a survey
+  $dropdownBtn.addEventListener('click', (event) => {
+    $dropdownMenu.classList.toggle('display-none');
+  });
+
+
+  // add games to dropdown content
+  const dropdownContent = $dropdownMenu.querySelector('.dropdown-content') as HTMLDivElement;
+  if(dropdownContent) {
+    const fragmentContent = new DocumentFragment();
+    for(const gbd of gameBoards) {
+      const ddItem = document.createElement('div');
+      ddItem.classList.add('dropdown-menu-item');
+      fragmentContent.append(ddItem)
+      ddItem.dataset.gameId = `${gbd.gameId}`; //data-game-id
+      // add eventlistenter to change game
+      ddItem.addEventListener('click',(event) => {
+        // const elem = event.target;
+        const elemGameId = ddItem.dataset.gameId;
+        const currGameId = divMain.dataset.gameId;
+        // TODO only change game when not survey
+        if(elemGameId === currGameId) {
+          $dropdownMenu.classList.add('display-none');
+          console.warn('same Game: ', {currGameId, elemGameId});
+        } else {
+          $dropdownMenu.classList.add('display-none');
+          console.warn('change Game: ', {currGameId, elemGameId});
+          updateGameBoard(Number(elemGameId));
+        }
+      })
+
+
+      const contentLabels = ['label', 'reward','points'];
+
+      for(const cl of contentLabels){
+        const ddItemContent = document.createElement('div');
+        ddItemContent.classList.add('item-content',cl);
+        if(cl==='label') {
+          ddItemContent.innerHTML = `Game ${gbd.gameId}`;
+        }
+        // TODO check storage if not survey for game states (points/rewards)
+        ddItem.append(ddItemContent);
+      }
+    }
+    dropdownContent.append(fragmentContent)
+  }
+}
+
+
+function updateGameBoard(gameId: number) {
+  const newGameBoardDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
+  if(newGameBoardDescr.length === 1) {
+    // label label to button-item
+    const dropdownBtnLabel = $nav.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
+    dropdownBtnLabel.innerHTML = `Game ${gameId}`;
+    
+    const selectGameBoardDescr = newGameBoardDescr[0];
+    console.info('change GameBoard to: ', selectGameBoardDescr);
+    currentGame = new GameBoard($main, selectGameBoardDescr);
+  }
+}
+/*
+  Games
+  - id
+  - visualization
+  - usable actions
+  - start config
+  - solution visualization
+  - number of atttempts ?
+*/
+
+
+/*
+  GAME 1
+  - id: 1
+  - visualization: scatterplot
+  - usable actions:
+    - decrease mark size
+    - add background color
+    - lighten grid lines
+    - use horizontal text
+    - write abbreviations out
+  - start config  
+  - solution  
+*/
+/*
 // GAME 1
 // scatterplot
-const scatter = new Scatterplot(aqDataset, 'Miles per gallon', 'Horsepower', 'Origin');
+const scatter1 = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', null);
+// const scatter = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', null);
 
-const solutionActions = [
-  { id: "sample_data", value: false },
-  { id: "aggregate", value: false },
-  { id: "lower_opacity", value: true },
-  { id: "decrease_size", value: false },
-  { id: "x_axis_zero", value: true },
-  { id: "y_axis_zero", value: true },
-  { id: "background_color", value: false },
-  { id: "legend", value: true },
-  { id: "nominal_colors", value: true }
+// usable actions
+const usableActions1 = [
+  actionsScatter.DecreaseMarkSize,
+  actionsScatter.AddBackgroundColor,
+  actionsScatter.LightenGridLines,
+  actionsScatter.HorizontalTextForAxis,
+  actionsScatter.WriteAbbreviationsOut
 ];
 
-const solution = scatter.getCopyofVisualization()
-solution.setMutlipleActions(solutionActions);
+scatter1.setUsableActions(usableActions1);
+console.log('scatter1 actions: ', scatter1.actions);
+
+const solutionActions1 = [
+  { id: actionsScatter.DecreaseMarkSize, value: true },
+  { id: actionsScatter.AddBackgroundColor, value: false },
+  { id: actionsScatter.LightenGridLines, value: true },
+  { id: actionsScatter.HorizontalTextForAxis, value: true },
+  { id: actionsScatter.WriteAbbreviationsOut, value: true }
+];
+
+// console.log('usableActions enum: ', usableActions1);
+// const usableActionsString = usableActions1.map((elem) => elem.toString());
+// console.log('usableActions string: ', usableActionsString);
+
+
+const solution1 = scatter1.getCopyofVisualization()
+solution1.setMutlipleActions(solutionActions1);
 // game config
-const gameDescr: IGameDescription = {
+const game1Descr: IGameBoardDescription = {
   gameId: 1,
-  // dataset
-  // vistype
-  // encodings
+  // usableActions: usableActions1,
+  // visType: VisType.Scatter,
+  startVisualization: scatter1,
   // initalState
-  visualization: scatter,
-  solution: solution
+  solutionVisualization: solution1,
+  attempts: 10
 }
 
 
 // GAME 2
 // scatterplot
-const scatter2 = new Scatterplot(aqDataset, 'Weight in lbs', 'Acceleration',null);
+const scatter2 = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', 'Origin');
+// const scatter = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', null);
+
+// usable actions
+const usableActions2 = [
+  actionsScatter.DecreaseMarkSize,
+  actionsScatter.ChangeMarkToRing,
+  actionsScatter.AddBackgroundColor,
+  actionsScatter.LightenGridLines,
+  actionsScatter.HorizontalTextForAxis,
+  actionsScatter.AddLegend,
+  actionsScatter.ApplyNominalColors,
+  actionsScatter.AddLegendBorder,
+];
+
+scatter2.setUsableActions(usableActions2);
 
 const solutionActions2 = [
-  { id: "sample_data", value: false },
-  { id: "aggregate", value: false },
-  { id: "lower_opacity", value: true },
-  { id: "decrease_size", value: false },
-  { id: "x_axis_zero", value: true },
-  { id: "y_axis_zero", value: true },
-  { id: "background_color", value: false }
-]
+  { id: actionsScatter.DecreaseMarkSize, value: false },
+  { id: actionsScatter.ChangeMarkToRing, value: true },
+  { id: actionsScatter.AddBackgroundColor, value: false },
+  { id: actionsScatter.LightenGridLines, value: true },
+  { id: actionsScatter.HorizontalTextForAxis, value: true },
+  { id: actionsScatter.AddLegend, value: true },
+  { id: actionsScatter.ApplyNominalColors, value: true },
+  { id: actionsScatter.AddLegendBorder, value: false }
+];
 
-const solution2 = scatter.getCopyofVisualization()
+const solution2 = scatter2.getCopyofVisualization()
 solution2.setMutlipleActions(solutionActions2);
 // game config
-const gameDescr2: IGameDescription = {
+const game2Descr: IGameBoardDescription = {
   gameId: 2,
-  // dataset
-  // vistype
-  // encodings
+  // usableActions: usableActions2,
+  // visType: VisType.Scatter,
+  startVisualization: scatter2,
   // initalState
-  visualization: scatter2,
-  solution: solution2
+  solutionVisualization: solution2,
+  attempts: 10
 }
 
+// GAME 2
+// scatterplot
+// const scatter2 = new Scatterplot(aqFullDataset, aqSampledDataset, 'Weight in lbs', 'Acceleration',null);
 
-// new game
-let currGameId = gameDescr.gameId;
-// let currGame = new Game($main, gameDescr, aqDataset, false);
-new Game($main, gameDescr, aqDataset, false);
-$main.dataset.gameId = `${currGameId}`;
+// const solutionActions2 = [
+//   { id: "sample_data", value: false },
+//   { id: "aggregate", value: false },
+//   { id: "lower_opacity", value: true },
+//   { id: "decrease_size", value: false },
+//   { id: "x_axis_zero", value: true },
+//   { id: "y_axis_zero", value: true },
+//   { id: "background_color", value: false }
+// ]
+
+// const solution2 = scatter2.getCopyofVisualization()
+// solution2.setMutlipleActions(solutionActions2);
+// // game config
+// const gameDescr2: IGameDescription = {
+//   gameId: 2,
+//   // dataset
+//   // sampled dataset
+//   // vistype
+//   // encodings
+//   // initalState
+//   visualization: scatter2,
+//   solution: solution2
+// }
+
+
+// GAME 3
+// scatterplot
+const scatter3 = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', 'Origin');
+// const scatter = new Scatterplot(aqFullDataset,aqSampledDataset, 'Horsepower', 'Miles per gallon', null);
+
+// usable actions
+const usableActions3 = [
+  actionsScatter.SampleData,
+  actionsScatter.DecreaseMarkSize,
+  actionsScatter.DecreaseMarkOpacity,
+  actionsScatter.ChangeMarkToRing,
+  actionsScatter.AggregateDataPoints,
+  actionsScatter.AddBackgroundColor,
+  actionsScatter.LightenGridLines,
+  actionsScatter.HorizontalTextForAxis,
+  actionsScatter.WriteAbbreviationsOut,
+  actionsScatter.AddLegend,
+  actionsScatter.ApplyNominalColors,
+  actionsScatter.AddLegendBorder,
+  actionsScatter.AddLegendTitle,
+];
+
+scatter3.setUsableActions(usableActions3);
+
+const solutionActions3 = [
+  { id: actionsScatter.SampleData, value: false },
+  { id: actionsScatter.DecreaseMarkSize, value: false },
+  { id: actionsScatter.DecreaseMarkOpacity, value: true },
+  { id: actionsScatter.ChangeMarkToRing, value: false },
+  { id: actionsScatter.AggregateDataPoints, value: false },
+  { id: actionsScatter.AddBackgroundColor, value: false },
+  { id: actionsScatter.LightenGridLines, value: true },
+  { id: actionsScatter.HorizontalTextForAxis, value: true },
+  { id: actionsScatter.WriteAbbreviationsOut, value: true },
+  { id: actionsScatter.AddLegend, value: true },
+  { id: actionsScatter.ApplyNominalColors, value: true },
+  { id: actionsScatter.AddLegendBorder, value: false },
+  { id: actionsScatter.AddLegendTitle, value: true }
+];
+
+const solution3 = scatter3.getCopyofVisualization()
+solution3.setMutlipleActions(solutionActions3);
+// game config
+const game3Descr: IGameBoardDescription = {
+  gameId: 3,
+  // usableActions: usableActions3,
+  // visType: VisType.Scatter,
+  startVisualization: scatter3,
+  // initalState
+  solutionVisualization: solution3,
+  attempts: 10
+}*/
+
+// HACK
+// // new game
+// let currGameId = game1Descr.gameId;
+// // let currGame = new Game($main, gameDescr, aqDataset, false);
+// let currentGame = new GameBoard($main, game1Descr);
+// $main.dataset.gameId = `${currGameId}`;
 
 // nav -> retry
-const navRetry = $nav.querySelector('.nav-retry') as HTMLDivElement;
-navRetry.addEventListener('click', (event) => {
-  const elem = event.target as HTMLElement;
-  // elem.classList.toggle('active');
-  // const gameId = $main.dataset.gameId;
-  //TODO retry game
-  console.log('old game: ', currGameId);
-  // new Game($main, gameDescr, aqDataset, false);
-  restartGame();
-}); 
+// const navRetry = $nav.querySelector('.nav-retry') as HTMLDivElement;
+// navRetry.addEventListener('click', (event) => {
+//   const elem = event.target as HTMLElement;
+//   // elem.classList.toggle('active');
+//   // const gameId = $main.dataset.gameId;
+//   //TODO retry game
+//   console.log('old game: ', currGameId);
+//   // new Game($main, gameDescr, aqDataset, false);
+//   restartGame();
+// }); 
 
 // nav -> next
-const navNext = $nav.querySelector('.nav-next') as HTMLDivElement;
-navNext.addEventListener('click', (event) => {
-  const elem = event.target as HTMLElement;
-  // elem.classList.toggle('active');
-  // const gameId = $main.dataset.gameId;
-  //TODO retry game
-  console.log('old game: ', currGameId);
-  // new Game($main, gameDescr, aqDataset, false);
-  nextGame();
-}); 
+// const navNext = $nav.querySelector('.nav-next') as HTMLDivElement;
+// navNext.addEventListener('click', (event) => {
+//   const elem = event.target as HTMLElement;
+//   // elem.classList.toggle('active');
+//   // const gameId = $main.dataset.gameId;
+//   //TODO retry game
+//   console.log('old game: ', currGameId);
+//   // new Game($main, gameDescr, aqDataset, false);
+//   nextGame();
+// }); 
 
 
 function createHelpModal() {
@@ -316,8 +613,9 @@ function createGameEndModal() {
   btnRetry.addEventListener('click', (event) => {
     modalGameEnd.classList.remove('show-modal');
     // TODO restart game
+    // TODO save track data
     // new Game($main, gameDescr, aqDataset, false);
-    restartGame();
+    // restartGame();
   })
   btnArea.appendChild(btnRetry);
 
@@ -329,36 +627,45 @@ function createGameEndModal() {
   btnNext.addEventListener('click', (event) => {
     modalGameEnd.classList.remove('show-modal');
     // TODO start different game
-    nextGame();
+    // TODO save track data
+    // nextGame();
   })
   btnArea.appendChild(btnNext);
 }
 
-function restartGame() {
-  const gameId = Number($main.dataset.gameId);
-  if(gameId === gameDescr.gameId) {
-    new Game($main, gameDescr, aqDataset, false);
-    currGameId = gameDescr.gameId;
-    $main.dataset.gameId = `${currGameId}`;
-  } else {
-    new Game($main, gameDescr2, aqDataset, false);
-    currGameId = gameDescr2.gameId;
-    $main.dataset.gameId = `${currGameId}`;
-  }
-}
+// function restartGame() {
+//   const gameId = Number($main.dataset.gameId);
+//   if(gameId === game1Descr.gameId) {
+//     currentGame = new GameBoard($main, game1Descr);
+//     currGameId = game1Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   } else if (gameId === game2Descr.gameId) {
+//     currentGame = new GameBoard($main, game2Descr);
+//     currGameId = game2Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   } else {
+//     currentGame = new GameBoard($main, game3Descr);
+//     currGameId = game3Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   }
+// }
 
-function nextGame() {
-  const gameId = Number($main.dataset.gameId);
-  if(gameId === gameDescr.gameId) {
-    new Game($main, gameDescr2, aqDataset, false);
-    currGameId = gameDescr2.gameId;
-    $main.dataset.gameId = `${currGameId}`;
-  } else {
-    new Game($main, gameDescr, aqDataset, false);
-    currGameId = gameDescr.gameId;
-    $main.dataset.gameId = `${currGameId}`;
-  }
-}
+// function nextGame() {
+//   const gameId = Number($main.dataset.gameId);
+//   if(gameId === game1Descr.gameId) {
+//     currentGame = new GameBoard($main, game2Descr);
+//     currGameId = game2Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   } else if(gameId === game2Descr.gameId) {
+//     currentGame = new GameBoard($main, game3Descr);
+//     currGameId = game3Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   } else {
+//     currentGame = new GameBoard($main, game1Descr);
+//     currGameId = game1Descr.gameId;
+//     $main.dataset.gameId = `${currGameId}`;
+//   }
+// }
 
 // --------- OLD CODE: BEGIN ---------
 // const testInvestigation = new Investigation($main, isFreeMode, aqDataset);

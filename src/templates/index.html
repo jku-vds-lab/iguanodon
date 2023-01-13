@@ -6,11 +6,14 @@
   <title>Iguanodon</title>
 </head>
 
-<body id="body">
+<!-- <body id="body">
   <div id="header">
   </div>
   <div id="nav">
     <div class="navbar-nav">
+      <div class="nav-item nav-logo">
+        <div class="logo"></div>
+      </div>
       <span class="nav-item nav-help">&#x3f; Help</span>
       <span class="nav-item nav-retry">&#10226; Retry</span>
       <span class="nav-item nav-next">&#10132; Start new game</span>
@@ -19,6 +22,46 @@
   <div id="main">
   </div>
   <div id="footer">
+  </div>
+</body> -->
+
+
+<body id="body">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="navbar-item">
+        <!-- <div class="logo"></div> -->
+        <img class="logo" src="../images/jku-vds-lab-logo-dark-theme.svg">
+      </div>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        <div class="navbar-item nav-help">Help &#x3f;</div>
+        <div class="navbar-item nav-retry">Retry &#10226;</div>
+        <div class="navbar-item nav-game">
+          <div class="dropdown">
+            <div class="dropdown-btn">
+              <div class="dropdown-btn-item label"></div>
+              <div class="dropdown-btn-item reward"></div>
+              <div class="dropdown-btn-item points"></div>
+            </div>
+            <div class="dropdown-menu display-none">
+              <div class="dropdown-content">
+                <!-- <div class="dropdown-menu-item"></div>
+                <div class="dropdown-menu-item"></div> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="navbar-center">
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item nav-survey display-none">Code</div>
+      </div>
+    </div>
+  </nav>
+  <div id="main">
   </div>
 </body>
 

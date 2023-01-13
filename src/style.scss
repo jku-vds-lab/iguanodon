@@ -60,6 +60,8 @@ $height-header: 2rem;
 $height-score-strip: 2rem;
 $height-pipeline-state: 2rem;
 $height-pipeline-stage: 1.5rem;
+$height-navbar: 3rem;
+
  
 
 #body {
@@ -82,6 +84,7 @@ $height-pipeline-stage: 1.5rem;
   display: none !important;
 }
 
+// --- Start: Modal ----
 .show-modal {
   display: flex !important;
 }
@@ -224,6 +227,8 @@ $height-pipeline-stage: 1.5rem;
     cursor: pointer;
   }
 }
+// --- End: Modal ---
+
 
 // --- Start: Toggle Switch ---
 .toggle-switch {
@@ -302,12 +307,148 @@ $height-pipeline-stage: 1.5rem;
 // .toggle-switch input:focus + .toggle-slider {
 //   box-shadow: 0 0 5px $color-default;
 // }
-
 // --- End: Toggle Switch ---
 
-// --- NAV ---
+// --- Start: Dropdown ---
+.dropdown {
+  position: relative;
+  width: 5rem;
+
+  >.dropdown-btn {
+    display: flex;
+    height: 100%;
+
+    >.dropdown-btn-item {
+      height: 100%;
+    }
+  }
+
+  >.dropdown-menu {
+    position: absolute;
+    background-color: $color-background-dark;
+    width: 7rem;
+    top: 100%;
+    left: -1rem;
+    z-index: 20;
+
+    .dropdown-menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: normal;
+      font-size: 1rem;
+      height: 2rem;
+      line-height: 2rem;
+      padding: 0 0.5rem;
+      border: lightgrey 1px solid;
+      color: white;
+
+      &:hover {
+        background-color: lighten($color-background-dark,20%);
+      }
+    }
+  }
+}
+
+// --- End: Dropdown ---
+
+
+// --- Start: Nav ---
+$navbar-item-side-padding: 1rem;
+$width-logo: 6rem;
+.navbar, .navbar-menu, .navbar-start, .navbar-center, .navbar-end {
+  display: flex;
+} 
+
+
+.navbar {
+  height: $height-navbar;
+  background-color: $color-background-dark;
+}
+
+.navbar-menu {
+  height: 100%;
+  flex: 1 0;
+  font-size: 1.125rem; //1.25rem too big
+  align-items: stretch;
+}
+
+.navbar-start {
+  height: 100%;
+  justify-content: flex-start;
+  margin-right: auto;
+}
+
+.navbar-center {
+  height: 100%;
+  justify-content: center;
+  // padding-right: $width-logo;
+}
+
+.navbar-end {
+  height: 100%;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.navbar-brand {
+  width: calc($width-logo + calc(2* $navbar-item-side-padding));
+
+  // >.navbar-item {
+  //   display: flex;
+  //   justify-content: center;
+  //   align-items: center;
+  //   color: white;
+  //   font-weight: bold;
+  //   padding: 0 $navbar-item-side-padding;
+  //   margin-top: auto;
+  //   height: $height-navbar;
+  //   line-height: $height-navbar;
+  //   // margin: 0 0.5rem;
+  //   background-color: $color-background-dark;
+  //   cursor: pointer;
+  
+  //   &:hover {
+  //     background-color: lighten($color-background-dark,20%);
+  //   }
+  // }
+
+  .logo {
+    max-width: $width-logo;
+    // background: url('./images/jku-vds-lab-logo-dark-theme.svg');
+    // background-repeat: no-repeat;
+    // background-size: 7rem auto;
+    // background-color: $color-background-dark;
+    cursor: pointer;
+
+    &:hover {
+      background-color: lighten($color-background-dark,20%);
+    }
+  }
+}
+
+
+.navbar-item {
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  padding: 0 $navbar-item-side-padding;
+  margin-top: auto;
+  height: $height-navbar;
+  line-height: $height-navbar;
+  // margin: 0 0.5rem;
+  background-color: $color-background-dark;
+  cursor: pointer;
+
+  &:hover {
+    background-color: lighten($color-background-dark,20%);
+  }
+}
+// __________________________
+
 #nav{
-  height: 2rem;
+  height: $height-navbar;
   background-color: $color-background-dark;
 }
 
@@ -320,11 +461,12 @@ $height-pipeline-stage: 1.5rem;
 
 .nav-item {
   color: white;
+  font-size: 1.125rem;
   font-weight: bold;
   padding: 0 1rem;
   margin-top: auto;
-  height: 2rem;
-  line-height: 2rem;
+  height: $height-navbar;
+  line-height: $height-navbar;
   // margin: 0 0.5rem;
   background-color: $color-background-dark;
   cursor: pointer;
@@ -333,18 +475,34 @@ $height-pipeline-stage: 1.5rem;
     background-color: lighten($color-background-dark,20%);
   }
 
+  &.nav-logo {
+    max-width: 160px;
+    flex-grow: 1;
+  }
+
+  .logo {
+    $padding-one-side: 0.3rem;
+    $height-logo: calc($height-navbar - calc(2*$padding-one-side));
+    height: $height-logo;
+    margin: $padding-one-side 0;
+    background: url('./images/jku-vds-lab-logo-dark-theme.svg');
+    background-repeat: no-repeat;
+    background-size: auto $height-logo;
+  }
+
   // &.active {
   //   color: $color-font-app;
   //   // background-color: $color-app-background;
   //   background-color: $color-blue-tinted;
   // }
 }
+// --- End: Nav ---
 
-// --- MAIN ---
+// --- Start: Main ---
 #main {
   display: grid;
   width: 100%;
-  height: calc(100% - 2rem);
+  height: calc(100% - $height-navbar);
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr; 
   grid-template-areas: 
@@ -371,7 +529,7 @@ $height-pipeline-stage: 1.5rem;
 }
 
 .vis-container {
-  margin-bottom: 1rem;
+  // margin-bottom: 1rem;
   .vis-label {
     margin-top: 1rem;
     height: 2rem;
@@ -382,6 +540,11 @@ $height-pipeline-stage: 1.5rem;
     height: 21rem;
     width: 46rem;
   }
+
+  .vis-dataset  {
+    height: 1.5rem;
+  }
+
 }
 
 // game table with all actions, objectives and attempts + solution
@@ -399,8 +562,9 @@ $height-pipeline-stage: 1.5rem;
     align-items: center;
 
     // row in each column
+    $height-table-row: 1.5rem; 
     .row {
-      height: 1.5rem;
+      height: $height-table-row;
       width: 100%;
       display: flex;
       justify-content: center;
@@ -412,11 +576,34 @@ $height-pipeline-stage: 1.5rem;
         padding-left: 1rem;
       }
 
+      // &.sticky {
+      //   z-index: 10;
+      //   position: sticky;
+
+      //   &[data-bottom-row="0"] {
+      //     bottom: $height-table-row*0;
+      //   }
+      //   &[data-bottom-row="1"] {
+      //     bottom: $height-table-row*1;
+      //   }
+      //   &[data-bottom-row="2"] {
+      //     bottom: $height-table-row*2;
+      //   }
+      //   &[data-bottom-row="3"] {
+      //     bottom: $height-table-row*3;
+      //   }
+      //   &[data-bottom-row="4"] {
+      //     bottom: $height-table-row*4;
+      //   }
+      //   &[data-bottom-row="5"] {
+      //     bottom: $height-table-row*5;
+      //   }
+      // }
 
       &.header {
         text-align: center;
         background-color: $color-bg-header;
-        line-height: 1.5rem;
+        line-height: $height-table-row;
         position: sticky;
         top: 0;
         font-weight: bold;
@@ -461,6 +648,7 @@ $height-pipeline-stage: 1.5rem;
       // confirm button for each column
       &.confirm {
         height: 3rem;
+        background-color: $color-app-background;
       }
 
       .confirm-btn {
@@ -485,6 +673,7 @@ $height-pipeline-stage: 1.5rem;
     }
   }
 }
+// --- End: Main ---
 
 // --------------------------------------------------------------------------
 // **************************************************************************

@@ -544,10 +544,17 @@ export class GameBoard {
   }
 
   async updateVisualizationContainer(visContainer: HTMLDivElement, vis: VisualizationBase, heading: string) {
+    // attempt label
     const divLabel = visContainer.querySelector('.vis-label') as HTMLDivElement;
     divLabel.innerText = `${heading}`;
+    // visualization
     const divPlot = visContainer.querySelector('.vis-plot') as HTMLDivElement;
     await vis.showVisualization(divPlot);
+    // dataset info
+    const divDataset = visContainer.querySelector('.vis-dataset') as HTMLDivElement;
+    const datasetInfo = vis.currentDatasetInfo;
+    const itemMissing = datasetInfo.allItems - datasetInfo.notNullItems;
+    divDataset.innerHTML = `Source: Vega's cars dataset. (${itemMissing} items are not shown, due to missing values.)`;
   }
 
   convertObjStateToString(objState: ObjectiveState): string {

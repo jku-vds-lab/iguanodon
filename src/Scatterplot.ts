@@ -59,6 +59,16 @@ export class Scatterplot extends VisualizationBase {
   private yEncoding: string;
   private colorEncoding: string;
   private _hasColorEncoding: boolean;
+  private _fullDatasetInfo: {
+    sampled: boolean,
+    allItems: number,
+    notNullItems: number
+  };
+  private _sampledDatasetInfo: {
+    sampled: boolean,
+    allItems: number,
+    notNullItems: number
+  };
 
   private _axisTitleFontSize: number = 11;
 
@@ -71,6 +81,8 @@ export class Scatterplot extends VisualizationBase {
     this._hasColorEncoding = this.colorEncoding !== '';
     
     // console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
+    this.createDatasetSizes();
+
 
     // 1. create the actions based on encodings
     this.createActions();
@@ -87,6 +99,42 @@ export class Scatterplot extends VisualizationBase {
     // this.setupVegaSpecification();
     // this.setupDesignChoices();
     // this.setupObjectives();
+  }
+
+  private createDatasetSizes(){
+    // full dataset
+    // get items without missing values
+    const nonMissingItems = this.fullDataset.objects().filter((elem) => {
+      if(this._hasColorEncoding) {
+        return elem[this.xEncoding] && elem[this.yEncoding] && elem[this.colorEncoding];
+      } else {
+        return elem[this.xEncoding] && elem[this.yEncoding];
+      } 
+    });
+    this._fullDatasetInfo = {
+      sampled: false,
+      allItems: this.fullDataset.objects().length,
+      notNullItems: nonMissingItems.length
+    };
+    // console.log('_fullDataset: ', this._fullDatasetInfo);
+
+    // sampled dataset
+    // get items without missing values
+    const nonMissingItemsSampeld = this.sampledDataset.objects().filter((elem) => {
+      if(this._hasColorEncoding) {
+        return elem[this.xEncoding] && elem[this.yEncoding] && elem[this.colorEncoding];
+      } else {
+        return elem[this.xEncoding] && elem[this.yEncoding];
+      } 
+    });
+    this._sampledDatasetInfo = {
+      sampled: true,
+      allItems: this.sampledDataset.objects().length,
+      notNullItems: nonMissingItemsSampeld.length
+    };
+
+
+    // console.log('_sampledDataset: ', this._sampledDatasetInfo);
   }
 
   createActions() {
@@ -364,7 +412,9 @@ export class Scatterplot extends VisualizationBase {
     // const sampledSize = sampleDataActionValue ? Math.ceil(dataTotalSize/4) : dataTotalSize;
     // const sampledSize = sampleDataActionValue ? Math.ceil(dataTotalSize/2) : dataTotalSize;
     const visDataset = sampleDataActionValue ? this.sampledDataset : this.fullDataset;
-    
+    this.currentDatasetInfo = sampleDataActionValue ? this._sampledDatasetInfo : this._fullDatasetInfo;
+
+
     // decreased size
     const decreasedSizeAction = this.getAction(actionsScatter.DecreaseMarkSize);
     const decreasedSizeActionValue = decreasedSizeAction !== null ? decreasedSizeAction.value : false;
@@ -451,6 +501,10 @@ export class Scatterplot extends VisualizationBase {
       width: 'container', //responsive width
       height: 'container', //responsive height
       autosize: {type: 'fit', contains: 'padding'},
+      title : {
+        text: 'Car mileage decreases with higher horsepower',
+        fontSize: 14
+      },
       background: `${backgorundColor}`, // background color}
       // view: {fill: `${backgorundColor}`}, // background color}
     };

@@ -78,6 +78,12 @@ export abstract class VisualizationBase {
 
   highLevelObjectives: highLevelObjective[];
 
+  currentDatasetInfo: {
+    sampled: boolean,
+    allItems: number,
+    notNullItems: number
+  };
+
   // design choices
   // designChoices: designChoiceBase[];
 

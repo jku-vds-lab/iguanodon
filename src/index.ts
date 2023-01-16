@@ -73,7 +73,6 @@ navHelp.addEventListener('click', (event) => {
   modalHelp.classList.add('show-modal');
 }); 
 
-
 // main
 const $main = document.getElementById('main') as HTMLDivElement;
 
@@ -200,6 +199,9 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
     $dropdownMenu.classList.toggle('display-none');
   });
 
+  // show dorpdown arrow
+  const dropdownArrow = $dropdownBtn.querySelector('.dropdown-btn-item.arrow') as HTMLDivElement;
+  dropdownArrow.classList.remove('display-none');
 
   // add games to dropdown content
   const dropdownContent = $dropdownMenu.querySelector('.dropdown-content') as HTMLDivElement;

@@ -86,7 +86,7 @@ function createGame1Description(): IGameDescription {
 
   const startConfig = [
     { id: actionsScatter.DecreaseMarkSize, value: false },
-    { id: actionsScatter.AddBackgroundColor, value: false },
+    { id: actionsScatter.AddBackgroundColor, value: true },
     { id: actionsScatter.LightenGridLines, value: true },
     { id: actionsScatter.HorizontalTextForAxis, value: false },
     { id: actionsScatter.WriteAbbreviationsOut, value: false }

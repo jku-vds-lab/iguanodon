@@ -17,7 +17,7 @@ document.title = TITLE;
 // setupSidebarMenu(); //HACK
 
 export let userId =  null;
-export let isSurvey: boolean = null;
+export let isSurvey: boolean = false;
 // URL parameters
 const queryString = window.location.search;
 // console.log('queryString:', queryString);
@@ -57,7 +57,7 @@ console.log("🚀 ~ file: index.ts:51 ~ isSurvey", isSurvey);
 // const $header = document.getElementById('header') as HTMLDivElement;
 // nav
 // const $nav = document.getElementById('nav') as HTMLDivElement;
-const $nav = document.querySelector('nav.navbar') as HTMLDivElement;
+export const $nav = document.querySelector('nav.navbar') as HTMLDivElement;
 // $nav.classList.remove('hide');
 
 // set vds lab logo
@@ -95,13 +95,14 @@ createGameEndModal();
 // let isFreeMode = false;
 
 // ***** Datasets *****
-const fullDataset = getDataCars();
-console.log("🚀 ~ file: index.ts:89 ~ fullDataset", fullDataset)
-const sampledDataset = getSampledDataCars();
+const datasetAllItems = getDataCars();
+console.log("🚀 ~ file: index.ts:89 ~ fullDataset", datasetAllItems);
+const datasetSampledItems = getSampledDataCars();
+console.log("🚀 ~ file: index.ts:101 ~ sampledDataset", datasetSampledItems);
 
 // full datasset 
-export let aqFullDataset = aq.from(fullDataset);
-export let aqSampledDataset = aq.from(sampledDataset);
+export let aqFullDataset = aq.from(datasetAllItems);
+export let aqSampledDataset = aq.from(datasetSampledItems);
 
 // get column names
 const colNames = aqFullDataset.columnNames();
@@ -114,6 +115,17 @@ aqFullDataset = aqFullDataset.rename(colNiceNames);
 // console.log('aqDataset',aqDataset);
 // console.log('values: ',aqDataset.objects());
 aqSampledDataset = aqSampledDataset.rename(colNiceNames);
+
+
+export const fullDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
+  data: aq.from(datasetAllItems),
+  allItems: datasetAllItems.length,
+  notNullItems: null};
+
+export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
+  data: aq.from(datasetSampledItems),
+  allItems: datasetSampledItems.length,
+  notNullItems: null};
 // *******************
 
 
@@ -179,6 +191,9 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
   // label label to button-item
   const dropdownBtnLabel = $dropdownBtn.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
   dropdownBtnLabel.innerHTML = `Game ${gameBoards[0].gameId}`;
+
+  const dropdownBtnPoints = $dropdownBtn.querySelector('.dropdown-btn-item.points') as HTMLDivElement;
+  dropdownBtnPoints.innerHTML = `Points: -`;
   // add eventlistener to toggle dropdown menu
   // TODO only make active dropdown when not a survey
   $dropdownBtn.addEventListener('click', (event) => {
@@ -190,11 +205,14 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
   const dropdownContent = $dropdownMenu.querySelector('.dropdown-content') as HTMLDivElement;
   if(dropdownContent) {
     const fragmentContent = new DocumentFragment();
+    // go through all the game boards
     for(const gbd of gameBoards) {
+      // TODO check if games in local/session storage
       const ddItem = document.createElement('div');
       ddItem.classList.add('dropdown-menu-item');
       fragmentContent.append(ddItem)
       ddItem.dataset.gameId = `${gbd.gameId}`; //data-game-id
+      ddItem.dataset.score = '0';
       // add eventlistenter to change game
       ddItem.addEventListener('click',(event) => {
         // const elem = event.target;
@@ -211,14 +229,24 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
         }
       })
 
-
+      // create the elements for in menu item 
       const contentLabels = ['label', 'reward','points'];
-
       for(const cl of contentLabels){
         const ddItemContent = document.createElement('div');
         ddItemContent.classList.add('item-content',cl);
+        // label
         if(cl==='label') {
           ddItemContent.innerHTML = `Game ${gbd.gameId}`;
+        }
+        // reward
+        if(cl==='reward') {
+          const imgReward = document.createElement('img');
+          imgReward.classList.add('img-reward');
+          ddItemContent.append(imgReward);
+        }
+        // points
+        if(cl==='points') {
+          ddItemContent.innerHTML = `Points: -`;
         }
         // TODO check storage if not survey for game states (points/rewards)
         ddItem.append(ddItemContent);
@@ -232,12 +260,29 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
 function updateGameBoard(gameId: number) {
   const newGameBoardDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
   if(newGameBoardDescr.length === 1) {
-    // label label to button-item
-    const dropdownBtnLabel = $nav.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
+    // update navigation game dropwown button
+    // get reward and points from dropdown menu item
+    const menuItem = $nav.querySelector(`.dropdown-menu-item[data-game-id="${gameId}"]`) as HTMLDivElement;
+    const menuItemReward = menuItem.querySelector('.reward');
+    const imgMenuItemRewar = menuItemReward.querySelector('.img-reward') as HTMLImageElement;
+    const menuItemPoints = menuItem.querySelector('.points');
+
+    // dropdown button
+    const dropdownBtn = $nav.querySelector('.dropdown-btn') as HTMLDivElement;
+    // update button label
+    const dropdownBtnLabel = dropdownBtn.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
     dropdownBtnLabel.innerHTML = `Game ${gameId}`;
-    
+    // update button reward
+    const dropdownBtnReward = dropdownBtn.querySelector('.dropdown-btn-item.reward') as HTMLDivElement;
+    const imgBtn = dropdownBtnReward.querySelector('.img-reward') as HTMLImageElement;
+    imgBtn.src = imgMenuItemRewar.src;
+    // update button points
+    const dropdownBtnPoints = dropdownBtn.querySelector('.dropdown-btn-item.points') as HTMLDivElement;
+    dropdownBtnPoints.innerHTML = menuItemPoints.innerHTML;
+
+    // change game board
     const selectGameBoardDescr = newGameBoardDescr[0];
-    console.info('change GameBoard to: ', selectGameBoardDescr);
+    // console.info('change GameBoard to: ', selectGameBoardDescr);
     currentGame = new GameBoard($main, selectGameBoardDescr);
   }
 }
@@ -443,16 +488,16 @@ const game3Descr: IGameBoardDescription = {
 // $main.dataset.gameId = `${currGameId}`;
 
 // nav -> retry
-// const navRetry = $nav.querySelector('.nav-retry') as HTMLDivElement;
-// navRetry.addEventListener('click', (event) => {
-//   const elem = event.target as HTMLElement;
-//   // elem.classList.toggle('active');
-//   // const gameId = $main.dataset.gameId;
-//   //TODO retry game
-//   console.log('old game: ', currGameId);
-//   // new Game($main, gameDescr, aqDataset, false);
-//   restartGame();
-// }); 
+const navRetry = $nav.querySelector('.nav-retry') as HTMLDivElement;
+navRetry.addEventListener('click', (event) => {
+  const elem = event.target as HTMLElement;
+  // elem.classList.toggle('active');
+  // const gameId = $main.dataset.gameId;
+  // console.log('old game: ', currGameId);
+  // new Game($main, gameDescr, aqDataset, false);
+  // retry game
+  restartGame();
+}); 
 
 // nav -> next
 // const navNext = $nav.querySelector('.nav-next') as HTMLDivElement;
@@ -615,57 +660,68 @@ function createGameEndModal() {
     // TODO restart game
     // TODO save track data
     // new Game($main, gameDescr, aqDataset, false);
-    // restartGame();
+    restartGame();
   })
   btnArea.appendChild(btnRetry);
 
 
   // button next
   const btnNext = document.createElement('div');
-  btnNext.innerHTML = '&#10132; Start new game';
+  btnNext.innerHTML = '&#10132; Next game';
   btnNext.classList.add('modal-btn','btn-next')
   btnNext.addEventListener('click', (event) => {
     modalGameEnd.classList.remove('show-modal');
     // TODO start different game
     // TODO save track data
-    // nextGame();
+    nextGame();
   })
   btnArea.appendChild(btnNext);
 }
 
-// function restartGame() {
-//   const gameId = Number($main.dataset.gameId);
-//   if(gameId === game1Descr.gameId) {
-//     currentGame = new GameBoard($main, game1Descr);
-//     currGameId = game1Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   } else if (gameId === game2Descr.gameId) {
-//     currentGame = new GameBoard($main, game2Descr);
-//     currGameId = game2Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   } else {
-//     currentGame = new GameBoard($main, game3Descr);
-//     currGameId = game3Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   }
-// }
+function restartGame() {
+  const gameId = Number($main.dataset.gameId);
+  // get the right game board description
+  const gameBoardsDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
+  updateGameBoard(gameId);
+  // if(gameBoardsDescr.length === 1) {
+    // const gbd = gameBoardsDescr[0];
+    // currentGame = new GameBoard($main, gbd);
+  // }
 
-// function nextGame() {
-//   const gameId = Number($main.dataset.gameId);
-//   if(gameId === game1Descr.gameId) {
-//     currentGame = new GameBoard($main, game2Descr);
-//     currGameId = game2Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   } else if(gameId === game2Descr.gameId) {
-//     currentGame = new GameBoard($main, game3Descr);
-//     currGameId = game3Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   } else {
-//     currentGame = new GameBoard($main, game1Descr);
-//     currGameId = game1Descr.gameId;
-//     $main.dataset.gameId = `${currGameId}`;
-//   }
-// }
+  // if(gameId === game1Descr.gameId) {
+  //   currentGame = new GameBoard($main, game1Descr);
+  //   currGameId = game1Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // } else if (gameId === game2Descr.gameId) {
+  //   currentGame = new GameBoard($main, game2Descr);
+  //   currGameId = game2Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // } else {
+  //   currentGame = new GameBoard($main, game3Descr);
+  //   currGameId = game3Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // }
+}
+
+function nextGame() {
+  const gameId = Number($main.dataset.gameId);
+  const nextGameId = (gameId % 3) + 1; 
+  updateGameBoard(nextGameId);
+
+  // if(gameId === game1Descr.gameId) {
+  //   currentGame = new GameBoard($main, game2Descr);
+  //   currGameId = game2Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // } else if(gameId === game2Descr.gameId) {
+  //   currentGame = new GameBoard($main, game3Descr);
+  //   currGameId = game3Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // } else {
+  //   currentGame = new GameBoard($main, game1Descr);
+  //   currGameId = game1Descr.gameId;
+  //   $main.dataset.gameId = `${currGameId}`;
+  // }
+}
 
 // --------- OLD CODE: BEGIN ---------
 // const testInvestigation = new Investigation($main, isFreeMode, aqDataset);

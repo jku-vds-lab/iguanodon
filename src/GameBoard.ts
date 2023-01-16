@@ -1,10 +1,13 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { userId } from ".";
+import { $nav, userId } from ".";
 import { ObjectiveState } from "./Objective";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
 import { createToggleSwitch, deepCopy, getColumnTypesFromArqueroTable } from "./util";
 import {  IAction, VisualizationBase } from "./visualizations";
+import imgBadgeGold from "./images/badge_gold.svg";
+import imgBadgeSilver from "./images/badge_silver.svg";
+import imgBadgeBronze from "./images/badge_bronze.svg";
 
 export interface IGameBoardDescription {
   gameId: number,
@@ -12,6 +15,14 @@ export interface IGameBoardDescription {
   solutionVisualization: VisualizationBase,
   attempts: number
 }
+
+export enum gameReward {
+  gold = 'gold',
+  silver = 'silver',
+  bronze = 'bronze',
+  noReward = 'noReward'
+};
+
 export class GameBoard {
   
   private _visHistory: { attempt: number, visualization: VisualizationBase }[];
@@ -36,6 +47,9 @@ export class GameBoard {
 
   attemptTrackData: IAttemptTrackData;
   gameTrackData: IGameTrackData;
+
+  score: number;
+  reward: gameReward;
 
   constructor(cntrMain: HTMLDivElement, game: IGameBoardDescription) {
     this.$container = cntrMain;
@@ -63,10 +77,6 @@ export class GameBoard {
     this.createGameSetup();
     this.setInitalVisualizationState();
     this.gameTrackData = this.createGameTrackData();
-    
-    // TODO
-    // - only use the set objectives and actions
-    // - set the value for the actions not used in the game
   }
 
   getGameId(): number {
@@ -389,6 +399,9 @@ export class GameBoard {
       // set solution column objectives
       this.setTableColumnObjectives(solutionCol, currSolution);
 
+      // calculate score and reward
+      this.calcScoreAndReward();
+
       // show WIN modal
       const modalGameEnd = document.body.querySelector('#modal-game-end');
       modalGameEnd.classList.add('show-modal');
@@ -398,10 +411,12 @@ export class GameBoard {
       const gameWin =  modalGameEnd.querySelector('.content-win');
       gameWin.classList.remove('display-none');
 
+
     } else {
       // not all objectives fulfilled
-      if(this._currAttempt === this._numbAttempts) {
+      if(this._currAttempt >= this._numbAttempts) {
         // all attempts used -> LOSE
+        this._currAttempt++;
 
         // show solution in current vis (actions + vis)
         // copy current correct vis as solution 
@@ -415,6 +430,9 @@ export class GameBoard {
         await this.updateVisualizationContainer(this.$currVis,currSolution, heading);
         // set solution column objectives
         this.setTableColumnObjectives(solutionCol, currSolution);
+        
+        // calculate score and reward
+        this.calcScoreAndReward();
 
         // show LOSE modal
         const modalGameEnd = document.body.querySelector('#modal-game-end');
@@ -424,6 +442,7 @@ export class GameBoard {
         gameWin.classList.add('display-none');
         const gameLose =  modalGameEnd.querySelector('.content-lose');
         gameLose.classList.remove('display-none');
+
 
       } else {
         // attempts still possible -> NEXT ATTEMPT
@@ -467,6 +486,69 @@ export class GameBoard {
         // update current vis
         const heading = `Attempt ${this._currAttempt} Preview`;
         this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
+      }
+    }
+
+  }
+
+  calcScoreAndReward() {
+    this.score = (this._numbAttempts - this._currAttempt) + 1;
+    this.reward = gameReward.noReward;
+    if(this.score === this._numbAttempts) {
+      this.reward = gameReward.gold;
+    } else if(this.score === (this._numbAttempts - 1) ) {
+      this.reward = gameReward.silver;
+    } else if(this.score === (this._numbAttempts - 2) ) {
+      this.reward = gameReward.bronze;
+    }
+
+    console.log('Current score: ', {score: this.score, reward: this.reward});
+    this.setScoreAndRewardInfo();
+  }
+
+  setScoreAndRewardInfo() {
+    // TODO set score and info
+    const navGame = $nav.querySelector('.nav-game');
+
+    const ddBtn = navGame.querySelector('.dropdown-btn');
+    const ddBtnReward = ddBtn.querySelector('.reward');
+    const ddBtnPoints = ddBtn.querySelector('.points');
+    
+    
+    const ddMenu = navGame.querySelector('.dropdown-menu');
+    // get current game menu item
+    const currMenuItem = ddMenu.querySelector(`.dropdown-menu-item[data-game-id="${this._gameId}"]`) as HTMLDivElement;
+    const oldScore = Number(currMenuItem.dataset.score);
+    const ddMenuItemReward = currMenuItem.querySelector('.reward');
+    const ddMenuItemPoints = currMenuItem.querySelector('.points');
+    
+    if(this.score > oldScore) {
+      // TODO save in local/session storage
+      // set menu item score
+      currMenuItem.dataset.score = `${this.score}`;
+
+      // set points
+      ddBtnPoints.innerHTML = `Points: ${this.score}`;
+      ddMenuItemPoints.innerHTML = `Points: ${this.score}`;
+
+      // set rewards
+      if(this.reward !== gameReward.noReward) {
+        // ddBtnReward.classList.remove(gameReward.bronze, gameReward.silver, gameReward.gold);
+        // ddBtnReward.classList.add(this.reward);
+        const imgBtn = ddBtnReward.querySelector('.img-reward') as HTMLImageElement;
+        // ddMenuItemReward.classList.remove(gameReward.bronze, gameReward.silver, gameReward.gold);
+        // ddMenuItemReward.classList.add(this.reward);
+        const imgMenuItem = ddMenuItemReward.querySelector('.img-reward') as HTMLImageElement;
+        if(this.reward === gameReward.gold) {
+          imgBtn.src=imgBadgeGold;
+          imgMenuItem.src=imgBadgeGold;
+        } else if(this.reward === gameReward.silver) {
+          imgBtn.src=imgBadgeSilver;
+          imgMenuItem.src=imgBadgeSilver;
+        } else if(this.reward === gameReward.bronze) {
+          imgBtn.src=imgBadgeBronze;
+          imgMenuItem.src=imgBadgeBronze;
+        }
       }
     }
 

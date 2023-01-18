@@ -43,49 +43,53 @@
 // $color-vis-pipeline-vm: #E78AC3;
 // $color-vis-pipeline-vt: #8DA0CB;
 
-// app
+// APP
 $color-bg-app: white;
 $color-text-app:#212529; // same as Coral
 
-// navbar
+// NAVBAR
 $color-bg-navbar: #2A2E32;
 $color-text-navbar: white;
-$padding-navbar-item-side: 1rem;
+$padding-navbar-item: 1rem;
 $width-navbar-logo: 6rem;
+$height-navbar: 3rem;
 
-// modal
+// MODAL
 $color-bg-modal: white;
 $color-bg-modal-background: #2A2E32AA;
 $color-border-modal-btn: lightgray;
 $color-border-header-footer: lightgray;
+$border-radius-modal: 0.375rem;
+
+// GAME BOARD TABLE
+$color-bg-gbt-header: lightgray;
+// actions
+$color-bg-gbt-action-even: white;
+$color-bg-gbt-action-odd: #EFF0F1;
 
 // toggle btn
 $color-toggle-active: $color-text-app;
 $color-toggle-inactive: lightgrey;
 $color-toggle-slider: white;
 
-// game board table
-// $color-table-grid: $color-default; 
-$color-bg-gbt-header: lightgray;
-$color-bg-gbt-action-even: white;
-$color-bg-gbt-action-odd: #EFF0F1;
-
+// confirm
 $color-bg-confirm-btn: lightgrey;
 
+// objectives
 $color-object-correct: lightgreen;
 $color-object-partial: lightsalmon;
 $color-object-wrong: lightcoral;
 $color-object-none: white;
 
-// height variables
-$height-header: 2rem; 
-$height-score-strip: 2rem;
-$height-pipeline-state: 2rem;
-$height-pipeline-stage: 1.5rem;
-$height-navbar: 3rem;
+// HEIGHT VARIABLES
+// $height-header: 2rem; 
+// $height-score-strip: 2rem;
+// $height-pipeline-state: 2rem;
+// $height-pipeline-stage: 1.5rem;
+
 
  
-
+// --- Start: App ----
 #body {
   margin:0;
   background: $color-bg-app;
@@ -105,25 +109,14 @@ $height-navbar: 3rem;
 .display-none {
   display: none !important;
 }
+// --- End: App ----
 
 // --- Start: Modal ----
-.show-modal {
-  display: flex !important;
-}
+// .show-modal {
+//   display: flex !important;
+// }
 
-.modal-btn {
-  background-color: $color-bg-modal;
-  border: $color-border-modal-btn 1px solid;
-  // border-radius: 0.25rem;
-  border-radius: 0.375rem;
-
-  &:hover {
-    // background-color: darken($color-bg-modal,10%);
-    border-color: darken($color-border-modal-btn,15%);
-  }
-}
-// ---- new parts
-.modal-new {
+.modal {
   display: none;
   align-items: center;
   flex-direction: column;
@@ -135,9 +128,21 @@ $height-navbar: 3rem;
   right: 0;
   top: $height-navbar;
   z-index: 40;
-
+  
   &.is-active {
     display: flex !important;
+  }
+}
+
+.modal-btn {
+  background-color: $color-bg-modal;
+  border: $color-border-modal-btn 1px solid;
+  // border-radius: 0.25rem;
+  border-radius: $border-radius-modal;
+
+  &:hover {
+    // background-color: darken($color-bg-modal,10%);
+    border-color: darken($color-border-modal-btn,15%);
   }
 }
 
@@ -160,7 +165,7 @@ $height-navbar: 3rem;
   // height: 70%;
   background-color: $color-bg-modal;
   // border: 1px black solid;
-  border-radius: 0.375rem;
+  border-radius: $border-radius-modal;
   z-index: 100;
 
   // &.show-modal {
@@ -201,8 +206,8 @@ $height-navbar: 3rem;
   padding: 1rem;
   border-bottom: $color-border-header-footer solid 1px;
   // background-color: #EFF0F1;
-  border-top-left-radius: 0.375rem;
-  border-top-right-radius: 0.375rem;
+  border-top-left-radius: $border-radius-modal;
+  border-top-right-radius: $border-radius-modal;
 
   >.modal-title {
     font-size: 1.5rem;
@@ -248,8 +253,8 @@ $height-navbar: 3rem;
   padding: 1rem;
   border-top: $color-border-header-footer solid 1px;
   // background-color: #EFF0F1;
-  border-bottom-left-radius: 0.375rem;
-  border-bottom-right-radius: 0.375rem;
+  border-bottom-left-radius: $border-radius-modal;
+  border-bottom-right-radius: $border-radius-modal;
   // height: 1.5rem;
   // padding: 0 0.5rem;
   // margin-top: 0.5rem;
@@ -268,6 +273,452 @@ $height-navbar: 3rem;
     cursor: pointer;
   }
 }
+// --- End: Modal ----
+
+
+// --- Start: Toggle Switch ---
+.toggle-switch {
+  position: relative;
+  display: block;
+  // width: 60px;
+  width: 3rem;
+  // height: 34px;
+  // height: 20px;
+  height: 1.125rem;
+  margin: auto;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  // pill (background) when unchecked
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 1rem;
+  background-color: $color-toggle-inactive;
+  transition: .3s;
+  -webkit-transition: .3s;
+
+  &[data-disabled="true"] {
+    cursor: default;
+  }
+}
+
+// New selector for the circle pseudo-element
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  // height: 26px;
+  // width: 26px;
+  // height: 12px;
+  height: 0.75rem;
+  // width: 12px;
+  width: 0.75rem;
+  // left: 4px;
+  // bottom: 4px;
+  left: 0.1875rem;
+  bottom: 0.1875rem;
+  border-radius: 50%;
+  background-color: $color-toggle-slider;
+  transition: .3s;
+  -webkit-transition: .3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  // pill (background) when checked
+  background-color: $color-toggle-active;
+}
+
+
+.toggle-switch input:checked + .toggle-slider:before {
+  // move circle pseudo-element from left to right 
+  // and right to left when the input is checked
+  // -webkit-transform: translateX(26px);
+  // -ms-transform: translateX(26px);
+  // transform: translateX(26px);
+  -webkit-transform: translateX(1.875rem);
+  -ms-transform: translateX(1.875rem);
+  transform: translateX(1.875rem);
+}
+
+// not needed for now
+// .toggle-switch input:focus + .toggle-slider {
+//   box-shadow: 0 0 5px $color-default;
+// }
+// --- End: Toggle Switch ---
+
+// --- Start: Dropdown ---
+.dropdown {
+  $width-dropdown: 12rem;
+  $width-padding-one-side: 1rem;
+  position: relative;
+  width: $width-dropdown;
+
+  >.dropdown-btn {
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+    align-items: center;
+
+    >.arrow {
+      border: .25rem solid $color-text-navbar;
+      border-radius: 2px;
+      border-right: 0;
+      border-top: 0;
+      height: .625em !important;
+      width: .625em !important;
+      margin-bottom: 0.4375rem;
+      margin-left: 0.4375rem;
+      pointer-events: none;
+      transform: rotate(-45deg);
+      transform-origin: center;
+    }
+
+    >.dropdown-btn-item {
+      height: 100%;
+    }
+
+    >.reward {
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+
+      >img {
+        max-height: 1rem;
+      }
+    }
+
+    >.points {
+      font-size: 0.7rem;
+      font-weight: normal;
+      width: 3.5rem;
+    }
+  }
+
+  >.dropdown-menu {
+    position: absolute;
+    background-color: $color-bg-navbar;
+    width: calc($width-dropdown + calc(2 * $width-padding-one-side));
+    top: 100%;
+    left: -$width-padding-one-side;
+    z-index: 20;
+
+    .dropdown-menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: normal;
+      font-size: 1rem;
+      height: 2rem;
+      line-height: 2rem;
+      padding: 0 1rem;
+      color: $color-text-navbar;
+
+      >.reward {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+
+        >img {
+          max-height: 0.7rem;
+        }
+      }
+
+      >.points {
+        font-size: 0.6rem;
+      }
+
+
+      &:hover {
+        background-color: lighten($color-bg-navbar,20%);
+      }
+    }
+  }
+}
+// --- End: Dropdown ---
+
+
+// --- Start: Nav ---
+.navbar, .navbar-menu, .navbar-start, .navbar-center, .navbar-end {
+  display: flex;
+} 
+
+
+.navbar {
+  height: $height-navbar;
+  background-color: $color-bg-navbar;
+}
+
+.navbar-menu {
+  height: 100%;
+  flex: 1 0;
+  font-size: 1.125rem; //1.25rem too big
+  align-items: stretch;
+}
+
+.navbar-start {
+  height: 100%;
+  justify-content: flex-start;
+  margin-right: auto;
+}
+
+.navbar-center {
+  height: 100%;
+  justify-content: center;
+  // padding-right: $width-logo;
+}
+
+.navbar-end {
+  height: 100%;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.navbar-brand {
+  width: calc($width-navbar-logo + calc(2* $padding-navbar-item));
+
+  // >.navbar-item {
+  //   display: flex;
+  //   justify-content: center;
+  //   align-items: center;
+  //   color: white;
+  //   font-weight: bold;
+  //   padding: 0 $navbar-item-side-padding;
+  //   margin-top: auto;
+  //   height: $height-navbar;
+  //   line-height: $height-navbar;
+  //   // margin: 0 0.5rem;
+  //   background-color: $color-background-dark;
+  //   cursor: pointer;
+  
+  //   &:hover {
+  //     background-color: lighten($color-background-dark,20%);
+  //   }
+  // }
+
+  .logo {
+    max-width: $width-navbar-logo;
+    // background: url('./images/jku-vds-lab-logo-dark-theme.svg');
+    // background-repeat: no-repeat;
+    // background-size: 7rem auto;
+    // background-color: $color-background-dark;
+    cursor: pointer;
+
+    &:hover {
+      background-color: lighten($color-bg-navbar,20%);
+    }
+  }
+}
+
+
+.navbar-item {
+  display: flex;
+  justify-content: center;
+  color: $color-text-navbar;
+  font-weight: bold;
+  padding: 0 $padding-navbar-item;
+  margin-top: auto;
+  height: $height-navbar;
+  line-height: $height-navbar;
+  // margin: 0 0.5rem;
+  background-color: $color-bg-navbar;
+  cursor: pointer;
+
+  &:hover {
+    background-color: lighten($color-bg-navbar,20%);
+  }
+}
+// --- End: Nav ---
+
+// --- Start: Main (Game Board) ---
+#main {
+  display: grid;
+  width: 100%;
+  height: calc(100% - $height-navbar);
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr; 
+  grid-template-areas: 
+    'last-vis curr-vis'
+    'game-table game-table';
+}
+
+#last-vis {
+  grid-area: last-vis;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+#current-vis {
+  grid-area: curr-vis;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.vis-container {
+  // margin-bottom: 1rem;
+  .vis-label {
+    margin-top: 1rem;
+    height: 2rem;
+    font-weight: bold;
+  }
+
+  .vis-plot {
+    height: 21rem;
+    width: 46rem;
+  }
+
+  .vis-dataset  {
+    height: 1rem;
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+  }
+
+}
+
+// game table with all actions, objectives and attempts + solution
+#game-table {
+  grid-area: game-table;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    align-items: center;
+
+    // row in each column
+    $height-table-row: 1.5rem; 
+    .row {
+      height: $height-table-row;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 0 0 auto;
+
+      &.label {
+        justify-content: left;
+        padding-left: 1rem;
+      }
+
+      // &.sticky {
+      //   z-index: 10;
+      //   position: sticky;
+
+      //   &[data-bottom-row="0"] {
+      //     bottom: $height-table-row*0;
+      //   }
+      //   &[data-bottom-row="1"] {
+      //     bottom: $height-table-row*1;
+      //   }
+      //   &[data-bottom-row="2"] {
+      //     bottom: $height-table-row*2;
+      //   }
+      //   &[data-bottom-row="3"] {
+      //     bottom: $height-table-row*3;
+      //   }
+      //   &[data-bottom-row="4"] {
+      //     bottom: $height-table-row*4;
+      //   }
+      //   &[data-bottom-row="5"] {
+      //     bottom: $height-table-row*5;
+      //   }
+      // }
+
+      &.header {
+        text-align: center;
+        background-color: $color-bg-gbt-header;
+        line-height: $height-table-row;
+        position: sticky;
+        top: 0;
+        font-weight: bold;
+        z-index: 10;
+      }
+
+      &.action:nth-child(2n+1) {
+        background-color: $color-bg-gbt-action-odd;
+      }
+
+      &.action:nth-child(2n) {
+        background-color: $color-bg-gbt-action-even;
+      }
+
+      // objectives are colored based on their states
+      &.objective.result {  
+        background-color: $color-bg-app;
+        padding: 0.125rem;
+
+        .obj_indicator {
+          width: 100%;
+          height: 100%;
+
+          &[data-value="none"] {
+            background-color: $color-object-none;
+          }
+          
+          &[data-value="correct"] {
+            background-color: $color-object-correct;
+          }
+      
+          &[data-value="partial"] {
+            background-color: $color-object-partial;
+          }
+      
+          &[data-value="wrong"] {
+            background-color: $color-object-wrong;
+          }
+        }
+      }
+
+      // confirm button for each column
+      &.confirm {
+        height: 3rem;
+        background-color: $color-bg-app;
+      }
+
+      .confirm-btn {
+        height: 1.5rem;
+        line-height: 1.5rem;
+        width: calc(100% - 0.25rem);
+        background-color: $color-bg-confirm-btn;
+        border-radius: 0.25rem;
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+          background-color: darken($color-bg-confirm-btn,10%);
+        }
+
+        &.disabled {
+          pointer-events: none;
+          background-color: lighten($color-bg-confirm-btn,10%);
+        }
+      }
+
+    }
+  }
+}
+// --- End: Main (Game Board) ---
+
 
 // ------------
 // #modal-help {
@@ -495,272 +946,8 @@ $height-navbar: 3rem;
 
 // --- End: Modal (bulma) ---
 
-// --- Start: Toggle Switch ---
-.toggle-switch {
-  position: relative;
-  display: block;
-  // width: 60px;
-  width: 3rem;
-  // height: 34px;
-  // height: 20px;
-  height: 1.125rem;
-  margin: auto;
-}
 
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  // pill (background) when unchecked
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 1rem;
-  background-color: $color-toggle-inactive;
-  transition: .3s;
-  -webkit-transition: .3s;
-
-  &[data-disabled="true"] {
-    cursor: default;
-  }
-}
-
-// New selector for the circle pseudo-element
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  // height: 26px;
-  // width: 26px;
-  // height: 12px;
-  height: 0.75rem;
-  // width: 12px;
-  width: 0.75rem;
-  // left: 4px;
-  // bottom: 4px;
-  left: 0.1875rem;
-  bottom: 0.1875rem;
-  border-radius: 50%;
-  background-color: $color-toggle-slider;
-  transition: .3s;
-  -webkit-transition: .3s;
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  // pill (background) when checked
-  background-color: $color-toggle-active;
-}
-
-
-.toggle-switch input:checked + .toggle-slider:before {
-  // move circle pseudo-element from left to right 
-  // and right to left when the input is checked
-  // -webkit-transform: translateX(26px);
-  // -ms-transform: translateX(26px);
-  // transform: translateX(26px);
-  -webkit-transform: translateX(1.875rem);
-  -ms-transform: translateX(1.875rem);
-  transform: translateX(1.875rem);
-}
-
-// not needed for now
-// .toggle-switch input:focus + .toggle-slider {
-//   box-shadow: 0 0 5px $color-default;
-// }
-// --- End: Toggle Switch ---
-
-// --- Start: Dropdown ---
-.dropdown {
-  $width-dropdown: 12rem;
-  $width-padding-one-side: 1rem;
-  position: relative;
-  width: $width-dropdown;
-
-  >.dropdown-btn {
-    display: flex;
-    justify-content: space-between;
-    height: 100%;
-    align-items: center;
-
-    >.arrow {
-      border: .25rem solid white;
-      border-radius: 2px;
-      border-right: 0;
-      border-top: 0;
-      height: .625em !important;
-      width: .625em !important;
-      margin-bottom: 0.4375rem;
-      margin-left: 0.4375rem;
-      pointer-events: none;
-      transform: rotate(-45deg);
-      transform-origin: center;
-    }
-
-    >.dropdown-btn-item {
-      height: 100%;
-    }
-
-    >.reward {
-      display: flex;
-      justify-content: center;
-      align-content: center;
-      flex-direction: column;
-
-      >img {
-        max-height: 1rem;
-      }
-    }
-
-    >.points {
-      font-size: 0.7rem;
-      font-weight: normal;
-      width: 3.5rem;
-    }
-  }
-
-  >.dropdown-menu {
-    position: absolute;
-    background-color: $color-bg-navbar;
-    width: calc($width-dropdown + calc(2 * $width-padding-one-side));
-    top: 100%;
-    left: -$width-padding-one-side;
-    z-index: 20;
-
-    .dropdown-menu-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: normal;
-      font-size: 1rem;
-      height: 2rem;
-      line-height: 2rem;
-      padding: 0 1rem;
-      color: white;
-
-      >.reward {
-        display: flex;
-        justify-content: center;
-        align-content: center;
-        flex-direction: column;
-
-        >img {
-          max-height: 0.7rem;
-        }
-      }
-
-      >.points {
-        font-size: 0.6rem;
-      }
-
-
-      &:hover {
-        background-color: lighten($color-bg-navbar,20%);
-      }
-    }
-  }
-}
-
-// --- End: Dropdown ---
-
-
-// --- Start: Nav ---
-
-.navbar, .navbar-menu, .navbar-start, .navbar-center, .navbar-end {
-  display: flex;
-} 
-
-
-.navbar {
-  height: $height-navbar;
-  background-color: $color-bg-navbar;
-}
-
-.navbar-menu {
-  height: 100%;
-  flex: 1 0;
-  font-size: 1.125rem; //1.25rem too big
-  align-items: stretch;
-}
-
-.navbar-start {
-  height: 100%;
-  justify-content: flex-start;
-  margin-right: auto;
-}
-
-.navbar-center {
-  height: 100%;
-  justify-content: center;
-  // padding-right: $width-logo;
-}
-
-.navbar-end {
-  height: 100%;
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-.navbar-brand {
-  width: calc($width-navbar-logo + calc(2* $padding-navbar-item-side));
-
-  // >.navbar-item {
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  //   color: white;
-  //   font-weight: bold;
-  //   padding: 0 $navbar-item-side-padding;
-  //   margin-top: auto;
-  //   height: $height-navbar;
-  //   line-height: $height-navbar;
-  //   // margin: 0 0.5rem;
-  //   background-color: $color-background-dark;
-  //   cursor: pointer;
-  
-  //   &:hover {
-  //     background-color: lighten($color-background-dark,20%);
-  //   }
-  // }
-
-  .logo {
-    max-width: $width-navbar-logo;
-    // background: url('./images/jku-vds-lab-logo-dark-theme.svg');
-    // background-repeat: no-repeat;
-    // background-size: 7rem auto;
-    // background-color: $color-background-dark;
-    cursor: pointer;
-
-    &:hover {
-      background-color: lighten($color-bg-navbar,20%);
-    }
-  }
-}
-
-
-.navbar-item {
-  display: flex;
-  justify-content: center;
-  color: $color-text-navbar;
-  font-weight: bold;
-  padding: 0 $padding-navbar-item-side;
-  margin-top: auto;
-  height: $height-navbar;
-  line-height: $height-navbar;
-  // margin: 0 0.5rem;
-  background-color: $color-bg-navbar;
-  cursor: pointer;
-
-  &:hover {
-    background-color: lighten($color-bg-navbar,20%);
-  }
-}
-// __________________________
-
+// --- Start: old nav ---
 // #nav{
 //   height: $height-navbar;
 //   background-color: $color-bg-navbar;
@@ -810,186 +997,7 @@ $height-navbar: 3rem;
   //   background-color: $color-blue-tinted;
   // }
 // }
-// --- End: Nav ---
-
-// --- Start: Main ---
-#main {
-  display: grid;
-  width: 100%;
-  height: calc(100% - $height-navbar);
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr; 
-  grid-template-areas: 
-    'last-vis curr-vis'
-    'game-table game-table';
-}
-
-#last-vis {
-  grid-area: last-vis;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-#current-vis {
-  grid-area: curr-vis;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-.vis-container {
-  // margin-bottom: 1rem;
-  .vis-label {
-    margin-top: 1rem;
-    height: 2rem;
-    font-weight: bold;
-  }
-
-  .vis-plot {
-    height: 21rem;
-    width: 46rem;
-  }
-
-  .vis-dataset  {
-    height: 1rem;
-    font-size: 0.7rem;
-    margin-top: 0.5rem;
-  }
-
-}
-
-// game table with all actions, objectives and attempts + solution
-#game-table {
-  grid-area: game-table;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  overflow-x: auto;
-
-  .column {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    align-items: center;
-
-    // row in each column
-    $height-table-row: 1.5rem; 
-    .row {
-      height: $height-table-row;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex: 0 0 auto;
-
-      &.label {
-        justify-content: left;
-        padding-left: 1rem;
-      }
-
-      // &.sticky {
-      //   z-index: 10;
-      //   position: sticky;
-
-      //   &[data-bottom-row="0"] {
-      //     bottom: $height-table-row*0;
-      //   }
-      //   &[data-bottom-row="1"] {
-      //     bottom: $height-table-row*1;
-      //   }
-      //   &[data-bottom-row="2"] {
-      //     bottom: $height-table-row*2;
-      //   }
-      //   &[data-bottom-row="3"] {
-      //     bottom: $height-table-row*3;
-      //   }
-      //   &[data-bottom-row="4"] {
-      //     bottom: $height-table-row*4;
-      //   }
-      //   &[data-bottom-row="5"] {
-      //     bottom: $height-table-row*5;
-      //   }
-      // }
-
-      &.header {
-        text-align: center;
-        background-color: $color-bg-gbt-header;
-        line-height: $height-table-row;
-        position: sticky;
-        top: 0;
-        font-weight: bold;
-        z-index: 10;
-      }
-
-      &.action:nth-child(2n+1) {
-        background-color: $color-bg-gbt-action-odd;
-      }
-
-      &.action:nth-child(2n) {
-        background-color: $color-bg-gbt-action-even;
-      }
-
-      // objectives are colored based on their states
-      &.objective.result {  
-        background-color: $color-bg-app;
-        padding: 0.125rem;
-
-        .obj_indicator {
-          width: 100%;
-          height: 100%;
-
-          &[data-value="none"] {
-            background-color: $color-object-none;
-          }
-          
-          &[data-value="correct"] {
-            background-color: $color-object-correct;
-          }
-      
-          &[data-value="partial"] {
-            background-color: $color-object-partial;
-          }
-      
-          &[data-value="wrong"] {
-            background-color: $color-object-wrong;
-          }
-        }
-      }
-
-      // confirm button for each column
-      &.confirm {
-        height: 3rem;
-        background-color: $color-bg-app;
-      }
-
-      .confirm-btn {
-        height: 1.5rem;
-        line-height: 1.5rem;
-        width: calc(100% - 0.25rem);
-        background-color: $color-bg-confirm-btn;
-        border-radius: 0.25rem;
-        text-align: center;
-        cursor: pointer;
-
-        &:hover {
-          background-color: darken($color-bg-confirm-btn,10%);
-        }
-
-        &.disabled {
-          pointer-events: none;
-          background-color: lighten($color-bg-confirm-btn,10%);
-        }
-      }
-
-    }
-  }
-}
-// --- End: Main ---
+// --- End: old nav ---
 
 // --------------------------------------------------------------------------
 // **************************************************************************
@@ -998,6 +1006,7 @@ $height-navbar: 3rem;
 //
 // **************************************************************************
 // --------------------------------------------------------------------------
+
 
 
 // #main {

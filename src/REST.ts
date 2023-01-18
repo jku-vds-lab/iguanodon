@@ -36,7 +36,7 @@ export async function postJSONAttemptData(filename: string, data: IAttemptTrackD
     filename,
     data
   };
-  console.log("🚀 ~ file: REST.ts ~ line 35 ~ postJSONAttemptData ~ payload", payload)
+  // console.log("🚀 ~ file: REST.ts ~ line 35 ~ postJSONAttemptData ~ payload", payload)
 
   // const response = await fetch(postURL, {
   //   method: "POST",
@@ -55,7 +55,7 @@ export async function postJSONGameData(filename: string, data: IGameTrackData) {
     filename,
     data
   };
-  console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
+  // console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
  
 
   // const response = await fetch(postURL, {

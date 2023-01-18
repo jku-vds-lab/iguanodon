@@ -1,4 +1,4 @@
-import './style.scss'; // import styles as described https://github.com/webpack-contrib/sass-loader
+import './style.scss';
 import * as aq from 'arquero';
 import ColumnTable from 'arquero/dist/types/table/column-table';
 import { getDataCars, getSampledDataCars } from './dataCars';
@@ -9,6 +9,9 @@ import { getColumnTypesFromArqueroTable, getDateParts, niceName } from './util';
 import { VisType } from './visualizations';
 import helpModal from './templates/helpModal.html';
 import gameResultModal from './templates/gameResultModal.html';
+// import * as cars from './assets/cars.json';
+// import * as sampledCars from './assets/sampledCars.json';
+
 
 var TITLE = 'Iguanodon'
 document.title = TITLE;
@@ -123,18 +126,40 @@ aqSampledDataset = aqSampledDataset.rename(colNiceNames);
 
 // rename json array property
 // TODO remove arquero
-// const propNames = Object.getOwnPropertyNames(datasetAllItems[0]);
-// console.log("🚀 ~ file: index.ts:126 ~ propNames", propNames)
+// TODO use top-level await for data loading
+// interface dataCar {
+//   Name: string;
+//   Miles_per_Gallon: number;
+//   Cylinders: number;
+//   Displacement: number;
+//   Horsepower: number;
+//   Weight_in_lbs: number;
+//   Acceleration: number;
+//   Year: string;
+//   Origin: string;
+// };
+
+// const allCars: dataCar[] = cars;
+// const samCars: dataCar[] = sampledCars;
+// const propNames = Object.getOwnPropertyNames(allCars[0]);
+// // console.log("🚀 ~ file: index.ts:126 ~ propNames", propNames)
 // const propNiceNames = propNames.map((elem) => {return {propName: elem, propNiceName: niceName(elem)}});
-// console.log("🚀 ~ file: index.ts:127 ~ propNiceNames", propNiceNames)
-// const mappedDataset = datasetAllItems.map((item) => {
+// // console.log("🚀 ~ file: index.ts:127 ~ propNiceNames", propNiceNames)
+// const mappedAllCars = allCars.map((item) => {
 //   const renamedItem = {};
 //   for(const pnn of propNiceNames) {
 //     renamedItem[pnn.propNiceName] = item[pnn.propName];
 //   }
 //   return renamedItem;
 // });
-// console.log("🚀 ~ file: index.ts:134 ~ mappedDataset ~ mappedDataset", mappedDataset)
+// const mappedSamCars = samCars.map((item) => {
+//   const renamedItem = {};
+//   for(const pnn of propNiceNames) {
+//     renamedItem[pnn.propNiceName] = item[pnn.propName];
+//   }
+//   return renamedItem;
+// });
+// // console.log("🚀 ~ file: index.ts:134 ~ mappedDataset ~ mappedDataset", mappedDataset)
 
 
 export const fullDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
@@ -147,6 +172,7 @@ export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems:
   allItems: datasetSampledItems.length,
   notNullItems: null};
 // *******************
+
 
 
 // *********************************************++

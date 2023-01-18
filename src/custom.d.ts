@@ -4,6 +4,6 @@ declare module "*.jpeg";
 declare module "*.gif";
 declare module "*.svg";
 declare module "*.html" {
-  const content:string;
+  const content: string;
   export default content;
 }

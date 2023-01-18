@@ -6,7 +6,7 @@ module.exports = merge(webpackCommon,{
   mode: "production",
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].[fullhash].css'
+      filename: '[name].css'
     })
   ],
   module: {

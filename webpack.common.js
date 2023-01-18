@@ -11,7 +11,8 @@ module.exports = {
     main: './src/index.ts',
   },
   output: {
-    filename: '[name].[fullhash].js', // <- ensure unique bundle name
+    filename: '[name].js',
+    // filename: '[name].[fullhash].js', // <- ensure unique bundle name
     path: path.resolve(__dirname, 'dist'),
   },
   module: {

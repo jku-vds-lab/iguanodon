@@ -1,10 +1,9 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import { $nav, userId } from ".";
-import { ObjectiveState } from "./Objective";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
 import { createToggleSwitch, deepCopy, getColumnTypesFromArqueroTable } from "./util";
-import {  IAction, VisualizationBase } from "./visualizations";
+import {  IAction, ObjectiveState, VisualizationBase } from "./visualizations";
 import imgBadgeGold from "./images/badge_gold.svg";
 import imgBadgeSilver from "./images/badge_silver.svg";
 import imgBadgeBronze from "./images/badge_bronze.svg";

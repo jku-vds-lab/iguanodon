@@ -1,7 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
 import embed, { VisualizationSpec } from "vega-embed";
-import { ActionType, VisPiplineStage } from "./designChoices";
-import { ObjectiveState } from "./Objective";
 import { actionsScatter } from "./Scatterplot";
 import { deepCopy } from "./util";
 
@@ -18,8 +16,6 @@ export interface IAction {
   id: string;
   label: string;
   value: any;
-  // visStage: VisPiplineStage;
-  // type: ActionType;
 }
 
 export interface IEncoding {
@@ -37,6 +33,13 @@ export interface IObjective {
   // numActions: number;
 }
 
+
+export enum ObjectiveState {
+  correct,
+  partial,
+  wrong
+}
+
 export interface IObjectiveState {
   id: string;
   label: string;
@@ -44,15 +47,6 @@ export interface IObjectiveState {
   corrActions: number;
   numActions: number;
 }
-
-// export interface lowLevelObjective {
-//   id: string,
-//   label: string,
-//   description: string,
-//   designChoices: designChoiceBase[],
-//   state: ObjectiveState,
-//   corrDesignChoices: number,
-// }
 
 export interface highLevelObjective {
   id: string,
@@ -84,13 +78,9 @@ export abstract class VisualizationBase {
     notNullItems: number
   };
 
-  // design choices
-  // designChoices: designChoiceBase[];
-
   // HTML element with the visualization
   visContainer: HTMLElement;
 
-  // TODO add dynamic data as parameter
   constructor(fullDataset: ColumnTable, sampledDataset: ColumnTable, visType: VisType) {
     this.fullDataset = fullDataset;
     this.sampledDataset = sampledDataset;
@@ -135,12 +125,6 @@ export abstract class VisualizationBase {
     return smVegaSpec;
   }
 
-  // updateVegaSpecBasedOnDesignChoices() {
-  //   for (const desC of this.designChoices) {
-  //     this.vegaSpec = desC.updateVegaSpec(this);
-  //   }
-  // }
-
   convertNullEncoding(value: string): string {
     if (value === null || value === 'null') {
       return '';
@@ -149,16 +133,6 @@ export abstract class VisualizationBase {
     }
   }
 
-  // createActionObject(id: string, label: string, value: any, visStage: VisPiplineStage, type: ActionType): IAction {
-  //   return {
-  //     id,
-  //     label,
-  //     value,
-  //     visStage,
-  //     type
-  //   };
-  // }
-
   createAction(id: actionsScatter, label: string, value: boolean) {
     return {
       id,
@@ -166,107 +140,6 @@ export abstract class VisualizationBase {
       value
     };
   }
-
-
-  // FIXME
-  // setActionsBasedOnVisualization(visualization: VisualizationBase, withEncodings: boolean = false) {
-  //   let givenActions = visualization.actions;
-    
-  //   // remove the encoding actions based on the withEncodings parameter
-  //   // if(!withEncodings) {
-  //   //   givenActions = givenActions.filter((elem) => elem.type !== ActionType.Encoding);
-  //   // }
-
-  //   // go through all the given actions
-  //   for(const gAction of givenActions) {
-  //     // find the action that should be changed based on the given one
-  //     const currAction = this.actions.filter((elem) => elem.id ===  gAction.id);
-  //     if (currAction && currAction.length > 0) {
-  //       // set the current action value to the one given
-  //       currAction[0].value = gAction.value;
-  //     }
-  //   }
-
-  //   // update objectives and visualization
-  //   // this.createObjectives(); //FIXME not needed -> commented out
-  //   this.updateVegaSpec();
-  // }
-
-
-
-  // baseDesignChoicesOnVisualization(visualization: VisualizationBase) {
-  //   const desChoices = visualization.designChoices;
-
-  //   for (const dc of desChoices) {
-  //     // find given design choice in design choices
-  //     const currDesCh = this.designChoices.filter((elem) => elem.id === dc.id)
-  //     if (currDesCh) {
-  //       // set the current design choice value to the one given
-  //       currDesCh[0].value = dc.value;
-  //       this.vegaSpec = currDesCh[0].updateVegaSpec(this);
-  //     }
-  //   }
-
-  //   this.updateVegaSpecBasedOnDesignChoices();
-  //   // TODO update parameters for objectives
-  //   // vega spec for legend
-  //   // [ ] commented out legend and rightColor encoding
-  //   // // console.log('legend objective: ', this.objectives.filter((elem) => elem.id === 'addLegend')[0]);
-  //   // (this.objectives.filter((elem) => elem.id === 'addLegend')[0] as any).vegaSpec = this.vegaSpec;
-  //   // // console.log('rightColorEnc objective: ', this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0]);
-  //   // (this.objectives.filter((elem) => elem.id === 'rightColorEnc')[0] as any).vegaSpec = this.vegaSpec;
-  //   // // vega spec for right color encoding
-
-  // }
-
- 
-
-  // getStateOfDesignChoices(): { dcId: string; label: string, type: ActionType; value: boolean | string | number }[] {
-  //   const desCArr: { dcId: string; label: string, type: ActionType; value: boolean | string | number }[] = [];
-  //   for (const dc of this.designChoices) {
-  //     desCArr.push(dc.getCurrentState());
-  //   }
-
-  //   return desCArr;
-  // }
-
-  // getLHLObjctivesBasedOnDesignChoice(designChoiceId: string): { highLevel: highLevelObjective, lowLevel: IObjective } {
-  //   const objectives = {
-  //     lowLevel: null,
-  //     highLevel: null
-  //   }
-
-  //   // get low level
-  //   for (const lob of this.objectives) {
-  //     if (lob.actions.map((elem) => elem.id).indexOf(designChoiceId) !== -1) {
-  //       objectives.lowLevel = lob;
-  //     }
-  //   }
-
-  //   // get low level
-  //   for (const hob of this.highLevelObjectives) {
-  //     if (objectives.lowLevel) {
-  //       if (hob.lowLevelObjectives.map((elem) => elem.id).indexOf(objectives.lowLevel.id) !== -1) {
-  //         objectives.highLevel = hob;
-  //       }
-  //     }
-  //   }
-
-  //   return objectives;
-  // }
-
-  // getDesignChoicesBasedOnId(ids: string[]): designChoiceBase[] {
-  //   const arr: designChoiceBase[] = [];
-  //   for (const id of ids) {
-  //     const desCArr = this.designChoices.filter((elem) => elem.id === id);
-  //     if (desCArr) {
-  //       const desC = desCArr[0];
-  //       arr.push(desC);
-  //     }
-  //   }
-
-  //   return arr;
-  // }
 
   getObjectivesState(): IObjectiveState[] {
     const stateObjectives = [];
@@ -298,9 +171,6 @@ export abstract class VisualizationBase {
     return fulfill;
   }
 
-  // getLowLevelObjectiveById(id: string): lowLevelObjective {
-  //   return this.objectives.filter((elem) => elem.id === id)[0];
-  // }
 
   getAction(id: string): IAction {
     const actions = this.actions.filter((elem) => elem.id === id);
@@ -371,24 +241,12 @@ export abstract class VisualizationBase {
   }
 
   abstract createActions();
+
   abstract createObjectives();
 
   abstract updateVegaSpec();
-
-  // abstract getEncodings(): IEncoding[];
-
-  
-  // abstract setEncodings(encodinds: IEncoding[]);
-  
+ 
   abstract getCopyofVisualization(): VisualizationBase;
-  // abstract getCopyofVisualizationWithChangedEncodings(encodings: IEncoding[]): VisualizationBase;
-
-  // abstract getVisualizationCopyWithEncodingsAndActions(copyId: string, encodings: {field: string, value: string}[]): VisualizationBase;
-
-  // abstract setupVegaSpecification();
-  
-  // abstract setupDesignChoices();
-  // abstract updateVegaSpecForSmallMultiple(vSpec: VisualizationSpec): VisualizationSpec;
 
   abstract checkStateOfObjective(id: string): { state: ObjectiveState, corrActions: number };
 }

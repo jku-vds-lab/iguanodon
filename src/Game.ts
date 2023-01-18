@@ -237,21 +237,6 @@ function createGame3Description(): IGameDescription {
 }
 
 function getCarsDatasets(): {fullDataset: ColumnTable, sampledDataset: ColumnTable} {
-//   const fullDataset = getDataCars();
-//   const sampledDataset = getSampledDataCars();
-  
-//   // full datasset 
-//   let aqFullDataset = aq.from(fullDataset);
-//   let aqSampledDataset = aq.from(sampledDataset);
-  
-//   // get column names
-//   const colNames = aqFullDataset.columnNames();
-//   const colNiceNames = colNames.map((elem) => {return {[elem]: niceName(elem)}});
-  
-//   // rename columns
-//   aqFullDataset = aqFullDataset.rename(colNiceNames);
-//   aqSampledDataset = aqSampledDataset.rename(colNiceNames);
-
   return {
     fullDataset: aqFullDataset,
     sampledDataset: aqSampledDataset

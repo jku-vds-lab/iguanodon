@@ -32,7 +32,6 @@ jobs:
         name: copy index.html to deploy folder (./dist)
         run: |
           cp src/assets/cars.json ./dist/
-          cp src/assets/stocks.csv ./dist/
       - 
         name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v1

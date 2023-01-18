@@ -405,7 +405,7 @@ export class GameBoard {
       // show WIN modal
       // const modalGameEnd = document.body.querySelector('#modal-game-end');
       // modalGameEnd.classList.add('show-modal');
-      const modalGameResult = document.body.querySelector('.modal-new.modal-game-result');
+      const modalGameResult = document.body.querySelector('.modal.modal-game-result');
       
       // show win text
       const gameLose =  modalGameResult.querySelector('.content-game-over');
@@ -440,7 +440,7 @@ export class GameBoard {
         // show LOSE modal
         // const modalGameEnd = document.body.querySelector('#modal-game-end');
         // modalGameEnd.classList.add('show-modal');
-        const modalGameResult = document.body.querySelector('.modal-new.modal-game-result');
+        const modalGameResult = document.body.querySelector('.modal.modal-game-result');
         
         // show game over text
         const gameWin =  modalGameResult.querySelector('.content-win');

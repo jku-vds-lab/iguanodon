@@ -78,7 +78,7 @@ navHelp.addEventListener('click', (event) => {
   // const modalHelp = document.body.querySelector('#modal-help');
   // modalHelp.classList.add('show-modal');
 
-  const modalHelp = document.body.querySelector('.modal-new.modal-help');
+  const modalHelp = document.body.querySelector('.modal.modal-help');
   modalHelp.classList.toggle('is-active');
 }); 
 

@@ -206,7 +206,7 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
       ddItem.classList.add('dropdown-menu-item');
       fragmentContent.append(ddItem)
       ddItem.dataset.gameId = `${gbd.gameId}`; //data-game-id
-      ddItem.dataset.score = '0';
+      ddItem.dataset.score = '-1';
       // add eventlistenter to change game
       ddItem.addEventListener('click',(event) => {
         // const elem = event.target;

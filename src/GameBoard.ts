@@ -403,19 +403,22 @@ export class GameBoard {
       this.calcScoreAndReward();
 
       // show WIN modal
-      const modalGameEnd = document.body.querySelector('#modal-game-end');
-      modalGameEnd.classList.add('show-modal');
-
-      const gameLose =  modalGameEnd.querySelector('.content-lose');
+      // const modalGameEnd = document.body.querySelector('#modal-game-end');
+      // modalGameEnd.classList.add('show-modal');
+      const modalGameResult = document.body.querySelector('.modal-new.modal-game-result');
+      
+      // show win text
+      const gameLose =  modalGameResult.querySelector('.content-game-over');
       gameLose.classList.add('display-none');
-      const gameWin =  modalGameEnd.querySelector('.content-win');
+      const gameWin =  modalGameResult.querySelector('.content-win');
       gameWin.classList.remove('display-none');
-
+      // show modal
+      modalGameResult.classList.add('is-active');
 
     } else {
       // not all objectives fulfilled
       if(this._currAttempt >= this._numbAttempts) {
-        // all attempts used -> LOSE
+        // all attempts used -> LOSE / GAME OVER
         this._currAttempt++;
 
         // show solution in current vis (actions + vis)
@@ -435,14 +438,17 @@ export class GameBoard {
         this.calcScoreAndReward();
 
         // show LOSE modal
-        const modalGameEnd = document.body.querySelector('#modal-game-end');
-        modalGameEnd.classList.add('show-modal');
-
-        const gameWin =  modalGameEnd.querySelector('.content-win');
+        // const modalGameEnd = document.body.querySelector('#modal-game-end');
+        // modalGameEnd.classList.add('show-modal');
+        const modalGameResult = document.body.querySelector('.modal-new.modal-game-result');
+        
+        // show game over text
+        const gameWin =  modalGameResult.querySelector('.content-win');
         gameWin.classList.add('display-none');
-        const gameLose =  modalGameEnd.querySelector('.content-lose');
+        const gameLose =  modalGameResult.querySelector('.content-game-over');
         gameLose.classList.remove('display-none');
-
+        // show modal
+        modalGameResult.classList.add('is-active');
 
       } else {
         // attempts still possible -> NEXT ATTEMPT
@@ -602,11 +608,11 @@ export class GameBoard {
   setTableColumnObjectives(column: HTMLDivElement, vis: VisualizationBase) {
     if(column) {
       const visObjStates = vis.getObjectivesState();
-      console.log('visObjStates',visObjStates);
-      console.log('visActionStates',vis.actions);
+      // console.log('visObjStates',visObjStates);
+      // console.log('visActionStates',vis.actions);
       // get row objective
       const objRows = Array.from(column.querySelectorAll('.objective')) as HTMLDivElement[];
-      console.log('objRows',objRows);
+      // console.log('objRows',objRows);
       for(const oRow of objRows) {
         const oid = oRow.dataset.objective;
         

@@ -7,6 +7,8 @@ import { GameBoard, IGameBoardDescription } from './GameBoard';
 import { actionsScatter, Scatterplot } from './Scatterplot';
 import { getColumnTypesFromArqueroTable, getDateParts, niceName } from './util';
 import { VisType } from './visualizations';
+import helpModal from './templates/helpModal.html';
+import gameResultModal from './templates/gameResultModal.html';
 
 var TITLE = 'Iguanodon'
 document.title = TITLE;
@@ -68,17 +70,21 @@ export const $nav = document.querySelector('nav.navbar') as HTMLDivElement;
 const navHelp = $nav.querySelector('.nav-help') as HTMLDivElement;
 navHelp.addEventListener('click', (event) => {
   const elem = event.target as HTMLElement;
+  event.stopPropagation();
   // elem.classList.toggle('active');
-  const modalHelp = document.body.querySelector('#modal-help');
-  modalHelp.classList.add('show-modal');
+  // const modalHelp = document.body.querySelector('#modal-help');
+  // modalHelp.classList.add('show-modal');
+
+  const modalHelp = document.body.querySelector('.modal-new.modal-help');
+  modalHelp.classList.toggle('is-active');
 }); 
 
 // main
 const $main = document.getElementById('main') as HTMLDivElement;
 
-// create modals
-createHelpModal();
-createGameEndModal();
+// HACK create modals
+// createHelpModal();
+// createGameEndModal();
 
 // TODO after page load read JSON file
 
@@ -114,6 +120,21 @@ aqFullDataset = aqFullDataset.rename(colNiceNames);
 // console.log('aqDataset',aqDataset);
 // console.log('values: ',aqDataset.objects());
 aqSampledDataset = aqSampledDataset.rename(colNiceNames);
+
+// rename json array property
+// TODO remove arquero
+// const propNames = Object.getOwnPropertyNames(datasetAllItems[0]);
+// console.log("🚀 ~ file: index.ts:126 ~ propNames", propNames)
+// const propNiceNames = propNames.map((elem) => {return {propName: elem, propNiceName: niceName(elem)}});
+// console.log("🚀 ~ file: index.ts:127 ~ propNiceNames", propNiceNames)
+// const mappedDataset = datasetAllItems.map((item) => {
+//   const renamedItem = {};
+//   for(const pnn of propNiceNames) {
+//     renamedItem[pnn.propNiceName] = item[pnn.propName];
+//   }
+//   return renamedItem;
+// });
+// console.log("🚀 ~ file: index.ts:134 ~ mappedDataset ~ mappedDataset", mappedDataset)
 
 
 export const fullDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
@@ -162,6 +183,10 @@ export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems:
 //             </div>
 //           </div>
 //         </div>
+
+
+// add modals
+addModalsAndFunctionality();
 
 
 // get game board descriptions (games + attempts) 
@@ -513,172 +538,270 @@ navRetry.addEventListener('click', (event) => {
 //   nextGame();
 // }); 
 
-
-function createHelpModal() {
-  const modalHelp = document.createElement('div');
-  modalHelp.id = 'modal-help';
-  modalHelp.style.display = 'none';
-  document.body.appendChild(modalHelp);
-  modalHelp.classList.add('show-modal');
+function addModalsAndFunctionality() {
+  // --- HELP MODAL ---
+  // add help modal to document body
+  // document.body.insertAdjacentHTML('beforeend', helpModal);
+  // create template element to convert string into DOM element structure
+  const templateHelp = document.createElement('template');
+  // remove start and end whitespaces
+  const trimHelpModal = helpModal.trim(); 
+  // create DOM element structure
+  templateHelp.innerHTML = trimHelpModal;
+  // get template content as DocumentFragment
+  // with a DocumentFragment different elements can be accessed and modified
+  const fragHelp = templateHelp.content;
+  // get help modal
+  const divHelpModal = fragHelp.querySelector('.modal-help');
+  divHelpModal.classList.add('is-active');
+  
+  // modal-background
+  const modalBackground = divHelpModal.querySelector('.modal-background');
+  modalBackground.addEventListener('click', (event) => {
+    divHelpModal.classList.remove('is-active');
+  });
 
   // button close-x
-  const btnCross = document.createElement('div');
-  btnCross.innerHTML = '&times;';
-  btnCross.classList.add('modal-btn','btn-cross');
-  modalHelp.addEventListener('click', (event) => {
-    modalHelp.classList.remove('show-modal');
-  })
-  modalHelp.appendChild(btnCross);
-
-  // TODO add HELP content
-  // content area
-  const contentArea = document.createElement('div');
-  contentArea.classList.add('content-area');
-  modalHelp.appendChild(contentArea);
-
-  // pHead - heading
-  const pHead = document.createElement('p');
-  pHead.classList.add('modal-heading');
-  pHead.innerText = 'HELP';
-  contentArea.appendChild(pHead);
-
-  // p1 - goal
-  const p1 = document.createElement('p');
-  p1.innerText = 'The goal of this game is to fulfill all objectives for one visualization by applying the right actions.';
-  contentArea.appendChild(p1);
-
-  // p2 - parts
-  const p2 = document.createElement('p');
-  p2.innerText = `The top half shows you the visualizations and the botton half the actions and objectives.
-
-  Visualizations: 
-  The visualization of the current attempt will be displayed, as well as the previous one or the solution.
-  
-  Actions: 
-  Allow you to change the configuration of the visualization and will be used to check the correctness of objective.
-  
-  Objectives:
-  Indicate the objectives of the visualization of each attempt, there are three different states:
-  - green: objective is fulfilled
-  - orange: objective is partially fulfilled
-  - red: objective is unfulfilled`;
-  contentArea.appendChild(p2);
-
-  // p3 - steps
-  const p3 = document.createElement('p');
-  p3.innerText = `The gameplay consits of following steps:
-  - Change the current visualization by toggeling the corresponding action with their buttons. You can change as may actions you like until you think that the current configuration would fulfill all the objectives.
-  - Click the 'Confirm' button to check the state of the objectives. This will color the objectives based on their correctness. 
-  - If you didn't fulfill all objectives, you can try again to change the action in the a new attempt.`;
-  contentArea.appendChild(p3);
-
-  // p4 - win
-  const p4 = document.createElement('p');
-  p4.innerText = `You win the game if you correctly apply the actions and fulfill all objectives within the given attempts.`;
-  contentArea.appendChild(p4);
-
-
-  // button area
-  const btnArea = document.createElement('div');
-  btnArea.classList.add('btn-area');
-  modalHelp.appendChild(btnArea);
+  const btnCross = divHelpModal.querySelector('.btn-cross');
+  btnCross.addEventListener('click', (event) => {
+    divHelpModal.classList.remove('is-active');
+  });
 
   // button close
-  const btnClose = document.createElement('div');
-  btnClose.innerHTML = 'Close';
-  btnClose.classList.add('modal-btn','btn-close')
+  const btnClose = divHelpModal.querySelector('.btn-close');
   btnClose.addEventListener('click', (event) => {
-    modalHelp.classList.remove('show-modal');
-  })
-  btnArea.appendChild(btnClose);
-}
+    divHelpModal.classList.remove('is-active');
+  });
+  
+  // add DocumentFragment to body
+  document.body.append(templateHelp.content);
+  // --- --- --- ---
 
-function createGameEndModal() {
-  const modalGameEnd = document.createElement('div');
-  modalGameEnd.id = 'modal-game-end';
-  modalGameEnd.style.display = 'none';
-  document.body.appendChild(modalGameEnd);
+  // --- HELP MODAL ---
+  // add game result modal to document body
+  // document.body.insertAdjacentHTML('beforeend', gameResultModal);
+  // create template element to convert string into DOM element structure
+  const templateGameResult = document.createElement('template');
+  // remove start and end whitespaces
+  const trimGameResultModal = gameResultModal.trim();
+  // create DOM element structure
+  templateGameResult.innerHTML = trimGameResultModal;
+  // get template content as DocumentFragment
+  // with a DocumentFragment different elements can be accessed and modified
+  const fragGameResult = templateGameResult.content;
+
+  // get game result modal
+  const divGameResultModal = fragGameResult.querySelector('.modal-game-result');
+
+  // modal-background
+  const modalBackgroundGR = divGameResultModal.querySelector('.modal-background');
+  modalBackgroundGR.addEventListener('click', (event) => {
+    divGameResultModal.classList.remove('is-active');
+  });
 
   // button close-x
-  const btnCross = document.createElement('div');
-  btnCross.innerHTML = '&times;';
-  btnCross.classList.add('modal-btn','btn-cross');
-  btnCross.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show-modal');
-  })
-  modalGameEnd.appendChild(btnCross);
+  const btnCrossGR = divGameResultModal.querySelector('.btn-cross');
+  btnCrossGR.addEventListener('click', (event) => {
+    divGameResultModal.classList.remove('is-active');
+  });
 
-  // TODO add GAME END content
-  // content area
-  const contentArea = document.createElement('div');
-  contentArea.classList.add('content-area');
-  modalGameEnd.appendChild(contentArea);
-
-  // game win content
-  const contentWin = document.createElement('div');
-  contentWin.classList.add('content-win','display-none');
-  contentArea.appendChild(contentWin);
-
-  // pHeadWin - heading
-  const pHeadWin = document.createElement('p');
-  pHeadWin.classList.add('modal-heading');
-  pHeadWin.innerText = 'YOU WIN!';
-  contentWin.appendChild(pHeadWin);
-
-  // p1Win - message
-  const p1Win = document.createElement('p');
-  p1Win.innerText = `Congratulation on your accomplishment!
-  You can try again or try another game.`;
-  contentWin.appendChild(p1Win);
-
-  // game lose content
-  const contentLose = document.createElement('div');
-  contentLose.classList.add('content-lose','display-none');
-  contentArea.appendChild(contentLose);
-
-  // pHeadLose - heading
-  const pHeadLose = document.createElement('p');
-  pHeadLose.classList.add('modal-heading');
-  pHeadLose.innerText = 'YOU LOSE!';
-  contentLose.appendChild(pHeadLose);
-
-  // p1Lose - message
-  const p1Lose = document.createElement('p');
-  p1Lose.innerText = `It's just a game. Sometimes you win, sometimes you lose.
-  You can try again or try another game.`;
-  contentLose.appendChild(p1Lose);
-
-  // button area
-  const btnArea = document.createElement('div');
-  btnArea.classList.add('btn-area');
-  modalGameEnd.appendChild(btnArea);
+  // button close
+  const btnCloseGR = divGameResultModal.querySelector('.btn-close');
+  btnCloseGR.addEventListener('click', (event) => {
+    divGameResultModal.classList.remove('is-active');
+  });
 
   // button retry
-  const btnRetry = document.createElement('div');
-  btnRetry.innerHTML = '&#10226;  Retry';
-  btnRetry.classList.add('modal-btn','btn-retry')
+  const btnRetry = divGameResultModal.querySelector('.btn-retry');
   btnRetry.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show-modal');
-    // TODO restart game
-    // TODO save track data
-    // new Game($main, gameDescr, aqDataset, false);
+    divGameResultModal.classList.remove('is-active');
     restartGame();
-  })
-  btnArea.appendChild(btnRetry);
+  });
 
-
-  // button next
-  const btnNext = document.createElement('div');
-  btnNext.innerHTML = '&#10132; Next game';
-  btnNext.classList.add('modal-btn','btn-next')
+  // button next game
+  const btnNext = divGameResultModal.querySelector('.btn-next');
   btnNext.addEventListener('click', (event) => {
-    modalGameEnd.classList.remove('show-modal');
-    // TODO start different game
-    // TODO save track data
+    divGameResultModal.classList.remove('is-active');
     nextGame();
-  })
-  btnArea.appendChild(btnNext);
+  });
+  
+  // add DocumentFragment to body
+  document.body.append(fragGameResult);
+
+  // --- NAVBAR CLOSE --
+  $nav.addEventListener('click', (event) => {
+    divHelpModal.classList.remove('is-active');
+    divGameResultModal.classList.remove('is-active');
+  });
+
 }
+
+
+// function createHelpModal() {
+//   const modalHelp = document.createElement('div');
+//   modalHelp.id = 'modal-help';
+//   modalHelp.style.display = 'none';
+//   document.body.appendChild(modalHelp);
+//   modalHelp.classList.add('show-modal');
+
+//   // button close-x
+//   const btnCross = document.createElement('div');
+//   btnCross.innerHTML = '&times;';
+//   btnCross.classList.add('modal-btn','btn-cross');
+//   modalHelp.addEventListener('click', (event) => {
+//     modalHelp.classList.remove('show-modal');
+//   })
+//   modalHelp.appendChild(btnCross);
+
+//   // TODO add HELP content
+//   // content area
+//   const contentArea = document.createElement('div');
+//   contentArea.classList.add('content-area');
+//   modalHelp.appendChild(contentArea);
+
+//   // pHead - heading
+//   const pHead = document.createElement('p');
+//   pHead.classList.add('modal-heading');
+//   pHead.innerText = 'HELP';
+//   contentArea.appendChild(pHead);
+
+//   // p1 - goal
+//   const p1 = document.createElement('p');
+//   p1.innerText = 'The goal of this game is to fulfill all objectives for one visualization by applying the right actions.';
+//   contentArea.appendChild(p1);
+
+//   // p2 - parts
+//   const p2 = document.createElement('p');
+//   p2.innerText = `The top half shows you the visualizations and the botton half the actions and objectives.
+
+//   Visualizations: 
+//   The visualization of the current attempt will be displayed, as well as the previous one or the solution.
+  
+//   Actions: 
+//   Allow you to change the configuration of the visualization and will be used to check the correctness of objective.
+  
+//   Objectives:
+//   Indicate the objectives of the visualization of each attempt, there are three different states:
+//   - green: objective is fulfilled
+//   - orange: objective is partially fulfilled
+//   - red: objective is unfulfilled`;
+//   contentArea.appendChild(p2);
+
+//   // p3 - steps
+//   const p3 = document.createElement('p');
+//   p3.innerText = `The gameplay consits of following steps:
+//   - Change the current visualization by toggeling the corresponding action with their buttons. You can change as may actions you like until you think that the current configuration would fulfill all the objectives.
+//   - Click the 'Confirm' button to check the state of the objectives. This will color the objectives based on their correctness. 
+//   - If you didn't fulfill all objectives, you can try again to change the action in the a new attempt.`;
+//   contentArea.appendChild(p3);
+
+//   // p4 - win
+//   const p4 = document.createElement('p');
+//   p4.innerText = `You win the game if you correctly apply the actions and fulfill all objectives within the given attempts.`;
+//   contentArea.appendChild(p4);
+
+
+//   // button area
+//   const btnArea = document.createElement('div');
+//   btnArea.classList.add('btn-area');
+//   modalHelp.appendChild(btnArea);
+
+//   // button close
+//   const btnClose = document.createElement('div');
+//   btnClose.innerHTML = 'Close';
+//   btnClose.classList.add('modal-btn','btn-close')
+//   btnClose.addEventListener('click', (event) => {
+//     modalHelp.classList.remove('show-modal');
+//   })
+//   btnArea.appendChild(btnClose);
+// }
+
+// function createGameEndModal() {
+//   const modalGameEnd = document.createElement('div');
+//   modalGameEnd.id = 'modal-game-end';
+//   modalGameEnd.style.display = 'none';
+//   document.body.appendChild(modalGameEnd);
+
+//   // button close-x
+//   const btnCross = document.createElement('div');
+//   btnCross.innerHTML = '&times;';
+//   btnCross.classList.add('modal-btn','btn-cross');
+//   btnCross.addEventListener('click', (event) => {
+//     modalGameEnd.classList.remove('show-modal');
+//   })
+//   modalGameEnd.appendChild(btnCross);
+
+//   // TODO add GAME END content
+//   // content area
+//   const contentArea = document.createElement('div');
+//   contentArea.classList.add('content-area');
+//   modalGameEnd.appendChild(contentArea);
+
+//   // game win content
+//   const contentWin = document.createElement('div');
+//   contentWin.classList.add('content-win','display-none');
+//   contentArea.appendChild(contentWin);
+
+//   // pHeadWin - heading
+//   const pHeadWin = document.createElement('p');
+//   pHeadWin.classList.add('modal-heading');
+//   pHeadWin.innerText = 'YOU WIN!';
+//   contentWin.appendChild(pHeadWin);
+
+//   // p1Win - message
+//   const p1Win = document.createElement('p');
+//   p1Win.innerText = `Congratulation on your accomplishment!
+//   You can try again or try another game.`;
+//   contentWin.appendChild(p1Win);
+
+//   // game lose content
+//   const contentLose = document.createElement('div');
+//   contentLose.classList.add('content-lose','display-none');
+//   contentArea.appendChild(contentLose);
+
+//   // pHeadLose - heading
+//   const pHeadLose = document.createElement('p');
+//   pHeadLose.classList.add('modal-heading');
+//   pHeadLose.innerText = 'YOU LOSE!';
+//   contentLose.appendChild(pHeadLose);
+
+//   // p1Lose - message
+//   const p1Lose = document.createElement('p');
+//   p1Lose.innerText = `It's just a game. Sometimes you win, sometimes you lose.
+//   You can try again or try another game.`;
+//   contentLose.appendChild(p1Lose);
+
+//   // button area
+//   const btnArea = document.createElement('div');
+//   btnArea.classList.add('btn-area');
+//   modalGameEnd.appendChild(btnArea);
+
+//   // button retry
+//   const btnRetry = document.createElement('div');
+//   btnRetry.innerHTML = '&#10226;  Retry';
+//   btnRetry.classList.add('modal-btn','btn-retry')
+//   btnRetry.addEventListener('click', (event) => {
+//     modalGameEnd.classList.remove('show-modal');
+//     // TODO restart game
+//     // TODO save track data
+//     // new Game($main, gameDescr, aqDataset, false);
+//     restartGame();
+//   })
+//   btnArea.appendChild(btnRetry);
+
+
+//   // button next
+//   const btnNext = document.createElement('div');
+//   btnNext.innerHTML = '&#10132; Next game';
+//   btnNext.classList.add('modal-btn','btn-next')
+//   btnNext.addEventListener('click', (event) => {
+//     modalGameEnd.classList.remove('show-modal');
+//     // TODO start different game
+//     // TODO save track data
+//     nextGame();
+//   })
+//   btnArea.appendChild(btnNext);
+// }
 
 function restartGame() {
   const gameId = Number($main.dataset.gameId);

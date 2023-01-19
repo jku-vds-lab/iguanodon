@@ -176,8 +176,8 @@ $color-object-none: white;
     // flex-direction: column;
     // position: absolute;
     top: 15%;
-    left: 25%;
-    width: 50%;
+    left: 15%;
+    width: 70%;
     height: 70%;
     // background-color: $color-bg-modal;
     // border: 1px black solid;
@@ -211,6 +211,7 @@ $color-object-none: white;
 
   >.modal-title {
     font-size: 1.5rem;
+    font-weight: bold;
   }
 }
 
@@ -240,9 +241,65 @@ $color-object-none: white;
   padding: 1rem;
   overflow-y: auto;
   flex-grow: 1;
+  font-size: 1rem;
+  overflow: hidden;
 
-  p {
-    font-size: 0.875rem;
+  &.flex {
+    display: flex;
+  }
+  // p {
+  //   // font-size: 0.875rem;
+  // }
+  .modal-content-reference {
+    display: flex;
+    flex-direction: column;
+    width: 18rem;
+    position: sticky;
+    top: 0;
+
+    .level-1 {
+      margin-bottom: 0.25rem;
+    }
+    .level-2 {
+      padding-left: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  // .modal-content-text {
+    // flex-grow: 1;
+  // }
+
+  .dataset {
+    height: 10rem;
+    margin: 0 1.5rem 0.25rem 1.5rem;
+    overflow: auto;
+
+    >.table-data {
+      width: 100%;
+
+      thead {
+        position: sticky;
+        top: 0;
+      }
+
+      tr:nth-child(even) {
+        background: $color-bg-gbt-action-odd;
+      }
+      
+      tr:nth-child(odd) {
+        background: $color-bg-gbt-action-even;
+      }
+
+      th {
+        text-align: center;
+        background-color: $color-bg-gbt-header;
+      }
+
+      td {
+        text-align: center;
+      }
+    }
   }
 }
 
@@ -654,11 +711,11 @@ $color-object-none: white;
         z-index: 10;
       }
 
-      &.action:nth-child(2n+1) {
+      &.action:nth-child(odd) {
         background-color: $color-bg-gbt-action-odd;
       }
 
-      &.action:nth-child(2n) {
+      &.action:nth-child(even) {
         background-color: $color-bg-gbt-action-even;
       }
 

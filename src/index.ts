@@ -69,6 +69,8 @@ navHelp.addEventListener('click', (event) => {
   // modalHelp.classList.add('show-modal');
 
   const modalHelp = document.body.querySelector('.modal.modal-help');
+  // const modalHelpContent: HTMLDivElement = modalHelp.querySelector('.modal-content-text');
+  // modalHelpContent.scrollTo(0,0);
   modalHelp.classList.toggle('is-active');
 }); 
 
@@ -139,15 +141,15 @@ aqSampledDataset = aqSampledDataset.rename(colNiceNames);
 // // console.log("🚀 ~ file: index.ts:134 ~ mappedDataset ~ mappedDataset", mappedDataset)
 
 
-export const fullDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
-  data: aq.from(datasetAllItems),
-  allItems: datasetAllItems.length,
-  notNullItems: null};
+//  export const fullDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
+//   data: aqFullDataset,
+//   allItems: datasetAllItems.length,
+//   notNullItems: null};
 
-export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
-  data: aq.from(datasetSampledItems),
-  allItems: datasetSampledItems.length,
-  notNullItems: null};
+// export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems: number} = {
+//   data: aqSampledDataset,
+//   allItems: datasetSampledItems.length,
+//   notNullItems: null};
 // *******************
 
 
@@ -155,6 +157,22 @@ export const sampledDataset: {data: ColumnTable, allItems: number, notNullItems:
 // add modals
 addModalsAndFunctionality();
 
+// add dataset to modal
+addDatasetTableToModal();
+
+// add scrolling to modal text
+const modalHelp = document.body.querySelector('.modal.modal-help');
+const modalHelpRef = modalHelp.querySelector('.modal-content-reference');
+const refLinks: HTMLDivElement[] = Array.from(modalHelpRef.querySelectorAll('.reference'))
+const modalHelpContent = modalHelp.querySelector('.modal-content-text');
+for(const ref of refLinks) {
+  ref.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const elemIdShow = ref.dataset.contentId;
+    const elem = modalHelpContent.querySelector(`#${elemIdShow}`);
+    elem.scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
+  })
+}
 
 // get game board descriptions (games + attempts) 
 const gameBoardDescr = getGameBoardDescriptions();
@@ -169,7 +187,51 @@ addDropdownFunctionality($main, gameBoardDescr, startGame.gameId);
 // create start Game
 let currentGame = new GameBoard($main, startGame);
 
-
+function addDatasetTableToModal() {
+  const data = aqFullDataset.objects()
+  // const fragTable = new DocumentFragment;
+  const divDataset = document.createElement('div');
+  divDataset.classList.add('dataset');
+  const tableData = document.createElement('table');
+  tableData.classList.add('table-data');
+  divDataset.append(tableData);
+  // get data properties
+  const propNames = Object.getOwnPropertyNames(data[0]);
+  
+  // add table head
+  const tableHead = document.createElement('thead');
+  tableData.append(tableHead);
+  
+  // add table header cells
+  const rowHeader = document.createElement('tr');
+  tableHead.append(rowHeader);
+  for(const pn of propNames){
+    const cell = document.createElement('th');
+    rowHeader.append(cell);
+    cell.innerText = `${pn}`;
+  }
+  
+  // add table body
+  const tableBody = document.createElement('tbody');
+  tableData.append(tableBody);
+  
+  // add table data rows
+  for(const row of data){
+    const rowElem = document.createElement('tr');
+    tableBody.append(rowElem);
+  
+    for(const p of propNames) {
+      const cell = document.createElement('td');
+      rowElem.append(cell);
+      cell.innerText = `${row[p]}`;
+    }
+  }
+  
+  // get help modal
+  const modalHelp = document.body.querySelector('.modal.modal-help');
+  const modalHelpContent = modalHelp.querySelector('.modal-content-text');
+  modalHelpContent.append(divDataset);
+}
 
 function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoardDescription[], startGame: number) {
   // get nav game div

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap');
 // Sass variable: https://sass-lang.com/guide
 // color variables
 // $color-header: rgb(0, 0, 0);
@@ -47,8 +48,10 @@
 $color-bg-app: white;
 $color-text-app:#212529; // same as Coral
 
+$color-primary: #6369D1;
+
 // NAVBAR
-$color-bg-navbar: #2A2E32;
+$color-bg-navbar: $color-primary;
 $color-text-navbar: white;
 $padding-navbar-item: 1rem;
 $width-navbar-logo: 6rem;
@@ -62,24 +65,26 @@ $color-border-header-footer: lightgray;
 $border-radius-modal: 0.375rem;
 
 // GAME BOARD TABLE
-$color-bg-gbt-header: lightgray;
+$color-bg-gbt-header: transparent;
 // actions
-$color-bg-gbt-action-even: white;
-$color-bg-gbt-action-odd: #EFF0F1;
+$color-bg-gbt-action-even: #00000005; //just slightly darken the background
+$color-bg-gbt-action-odd: transparent;
 
 // toggle btn
-$color-toggle-active: $color-text-app;
-$color-toggle-inactive: lightgrey;
+$color-toggle-active: $color-primary;
+$color-toggle-inactive: lighten(#6369D1, 15%);
+$color-toggle-inactive: lighten(#6369D1, 15%);
 $color-toggle-slider: white;
 
 // confirm
-$color-bg-confirm-btn: lightgrey;
+$color-bg-confirm-btn: $color-primary;
 
 // objectives
-$color-object-correct: lightgreen;
-$color-object-partial: lightsalmon;
-$color-object-wrong: lightcoral;
-$color-object-none: white;
+// color https://www.schemecolor.com/scope-of-activity.php
+$color-object-correct: #58DDB1;
+$color-object-partial: #FCCC70;
+$color-object-wrong: #F37683;
+$color-object-none: transparent;
 
 // HEIGHT VARIABLES
 // $height-header: 2rem; 
@@ -93,9 +98,10 @@ $color-object-none: white;
 #body {
   margin:0;
   background: $color-bg-app;
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, rgba(254,203,255,0.45) 60%, rgba(67,114,250,0.44) 100%); 
   height: 100vh;
   color: $color-text-app;
-  font-family: Roboto,sans-serif;
+  font-family: 'Fredoka', sans-serif;
 }
 
 *, *:after, *:before  {
@@ -211,7 +217,7 @@ $color-object-none: white;
 
   >.modal-title {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 500;
   }
 }
 
@@ -220,7 +226,7 @@ $color-object-none: white;
   height: 1.75rem;
   line-height: 1.75rem;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 500;
   margin-left: auto;
   // margin-top: 0.5rem;
   // margin-right: 0.5rem;
@@ -582,7 +588,7 @@ $color-object-none: white;
   display: flex;
   justify-content: center;
   color: $color-text-navbar;
-  font-weight: bold;
+  font-weight: 500;
   padding: 0 $padding-navbar-item;
   margin-top: auto;
   height: $height-navbar;
@@ -632,7 +638,7 @@ $color-object-none: white;
   .vis-label {
     margin-top: 1rem;
     height: 2rem;
-    font-weight: bold;
+    font-weight: 500;
   }
 
   .vis-plot {
@@ -673,8 +679,9 @@ $color-object-none: white;
       flex: 0 0 auto;
 
       &.label {
-        justify-content: left;
+        justify-content: right;
         padding-left: 1rem;
+        padding-right: 1rem;
       }
 
       // &.sticky {
@@ -707,7 +714,7 @@ $color-object-none: white;
         line-height: $height-table-row;
         position: sticky;
         top: 0;
-        font-weight: bold;
+        font-weight: 500;
         z-index: 10;
       }
 
@@ -721,7 +728,6 @@ $color-object-none: white;
 
       // objectives are colored based on their states
       &.objective.result {  
-        background-color: $color-bg-app;
         padding: 0.125rem;
 
         .obj_indicator {
@@ -749,7 +755,6 @@ $color-object-none: white;
       // confirm button for each column
       &.confirm {
         height: 3rem;
-        background-color: $color-bg-app;
       }
 
       .confirm-btn {
@@ -760,6 +765,7 @@ $color-object-none: white;
         border-radius: 0.25rem;
         text-align: center;
         cursor: pointer;
+        color: $color-text-navbar;
 
         &:hover {
           background-color: darken($color-bg-confirm-btn,10%);

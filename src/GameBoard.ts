@@ -2,7 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { $nav, userId } from ".";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
-import { createToggleSwitch, deepCopy, getColumnTypesFromArqueroTable } from "./util";
+import { createToggleButton, createToggleSwitch, deepCopy, getColumnTypesFromArqueroTable } from "./util";
 import {  IAction, ObjectiveState, VisualizationBase } from "./visualizations";
 import imgBadgeGold from "./images/badge_gold.svg";
 import imgBadgeSilver from "./images/badge_silver.svg";
@@ -144,7 +144,18 @@ export class GameBoard {
     // header action
     const headerActionLabel = document.createElement('div');
     headerActionLabel.innerText = 'Actions';
-    headerActionLabel.classList.add('row','header', 'label');
+    // HACK
+    // // header action text
+    // const headerActionLabelText = document.createElement('div');
+    // headerActionLabelText.innerText = 'Actions';
+    // headerActionLabelText.classList.add('action-header-text');
+    // headerActionLabel.append(headerActionLabelText);
+    // // header action rect
+    // const headerActionLabelRect = document.createElement('div');
+    // headerActionLabelRect.classList.add('action-header-rect');
+    // headerActionLabel.append(headerActionLabelRect);
+
+    headerActionLabel.classList.add('row','action-header','header','label');
     colLabel.appendChild(headerActionLabel);
     // actions
     for(const act of this.shownActions) {
@@ -157,8 +168,11 @@ export class GameBoard {
 
     // confirm container + button
     const confirmElemLabel = document.createElement('div');
-    confirmElemLabel.classList.add('row','confirm','hide','sticky');
-    confirmElemLabel.dataset.bottomRow = `${(numbObj+1)}`;
+    confirmElemLabel.classList.add('row','confirm','hide');
+    // confirmElemLabel.classList.add('row','confirm','hide','sticky');
+    // confirmElemLabel.classList.add('row','confirm','sticky');
+    // confirmElemLabel.dataset.bottomRow = `${(numbObj+1)}`;
+
     // const confirmBtn = document.createElement('button');
     // confirmBtn.innerText = 'Confirm';
     // confirmBtn.classList.add('confirm-btn');
@@ -170,7 +184,7 @@ export class GameBoard {
     // header objective
     const headerObjectiveLabel = document.createElement('div');
     headerObjectiveLabel.innerText = 'Objectives';
-    headerObjectiveLabel.classList.add('row','header', 'label','sticky');
+    headerObjectiveLabel.classList.add('row','objective-header','header','label','sticky');
     headerObjectiveLabel.dataset.bottomRow = `${(numbObj)}`;
     colLabel.appendChild(headerObjectiveLabel);
     // objectives
@@ -212,8 +226,10 @@ export class GameBoard {
 
       // confirm container + button
       const confirmElem = document.createElement('div');
-      confirmElem.classList.add('row','confirm','hide','sticky');
-      confirmElem.dataset.bottomRow = `${(numbObj+1)}`;
+      confirmElem.classList.add('row','confirm','hide');
+      // confirmElem.classList.add('row','confirm','hide','sticky');
+      // confirmElem.classList.add('row','confirm','sticky');
+      // confirmElem.dataset.bottomRow = `${(numbObj+1)}`;
       const confirmBtn = document.createElement('div');
       confirmBtn.innerText = 'Confirm';
       confirmBtn.classList.add('confirm-btn');
@@ -259,7 +275,7 @@ export class GameBoard {
     // actions
     for(const act of this.shownActions) {
       const actElem = document.createElement('div');
-      const toggle = createToggleSwitch();
+      const toggle = createToggleButton();
       toggle.classList.add('hide');
       actElem.appendChild(toggle);
       actElem.dataset.action = act.id;
@@ -269,8 +285,10 @@ export class GameBoard {
 
     // confirm container + button
     const confirmElemSolution = document.createElement('div');
-    confirmElemSolution.classList.add('row','confirm','hide','sticky');
-    confirmElemSolution.dataset.bottomRow = `${(numbObj+1)}`;
+    confirmElemSolution.classList.add('row','confirm','hide');
+    // confirmElemSolution.classList.add('row','confirm','hide','sticky');
+    // confirmElemSolution.classList.add('row','confirm','sticky');
+    // confirmElemSolution.dataset.bottomRow = `${(numbObj+1)}`;
     // const confirmBtn = document.createElement('button');
     // confirmBtn.innerText = 'Confirm';
     // confirmBtn.classList.add('confirm-btn');
@@ -317,17 +335,14 @@ export class GameBoard {
       // disable actions
       const actRows = Array.from(colCurrAct.querySelectorAll('.action')) as HTMLDivElement[];
       for(const aRow of actRows) {
-        const checkbox = aRow.querySelector('input') as HTMLInputElement;
-        checkbox.disabled = true;
-        const span = aRow.querySelector('span') as HTMLSpanElement;
-        span.dataset.disabled = 'true';
+        // set current action toggle button to incative
+        const toggleBtn = aRow.querySelector('.toggle-btn') as HTMLDivElement;
+        toggleBtn.classList.add('inactive');
       }
 
        // disable confirm
-      //  const confirmBtn = colCurrAct.querySelector('.confirm-btn') as HTMLButtonElement;
        const confirmBtn = colCurrAct.querySelector('.confirm-btn') as HTMLDivElement;
        if(confirmBtn) {
-        // confirmBtn.disabled = true;
         confirmBtn.classList.add('disabled','hide');
        }
        
@@ -404,15 +419,18 @@ export class GameBoard {
       // show WIN modal
       // const modalGameEnd = document.body.querySelector('#modal-game-end');
       // modalGameEnd.classList.add('show-modal');
-      const modalGameResult = document.body.querySelector('.modal.modal-game-result');
+      const modalGameWin = document.body.querySelector('.modal.modal-game-win');
+      modalGameWin.classList.add('is-active');
+
+      // const modalGameResult = document.body.querySelector('.modal.modal-game-result');
       
-      // show win text
-      const gameLose =  modalGameResult.querySelector('.content-game-over');
-      gameLose.classList.add('display-none');
-      const gameWin =  modalGameResult.querySelector('.content-win');
-      gameWin.classList.remove('display-none');
-      // show modal
-      modalGameResult.classList.add('is-active');
+      // // show win text
+      // const gameLose =  modalGameResult.querySelector('.content-game-over');
+      // gameLose.classList.add('display-none');
+      // const gameWin =  modalGameResult.querySelector('.content-win');
+      // gameWin.classList.remove('display-none');
+      // // show modal
+      // modalGameResult.classList.add('is-active');
 
     } else {
       // not all objectives fulfilled
@@ -439,15 +457,17 @@ export class GameBoard {
         // show LOSE modal
         // const modalGameEnd = document.body.querySelector('#modal-game-end');
         // modalGameEnd.classList.add('show-modal');
-        const modalGameResult = document.body.querySelector('.modal.modal-game-result');
+        const modalGameOver = document.body.querySelector('.modal.modal-game-over');
+        modalGameOver.classList.add('is-active');
+        // const modalGameResult = document.body.querySelector('.modal.modal-game-result');
         
-        // show game over text
-        const gameWin =  modalGameResult.querySelector('.content-win');
-        gameWin.classList.add('display-none');
-        const gameLose =  modalGameResult.querySelector('.content-game-over');
-        gameLose.classList.remove('display-none');
-        // show modal
-        modalGameResult.classList.add('is-active');
+        // // show game over text
+        // const gameWin =  modalGameResult.querySelector('.content-win');
+        // gameWin.classList.add('display-none');
+        // const gameLose =  modalGameResult.querySelector('.content-game-over');
+        // gameLose.classList.remove('display-none');
+        // // show modal
+        // modalGameResult.classList.add('is-active');
 
       } else {
         // attempts still possible -> NEXT ATTEMPT
@@ -569,11 +589,10 @@ export class GameBoard {
         const currAction = vis.getAction(aid);
         const currValue = currAction.value;
   
-        const label = aRow.querySelector('label') as HTMLLabelElement;
-        label.classList.remove('hide');
-
-        const checkbox = aRow.querySelector('input') as HTMLInputElement;
-        checkbox.checked = currValue;
+        const toogleBtn = aRow.querySelector('.toggle-btn') as HTMLDivElement;
+        toogleBtn.classList.remove('hide');
+        const stringValue = currValue ? 'true' : 'false';
+        toogleBtn.dataset.value = stringValue;
       }
 
       // show confirm div
@@ -592,8 +611,8 @@ export class GameBoard {
       for(const aRow of actRows) {
         
         const aid = aRow.dataset.action;
-        const checkbox = aRow.querySelector('input') as HTMLInputElement;
-        const currValue = checkbox.checked
+        const toggleBtn = aRow.querySelector('.toggle-btn') as HTMLDivElement;
+        const currValue = toggleBtn.dataset.value === 'true' ? true : false;
         actionState.push({
           actionId: aid,
           value: currValue
@@ -641,7 +660,8 @@ export class GameBoard {
     const divDataset = visContainer.querySelector('.vis-dataset') as HTMLDivElement;
     const datasetInfo = vis.currentDatasetInfo;
     const itemMissing = datasetInfo.allItems - datasetInfo.notNullItems;
-    divDataset.innerHTML = `Source: Vega's cars dataset. (${itemMissing} items are not shown, due to missing values.)`;
+    const sampledText = datasetInfo.sampled ? `Dataset is sampled, it includes only ${datasetInfo.allItems} items. ` : '';
+    divDataset.innerHTML = `Source: Vega's cars dataset. (${sampledText}${itemMissing} items are not shown, due to missing values.)`;
   }
 
   convertObjStateToString(objState: ObjectiveState): string {
@@ -657,49 +677,58 @@ export class GameBoard {
   }
 
 
-  createActionableToggleSwitch(): HTMLLabelElement {
-    const toggle = createToggleSwitch();
+  createActionableToggleSwitch(): HTMLDivElement {
+    const toggle = createToggleButton();
     toggle.classList.add('hide');
-
-    const input = toggle.querySelector('input');
-
-    input.addEventListener('change', (event) => {
+  
+    toggle.addEventListener('click', (event) => {
+      console.log("🚀 ~ file: GameBoard.ts:692 ~ toggle.addEventListener ~ event", event);
       event.stopPropagation();
 
-      const col = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
-      if(col) {
-        // get actions
-        const actRows = Array.from(col.querySelectorAll('.action')) as HTMLDivElement[];
-        for(const aRow of actRows) {
-          // current checkbox value
-          const checkbox = aRow.querySelector('input') as HTMLInputElement;
-          const checkValue = checkbox.checked;
+      const eventTarget = event.target as HTMLDivElement;
+      let actioToggleBtn = event.target as HTMLDivElement;
+      if(eventTarget.classList.contains('toggle-btn-slider')) {
+        actioToggleBtn = eventTarget.parentElement as HTMLDivElement;
+      }
+      const isInactive = actioToggleBtn.classList.contains('inactive');
 
-          const aid = aRow.dataset.action;
-          const currAction = this.visualization.getAction(aid);
-          const oldValue = currAction.value;
-          // set action value
-          currAction.value = checkValue;
+      if(!isInactive) {
+        const currValue = actioToggleBtn.dataset.value === 'true' ? true : false;
+        actioToggleBtn.dataset.value = !currValue ? 'true' : 'false';
 
-          // update attempt data -> actionChanges
-          if(oldValue !== checkValue) {
-            const actionChangeTrack = {
-              actionId: aid,
-              oldValue,
-              newValue: checkValue,
-              timestamp: new Date()
+        const col = this.$gameTable.querySelector(`.column.attempt[data-attempt='${this._currAttempt}']`);
+        if(col) {
+          // get actions
+          const actRows = Array.from(col.querySelectorAll('.action')) as HTMLDivElement[];
+          for(const aRow of actRows) {
+            // current toggle button value
+            const toggleBtn = aRow.querySelector('.toggle-btn') as HTMLDivElement;
+            const toggleValue = toggleBtn.dataset.value === 'true' ? true : false;
+
+            const aid = aRow.dataset.action;
+            const currAction = this.visualization.getAction(aid);
+            const oldValue = currAction.value;
+            // set action value
+            currAction.value = toggleValue;
+
+            if(oldValue !== toggleValue) {
+              const actionChangeTrack = {
+                actionId: aid,
+                oldValue,
+                newValue: toggleValue,
+                timestamp: new Date()
+              }
+              this.attemptTrackData.actionChanges.push(actionChangeTrack);
             }
-            this.attemptTrackData.actionChanges.push(actionChangeTrack);
+            // show toggle button
+            toggle.classList.remove('hide');
           }
-    
-          const label = aRow.querySelector('label') as HTMLLabelElement;
-          label.classList.remove('hide');
-        }
 
-        // update current vis
-        const heading = `Attempt ${this._currAttempt} Preview`;
-        this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
-        
+          // update current vis
+          const heading = `Attempt ${this._currAttempt} Preview`;
+          this.updateVisualizationContainer(this.$currVis,this.visualization, heading);
+          
+        }
       }
     });
 
@@ -718,16 +747,17 @@ export class GameBoard {
       // set actions
       const actRows = Array.from(col.querySelectorAll('.action')) as HTMLDivElement[];
       for(const aRow of actRows) {
-        
+        // get action
         const aid = aRow.dataset.action;
         const currAction = this.visualization.getAction(aid);
+        // get action value
         const currValue = currAction.value;
   
-        const label = aRow.querySelector('label') as HTMLLabelElement;
-        label.classList.remove('hide');
-
-        const checkbox = aRow.querySelector('input') as HTMLInputElement;
-        checkbox.checked = currValue;
+        // get toggle button
+        const toggleBtn = aRow.querySelector('.toggle-btn') as HTMLDivElement;
+        toggleBtn.classList.remove('hide');
+        // set toggle button dataset value
+        toggleBtn.dataset.value = currValue ? 'true' : 'false';
       }
 
        // show confirm button

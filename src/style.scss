@@ -45,48 +45,110 @@
 
 // APP
 $color-bg-app: white;
-$color-text-app:#212529; // same as Coral
+// $color-text-app:#212529; // same as Coral
+// $color-text-app:#1B1E20; 
+$color-text-app:#2A2E32; 
+$margin-gameboard: 4rem;
+// $color-action:#00ABB3;
+$color-action:#3DAEE9;
+$color-action-opacity-75: rgba($color-action, 0.75);
+
+// $color-primary-action:
+// $color-primary-dark-bg:
+// $color-primary-dark-text:
+// $color-primary-bright-bg:
+// $color-primary-bright-text:
+// $color-primary-gray-dark:
+// $color-primary-gray-medium:
+// $color-primary-gray-light:
+
 
 // NAVBAR
 $color-bg-navbar: #2A2E32;
+// $color-bg-navbar: #1b1e20;
+$color-bg-navbar-hover: lighten($color-bg-navbar,10%);
 $color-text-navbar: white;
 $padding-navbar-item: 1rem;
-$width-navbar-logo: 6rem;
+$width-navbar-logo: 8rem;
 $height-navbar: 3rem;
+
+// BUTTON
+$width-border-button: 1px;
+$style-button: solid;
+$border-radius-button: 0.375rem;
+$color-bg-button: white;
+// $color-bg-button: #EFF0F1;
+$color-text-button: #2A2E32;
+// $color-bg-button: #2A2E32;
+// $color-text-button: white;
+$color-border-button: #DEE0E2;
+$color-border-button-hover: $color-action;
+$color-border-button-hover-opacity-75: $color-action-opacity-75;
+
+
 
 // MODAL
 $color-bg-modal: white;
-$color-bg-modal-background: #2A2E32AA;
-$color-border-modal-btn: lightgray;
+$color-bg-modal-background: rgba(#2A2E32, 0.66);
+$color-bg-modal-header-footer: white;
 $color-border-header-footer: lightgray;
-$border-radius-modal: 0.375rem;
+// button
+$color-bg-modal-btn: $color-bg-button;
+$color-text-modal-btn: $color-text-button;
+$color-border-modal-btn: $color-border-button;
+$color-border-modal-btn-hover: $color-border-button-hover;
+$color-border-modal-btn-hover-opacity-75: $color-border-button-hover-opacity-75; 
+$border-radius-modal-btn: $border-radius-button;
 
 // GAME BOARD TABLE
-$color-bg-gbt-header: lightgray;
+// $color-bg-gbt-header: lightgray;
+// $color-text-gbt-header: $color-text-app;
+// $color-bg-gbt-header: #DEE0E2;
+// $color-text-gbt-header: $color-text-app;
+$color-bg-gbt-header: #2A2E32;
+$color-text-gbt-header: white;
+$border-radius-gbt-row: 0.2rem;
 // actions
 $color-bg-gbt-action-even: white;
-$color-bg-gbt-action-odd: #EFF0F1;
+$color-bg-gbt-action-odd: #f8f8f8;
+$height-gbt-header: 1.5rem;
+$height-gbt-row: 1.5rem;
+$height-gbt-row-confirm: 3rem;
+
 
 // toggle btn
-$color-toggle-active: $color-text-app;
-$color-toggle-inactive: lightgrey;
+// $color-toggle-on: $color-text-app;
+// $color-toggle-off: lightgrey;
+$color-toggle-on: $color-action;
+$color-toggle-off: #2A2E32;
 $color-toggle-slider: white;
+// $color-toggle-on-inactive: lighten($color-toggle-on,30%);
+$color-toggle-on-inactive: #b1def6;
+// $color-toggle-off-inactive: lighten($color-toggle-off,30%);
+$color-toggle-off-inactive: #a9abad;
 
 // confirm
-$color-bg-confirm-btn: lightgrey;
+$color-bg-confirm-btn: $color-bg-button;
+$color-text-confirm-btn: $color-text-button;
+$color-border-confirm-btn: $color-border-button;
+$color-border-confirm-btn-hover: $color-border-button-hover;
+$color-border-confirm-btn-hover-opacity-75: $color-border-button-hover-opacity-75;
+$border-radius-confirm-btn: $border-radius-button;
+$height-confirm-btn: 2rem;
 
 // objectives
-$color-object-correct: lightgreen;
-$color-object-partial: lightsalmon;
-$color-object-wrong: lightcoral;
-$color-object-none: white;
+// $color-object-correct: lightgreen;
+// $color-object-partial: lightsalmon;
+// $color-object-wrong: lightcoral;
+$color-object-none: $color-bg-app;
 
-// HEIGHT VARIABLES
-// $height-header: 2rem; 
-// $height-score-strip: 2rem;
-// $height-pipeline-state: 2rem;
-// $height-pipeline-stage: 1.5rem;
+// $color-object-correct: #3DD425;
+// $color-object-partial: #E9643A;
+// $color-object-wrong: #E93D58;
 
+$color-object-correct: #58DDB1;
+$color-object-partial: #FCCC70;
+$color-object-wrong: #F37683;
 
  
 // --- Start: App ----
@@ -112,10 +174,6 @@ $color-object-none: white;
 // --- End: App ----
 
 // --- Start: Modal ----
-// .show-modal {
-//   display: flex !important;
-// }
-
 .modal {
   display: none;
   align-items: center;
@@ -135,14 +193,19 @@ $color-object-none: white;
 }
 
 .modal-btn {
-  background-color: $color-bg-modal;
-  border: $color-border-modal-btn 1px solid;
+  background-color: $color-bg-modal-btn;
+  color: $color-text-modal-btn;
+  border-color: $color-border-modal-btn;
+  border-width: $width-border-button;
+  border-style: $style-button;
   // border-radius: 0.25rem;
-  border-radius: $border-radius-modal;
+  border-radius: $border-radius-modal-btn;
 
   &:hover {
     // background-color: darken($color-bg-modal,10%);
-    border-color: darken($color-border-modal-btn,15%);
+    // border-color: darken($color-border-modal-btn,15%);
+    border-color: $color-border-modal-btn-hover;
+    // box-shadow: inset 0 0px 0.125rem $color-border-modal-btn-hover-opacity-75 , 0 0 0.5rem $color-border-modal-btn-hover-opacity-75 !important; 
   }
 }
 
@@ -165,7 +228,7 @@ $color-object-none: white;
   // height: 70%;
   background-color: $color-bg-modal;
   // border: 1px black solid;
-  border-radius: $border-radius-modal;
+  border-radius: $border-radius-modal-btn;
   z-index: 100;
 
   // &.show-modal {
@@ -205,13 +268,15 @@ $color-object-none: white;
   align-items: center;
   padding: 1rem;
   border-bottom: $color-border-header-footer solid 1px;
-  // background-color: #EFF0F1;
-  border-top-left-radius: $border-radius-modal;
-  border-top-right-radius: $border-radius-modal;
+  background-color: $color-bg-modal-header-footer;
+  border-top-left-radius: $border-radius-modal-btn;
+  border-top-right-radius: $border-radius-modal-btn;
 
   >.modal-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: bold;
+    flex-grow: 1;
+    text-align: center;
   }
 }
 
@@ -221,19 +286,28 @@ $color-object-none: white;
   line-height: 1.75rem;
   font-size: 1.5rem;
   font-weight: bold;
-  margin-left: auto;
+  // margin-left: auto;
   // margin-top: 0.5rem;
   // margin-right: 0.5rem;
   text-align: center;
   // background-color: $color-bg-modal;
   // background-color: lightgray;
   // color: white;
+  background-color: $color-bg-modal-btn;
+  color: $color-text-modal-btn;
+  // border-color: $color-border-modal-btn;
+  // border-width: $width-border-button;
+  // border-style: $style-button;
+  // border-radius: $border-radius-modal-btn;
   border: none;
   cursor: pointer;
 
   &:hover {
     // background-color: $color-bg-modal;
-    background-color: darken($color-bg-modal,10%);
+    // background-color: darken($color-bg-modal,10%);
+    // border-color: $color-border-modal-btn-hover;
+    color: $color-border-modal-btn-hover;
+    // box-shadow: inset 0 0px 0.125rem $color-border-modal-btn-hover-opacity-75 , 0 0 0.5rem $color-border-modal-btn-hover-opacity-75 !important; 
   }
 }
 
@@ -242,7 +316,7 @@ $color-object-none: white;
   overflow-y: auto;
   flex-grow: 1;
   font-size: 1rem;
-  overflow: hidden;
+  // overflow: hidden;
 
   &.flex {
     display: flex;
@@ -256,6 +330,7 @@ $color-object-none: white;
     width: 18rem;
     position: sticky;
     top: 0;
+    cursor: pointer;
 
     .level-1 {
       margin-bottom: 0.25rem;
@@ -264,14 +339,29 @@ $color-object-none: white;
       padding-left: 0.75rem;
       margin-bottom: 0.25rem;
     }
+
+    .reference:hover {
+      text-decoration: underline;
+    }
   }
 
   // .modal-content-text {
-    // flex-grow: 1;
   // }
+    
+  .modal-content-header-wrapper {
+    display: flex;
+    align-items: center;
+
+    >.header-bar {
+      height: 2rem;
+      border: 0.125rem solid $color-action;
+      border-radius: 0.375rem;
+      margin-right: 0.5rem;
+    }
+  }
 
   .dataset {
-    height: 10rem;
+    height: 20rem;
     margin: 0 1.5rem 0.25rem 1.5rem;
     overflow: auto;
 
@@ -294,6 +384,7 @@ $color-object-none: white;
       th {
         text-align: center;
         background-color: $color-bg-gbt-header;
+        color: $color-text-gbt-header;
       }
 
       td {
@@ -309,9 +400,9 @@ $color-object-none: white;
   justify-content: center;
   padding: 1rem;
   border-top: $color-border-header-footer solid 1px;
-  // background-color: #EFF0F1;
-  border-bottom-left-radius: $border-radius-modal;
-  border-bottom-right-radius: $border-radius-modal;
+  background-color: $color-bg-modal-header-footer;
+  border-bottom-left-radius: $border-radius-modal-btn;
+  border-bottom-right-radius: $border-radius-modal-btn;
   // height: 1.5rem;
   // padding: 0 0.5rem;
   // margin-top: 0.5rem;
@@ -333,84 +424,152 @@ $color-object-none: white;
 // --- End: Modal ----
 
 
-// --- Start: Toggle Switch ---
-.toggle-switch {
-  position: relative;
-  display: block;
-  // width: 60px;
-  width: 3rem;
-  // height: 34px;
-  // height: 20px;
-  height: 1.125rem;
-  margin: auto;
-}
+// --- Start: Toggle Button ---
+.toggle-btn {
+  // toggle button
+  $width-toggle-btn: 3rem;
+  $height-toggle-btn: 1.125rem;
+  $border-radius-toggle-btn: $height-toggle-btn;
+  $width-border-toggle-btn: 0.125rem;
+  // toggle slider
+  $margin-toggle-slider: 0.1875rem;
+  $height-toggle-slider: calc($height-toggle-btn - calc(2 * $margin-toggle-slider));
+  $width-toggle-slider: $height-toggle-slider;
+  $border-radius-toggle-slider: $height-toggle-slider;
+  $width-border-toogle-slider: 0rem;
+  $margin-toggle-slider-left-off: $margin-toggle-slider;
+  $margin-toggle-slider-left-on: calc($width-toggle-btn - $width-toggle-slider - $margin-toggle-slider);
 
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  // pill (background) when unchecked
-  position: absolute;
+  display: flex;
+  align-items: center;
+  height: $height-toggle-btn;
+  width: $width-toggle-btn;
+  // margin: 15px;
+  // background-color: darkgray;
+  border-radius: $border-radius-toggle-btn;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 1rem;
-  background-color: $color-toggle-inactive;
-  transition: .3s;
-  -webkit-transition: .3s;
+  // padding: 5px;
+  // border: 2px solid black;
 
-  &[data-disabled="true"] {
-    cursor: default;
+  
+  &[data-value="true"] {
+    background-color: $color-toggle-on;
+
+    >.toggle-btn-slider {
+      margin-left: $margin-toggle-slider-left-on;
+    }
+  }
+
+  &[data-value="false"] {
+    background-color: $color-toggle-off;
+
+    >.toggle-btn-slider {
+      margin-left: $margin-toggle-slider-left-off;
+    }
+  }
+
+  &.inactive {
+    cursor: default !important;
+
+    &[data-value="true"] {
+      background-color: $color-toggle-on-inactive;
+    }
+
+    &[data-value="false"] {
+      background-color: $color-toggle-off-inactive;
+    }
+  }
+
+  >.toggle-btn-slider {
+    background-color: $color-toggle-slider;
+    height: $height-toggle-slider;
+    width: $width-toggle-slider;
+    border-radius: $border-radius-toggle-slider;
+    transition: .3s;
+    -webkit-transition: .3s;
+    //border: 3px solid black;
   }
 }
+// --- Start: Toggle End ---
 
-// New selector for the circle pseudo-element
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  // height: 26px;
-  // width: 26px;
-  // height: 12px;
-  height: 0.75rem;
-  // width: 12px;
-  width: 0.75rem;
-  // left: 4px;
-  // bottom: 4px;
-  left: 0.1875rem;
-  bottom: 0.1875rem;
-  border-radius: 50%;
-  background-color: $color-toggle-slider;
-  transition: .3s;
-  -webkit-transition: .3s;
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  // pill (background) when checked
-  background-color: $color-toggle-active;
-}
-
-
-.toggle-switch input:checked + .toggle-slider:before {
-  // move circle pseudo-element from left to right 
-  // and right to left when the input is checked
-  // -webkit-transform: translateX(26px);
-  // -ms-transform: translateX(26px);
-  // transform: translateX(26px);
-  -webkit-transform: translateX(1.875rem);
-  -ms-transform: translateX(1.875rem);
-  transform: translateX(1.875rem);
-}
-
-// not needed for now
-// .toggle-switch input:focus + .toggle-slider {
-//   box-shadow: 0 0 5px $color-default;
+// // --- Start: Toggle Switch ---
+// .toggle-switch {
+//   position: relative;
+//   display: block;
+//   // width: 60px;
+//   width: 3rem;
+//   // height: 34px;
+//   // height: 20px;
+//   height: 1.125rem;
+//   margin: auto;
 // }
-// --- End: Toggle Switch ---
+
+// .toggle-switch input {
+//   opacity: 0;
+//   width: 0;
+//   height: 0;
+// }
+
+// .toggle-slider {
+//   // pill (background) when unchecked
+//   position: absolute;
+//   cursor: pointer;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   border-radius: 1rem;
+//   background-color: $color-toggle-off;
+//   transition: .3s;
+//   -webkit-transition: .3s;
+
+//   &[data-disabled="true"] {
+//     cursor: default;
+//   }
+// }
+
+// // New selector for the circle pseudo-element
+// .toggle-slider:before {
+//   position: absolute;
+//   content: "";
+//   // height: 26px;
+//   // width: 26px;
+//   // height: 12px;
+//   height: 0.75rem;
+//   // width: 12px;
+//   width: 0.75rem;
+//   // left: 4px;
+//   // bottom: 4px;
+//   left: 0.1875rem;
+//   bottom: 0.1875rem;
+//   border-radius: 50%;
+//   background-color: $color-toggle-slider;
+//   transition: .3s;
+//   -webkit-transition: .3s;
+// }
+
+// .toggle-switch input:checked + .toggle-slider {
+//   // pill (background) when checked
+//   background-color: $color-toggle-on;
+// }
+
+
+// .toggle-switch input:checked + .toggle-slider:before {
+//   // move circle pseudo-element from left to right 
+//   // and right to left when the input is checked
+//   // -webkit-transform: translateX(26px);
+//   // -ms-transform: translateX(26px);
+//   // transform: translateX(26px);
+//   -webkit-transform: translateX(1.875rem);
+//   -ms-transform: translateX(1.875rem);
+//   transform: translateX(1.875rem);
+// }
+
+// // not needed for now
+// // .toggle-switch input:focus + .toggle-slider {
+// //   box-shadow: 0 0 5px $color-default;
+// // }
+// // --- End: Toggle Switch ---
 
 // --- Start: Dropdown ---
 .dropdown {
@@ -497,7 +656,7 @@ $color-object-none: white;
 
 
       &:hover {
-        background-color: lighten($color-bg-navbar,20%);
+        background-color: $color-bg-navbar-hover;
       }
     }
   }
@@ -571,9 +730,9 @@ $color-object-none: white;
     // background-color: $color-background-dark;
     cursor: pointer;
 
-    &:hover {
-      background-color: lighten($color-bg-navbar,20%);
-    }
+    // &:hover {
+    //   background-color: $color-bg-navbar-hover;
+    // }
   }
 }
 
@@ -588,11 +747,11 @@ $color-object-none: white;
   height: $height-navbar;
   line-height: $height-navbar;
   // margin: 0 0.5rem;
-  background-color: $color-bg-navbar;
+  // background-color: $color-bg-navbar;
   cursor: pointer;
 
-  &:hover {
-    background-color: lighten($color-bg-navbar,20%);
+  &.has-hover:hover {
+    background-color: $color-bg-navbar-hover;
   }
 }
 // --- End: Nav ---
@@ -600,7 +759,8 @@ $color-object-none: white;
 // --- Start: Main (Game Board) ---
 #main {
   display: grid;
-  width: 100%;
+  // width: 100%;
+  margin: 0 $margin-gameboard;
   height: calc(100% - $height-navbar);
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr; 
@@ -663,62 +823,104 @@ $color-object-none: white;
     align-items: center;
 
     // row in each column
-    $height-table-row: 1.5rem; 
+    // $height-table-row: 1.5rem; 
+
+    // &.label>.header, &.label>.action {
+    //   border-top-left-radius: $border-radius-gbt-row;
+    //   border-bottom-left-radius: $border-radius-gbt-row;
+    // }
+
+    // HACK
+    // .action-header-text {
+    //   flex-grow: 1;
+    //   text-align: left;
+    //   background-color: #2a2e32;
+    //   color: white;
+    //   padding-left: 1rem;
+    //   border-radius: 0.375rem;
+    // }
+
+    // .action-header-rect {
+    //   height: 1.5rem;
+    //   width: 4rem;
+    //   transform: skewX(45deg);
+    //   background: #2a2e32;
+    //   margin-left: -1.5rem;
+    //   margin-right: 0.6rem;
+    //   // border-radius: 0.375rem;
+    //     // border-bottom-right-radius: 0.375rem;
+    //   border-top-right-radius: 0.375rem;
+    // }
+
+    // &.solution>.header, &.solution>.action {
+
+    //   border-top-right-radius: $border-radius-gbt-row;
+    //   border-bottom-right-radius: $border-radius-gbt-row;
+    // }
+
     .row {
-      height: $height-table-row;
+      height: $height-gbt-row;
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       flex: 0 0 auto;
 
-      &.label {
-        justify-content: left;
-        padding-left: 1rem;
-      }
-
-      // &.sticky {
-      //   z-index: 10;
-      //   position: sticky;
-
-      //   &[data-bottom-row="0"] {
-      //     bottom: $height-table-row*0;
-      //   }
-      //   &[data-bottom-row="1"] {
-      //     bottom: $height-table-row*1;
-      //   }
-      //   &[data-bottom-row="2"] {
-      //     bottom: $height-table-row*2;
-      //   }
-      //   &[data-bottom-row="3"] {
-      //     bottom: $height-table-row*3;
-      //   }
-      //   &[data-bottom-row="4"] {
-      //     bottom: $height-table-row*4;
-      //   }
-      //   &[data-bottom-row="5"] {
-      //     bottom: $height-table-row*5;
-      //   }
-      // }
-
       &.header {
         text-align: center;
-        background-color: $color-bg-gbt-header;
-        line-height: $height-table-row;
+        background-color: white;
+        border-bottom: 1px solid $color-bg-gbt-header;
+        // color: $color-text-gbt-header;
+        line-height: $height-gbt-header;
         position: sticky;
         top: 0;
         font-weight: bold;
         z-index: 10;
       }
 
+      &.label {
+        justify-content: left;
+        padding-left: 1rem;
+      }
+      
       &.action:nth-child(odd) {
         background-color: $color-bg-gbt-action-odd;
       }
-
+      
       &.action:nth-child(even) {
         background-color: $color-bg-gbt-action-even;
       }
 
+      &.sticky {
+        z-index: 10;
+        position: sticky;
+        
+        &[data-bottom-row="0"] {
+          bottom: $height-gbt-row*0;
+        }
+        &[data-bottom-row="1"] {
+          bottom: $height-gbt-row*1;
+        }
+        &[data-bottom-row="2"] {
+          bottom: $height-gbt-row*2;
+        }
+        &[data-bottom-row="3"] {
+          bottom: $height-gbt-row*3;
+        }
+        &[data-bottom-row="4"] {
+          bottom: $height-gbt-row*4;
+        }
+        &[data-bottom-row="5"] {
+          bottom: $height-gbt-row*5;
+        }
+      }
+      
+
+      
+      &.objective {
+        background-color: $color-bg-app;
+        z-index: 10;
+      }
       // objectives are colored based on their states
       &.objective.result {  
         background-color: $color-bg-app;
@@ -748,27 +950,33 @@ $color-object-none: white;
 
       // confirm button for each column
       &.confirm {
-        height: 3rem;
+        height: $height-gbt-row-confirm;
         background-color: $color-bg-app;
       }
 
       .confirm-btn {
-        height: 1.5rem;
-        line-height: 1.5rem;
+        height: $height-confirm-btn;
+        line-height: $height-confirm-btn;
         width: calc(100% - 0.25rem);
         background-color: $color-bg-confirm-btn;
-        border-radius: 0.25rem;
+        color: $color-text-confirm-btn;
+        border-style: $style-button;
+        border-width: $width-border-button;
+        border-color: $color-border-confirm-btn;
+        border-radius: $border-radius-confirm-btn;
         text-align: center;
         cursor: pointer;
 
         &:hover {
-          background-color: darken($color-bg-confirm-btn,10%);
+          // background-color: darken($color-bg-confirm-btn,10%);
+          border-color: $color-border-confirm-btn-hover;
+          // box-shadow: inset 0 0px 0.125rem $color-border-confirm-btn-hover-opacity-75 , 0 0 0.5rem $color-border-confirm-btn-hover-opacity-75 !important; 
         }
 
-        &.disabled {
-          pointer-events: none;
-          background-color: lighten($color-bg-confirm-btn,10%);
-        }
+        // &.disabled {
+        //   pointer-events: none;
+        //   background-color: lighten($color-bg-confirm-btn,10%);
+        // }
       }
 
     }

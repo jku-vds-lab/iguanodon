@@ -109,7 +109,7 @@ export abstract class VisualizationBase {
 
         await embed(container, smVegaSpec, { actions: false, padding: {left: 0, top: 0, right: 0, bottom: 4} });
       } else {
-        await embed(container, this.vegaSpec, { actions: false, renderer: 'svg', padding: {left: 0, top: 0, right: 0, bottom: 4}});
+        await embed(container, this.vegaSpec, { actions: false, renderer: 'svg', padding: {left: 0, top: 4, right: 0, bottom: 4}});
       }
     } catch (error) {
       // HACK add meaningful error catch

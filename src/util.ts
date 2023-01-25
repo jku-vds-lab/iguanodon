@@ -380,3 +380,15 @@ export function createToggleSwitch(): HTMLLabelElement {
 
   return htmlLabel;
 }
+
+export function createToggleButton(): HTMLDivElement {
+  const toggleBtn = document.createElement('div');
+  toggleBtn.classList.add('toggle-btn');
+  toggleBtn.dataset.value = 'false';
+
+  const toggleBtnSlider = document.createElement('div');
+  toggleBtnSlider.classList.add('toggle-btn-slider');
+  toggleBtn.append(toggleBtnSlider);
+
+  return toggleBtn;
+}

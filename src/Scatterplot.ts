@@ -20,7 +20,7 @@ export enum actionsScatter {
 
 export enum objectivesScatter {
   ReduceOverplotting = "reduceOverplotting",
-  UtilizeVisualEncodings = "utilizeVisualEncodings",
+  UtilizeColorEncoding = "utilizeColorEncoding",
   ReduceChartjunk = "reduceChartjunk",
   ImproveReadability = "improveReadability",
 }
@@ -221,17 +221,17 @@ export class Scatterplot extends VisualizationBase {
     // coditional objectives
     if(this._hasColorEncoding) {
       // utilize visual encodings properly
-      const utilizeVisualEnc: IObjective = {
-        id: objectivesScatter.UtilizeVisualEncodings,
-        label: 'Utilize visual encodings properly',
-        description: 'Utilize visual encodings properly: Description', //TODO add description
+      const utilizeColorEnc: IObjective = {
+        id: objectivesScatter.UtilizeColorEncoding,
+        label: 'Utilize color encoding properly',
+        description: 'Utilize color encoding properly: Description', //TODO add description
         actions: this.getMultipleAction([actionsScatter.AddLegend, actionsScatter.ApplyNominalColors, actionsScatter.AddLegendBorder, actionsScatter.AddLegendTitle]),
         state: null,
         corrActions: 0
         // numActions: 1
       }
-      if(utilizeVisualEnc.actions.length > 0) {
-        this.objectives.push(utilizeVisualEnc);
+      if(utilizeColorEnc.actions.length > 0) {
+        this.objectives.push(utilizeColorEnc);
       }
     }
     
@@ -443,7 +443,7 @@ export class Scatterplot extends VisualizationBase {
 
     if (id === objectivesScatter.ReduceOverplotting) {
       return this.checkReduceOverplotting();
-    } else if (id === objectivesScatter.UtilizeVisualEncodings) {
+    } else if (id === objectivesScatter.UtilizeColorEncoding) {
       return this.checkUtilizeVisualEncodings();
     } else if (id === objectivesScatter.ReduceChartjunk) {
       return this.checkReduceChartjunk();
@@ -524,7 +524,7 @@ export class Scatterplot extends VisualizationBase {
 
 
   private checkUtilizeVisualEncodings(): { state: ObjectiveState, corrActions: number } {
-    const objective = this.getObjective(objectivesScatter.UtilizeVisualEncodings);
+    const objective = this.getObjective(objectivesScatter.UtilizeColorEncoding);
 
     const amount = objective.actions.length;
     const actions = objective.actions;

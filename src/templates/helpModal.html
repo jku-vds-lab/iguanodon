@@ -1,21 +1,3 @@
-<!-- <div class="modal help-modal">
-  <div class="modal-background"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Help</p>
-      <button class="delete" aria-label="close"></button>
-    </header>
-    <div class="modal-card-body">
-      Content
-    </div>
-    <footer class="modal-card-foot">
-      <button class="button is-success">Save changes</button>
-      <button class="button">Cancel</button>
-    </footer>
-  </div>
-</div> -->
-
-
 <div class="modal modal-help">
   <div class="modal-background"></div>
   <div class="modal-card modal-help-card">
@@ -36,11 +18,20 @@
         <div class="level-1 reference" data-content-id="help-text-dataset">Dataset</div>
       </div>
       <div class="modal-content-text">
-        <h2 id="help-text-goal">Goal</h2>
+        <div class="modal-content-header-wrapper">
+          <div class="header-bar"></div>
+          <h2 id="help-text-goal">Goal</h2>
+        </div>
         <p>Iguanodon has three different games, the aim of each game is to create the perfect visualization in as few steps as possible.</p>
-        <h2 id="help-text-game">Game</h2>
+        <div class="modal-content-header-wrapper">
+          <div class="header-bar"></div>
+          <h2 id="help-text-game">Game</h2>
+        </div>
         <p>Each game is based on different literature on how to create the perfect visualization. They introduce guidelines on how and which design choices should be applied for a visualization.  For each game you have fixed number of attempts to create the perfect visualization.</p>
-        <h2 id="help-text-game-board">Game Board</h2>
+        <div class="modal-content-header-wrapper">
+          <div class="header-bar"></div>
+          <h2 id="help-text-game-board">Game Board</h2>
+        </div>
         <p>The game board is split in two halves the upper half shows the visualization(s). In the lower half is interactive and allows you to change the visualization and get feedback on how good the created visualization is.</p>
         <h3 id="help-text-visualization">Visualization</h3>
         <p>There are two visualizations: the left one shows you the previous visualization. Only if you have already attempted to solve the game once.
@@ -56,7 +47,10 @@
           To fulfill an objective all of its relevant actions have to be applied in the right way.
           A game is won when all objectives have been fulfilled.
         </p>
-        <h2 id="help-text-gameplay">Gameplay</h2>
+        <div class="modal-content-header-wrapper">
+          <div class="header-bar"></div>
+          <h2 id="help-text-gameplay">Gameplay</h2>
+        </div>
         <ol>
           <li>You toggle as may actions as you like to create the a visualization, that you think is a perfect solution.</li>
           <li>Click the -Confirm- button to check your visualization. The state of the objectives will give you feedback about the visualization.</li>
@@ -67,37 +61,17 @@
           <br><br>
           If you could not solve the game within the given number of attempts the game is over and you be provided with one solution.
           <br><br>
-          Note: For some games multiple solutions exists, if you really want to test your skill you could try to find all possible solutions.
+          Note: For some games multiple solutions exist, if you really want to test your skill you could try to find all possible solutions.
           </p>
-        <h2 id="help-text-dataset">Dataset</h2>
+        <div class="modal-content-header-wrapper">
+          <div class="header-bar"></div>
+          <h2 id="help-text-dataset">Dataset</h2>
+        </div>
         <p>The dataset is about different cars and their properties and was created by <a href="https://github.com/vega/vega-datasets/blob/next/data/cars.json">Vega</a>.
           It consists of 406 cars with 9 columns.  
           </p>
       </div>
-      <!-- <p class="modal-heading">HELP</p> -->
-      <!-- <p>The goal of this game is to fulfill all objectives for one visualization by applying the right actions.</p>
-      <p>The top half shows you the visualizations and the botton half the actions and objectives.<br><br> 
-        Visualizations:<br> 
-        The visualization of the current attempt will be displayed, as well as the previous one or the solution.<br> <br>
-        Actions: <br> 
-        Allow you to change the configuration of the visualization and will be used to check the correctness of
-        objective.<br> <br> 
-        Objectives:<br> Indicate the objectives of the visualization of each attempt, there are three
-        different states:<br> 
-        - green: objective is fulfilled<br> 
-        - orange: objective is partially fulfilled<br> 
-        - red:
-        objective is unfulfilled</p>
-      <p>The gameplay consits of following steps:<br> 
-        - Change the current visualization by toggeling the corresponding action
-        with their buttons. You can change as may actions you like until you think that the current configuration would
-        fulfill all the objectives.<br> 
-        - Click the 'Confirm' button to check the state of the objectives. This will color the
-        objectives based on their correctness. <br> 
-        - If you didn't fulfill all objectives, you can try again to change the
-        action in the a new attempt.</p>
-      <p>You win the game if you correctly apply the actions and fulfill all objectives within the given attempts.</p> -->
-      </div>
+    </div>
     <div class="modal-footer">
       <div class="modal-btn btn-footer btn-close">Close</div>
     </div>

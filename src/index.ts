@@ -8,7 +8,8 @@ import { actionsScatter, Scatterplot } from './Scatterplot';
 import { getColumnTypesFromArqueroTable, getDateParts, niceName } from './util';
 import { VisType } from './visualizations';
 import helpModal from './templates/helpModal.html';
-import gameResultModal from './templates/gameResultModal.html';
+import gameOverModal from './templates/gameOverModal.html';
+import gameWinModal from './templates/gameWinModal.html';
 // import * as cars from './assets/cars.json';
 // import * as sampledCars from './assets/sampledCars.json';
 
@@ -69,9 +70,9 @@ navHelp.addEventListener('click', (event) => {
   // modalHelp.classList.add('show-modal');
 
   const modalHelp = document.body.querySelector('.modal.modal-help');
-  // const modalHelpContent: HTMLDivElement = modalHelp.querySelector('.modal-content-text');
-  // modalHelpContent.scrollTo(0,0);
+  const modalHelpContent: HTMLDivElement = modalHelp.querySelector('.modal-content');
   modalHelp.classList.toggle('is-active');
+  modalHelpContent.scrollTop = 0;
 }); 
 
 // main
@@ -182,7 +183,7 @@ const startGame = gameBoardDescr[0];
 
 // setup dropdown functionality
 addDropdownFunctionality($main, gameBoardDescr, startGame.gameId);
-
+// TODO add link to VDS Lab Logo if it isn't a survey
 
 // create start Game
 let currentGame = new GameBoard($main, startGame);
@@ -358,22 +359,131 @@ navRetry.addEventListener('click', (event) => {
 
 
 function addModalsAndFunctionality() {
-  // --- HELP MODAL ---
-  // add help modal to document body
-  // document.body.insertAdjacentHTML('beforeend', helpModal);
+  const divHelpModal = addHelpModalFunctionality();
+  const divGameWinModal = addGameWinModalFunctionality();
+  const divGameOverModal = addGameOverModalFunctionality();
+
+  // --- NAVBAR CLOSE --
+  $nav.addEventListener('click', (event) => {
+    divHelpModal.classList.remove('is-active');
+    divGameWinModal.classList.remove('is-active');
+    divGameOverModal.classList.remove('is-active');
+  });
+    
+  // // --- HELP MODAL ---
+  // // add help modal to document body
+  // // document.body.insertAdjacentHTML('beforeend', helpModal);
+  // // create template element to convert string into DOM element structure
+  // const templateHelp = document.createElement('template');
+  // // remove start and end whitespaces
+  // const trimHelpModal = helpModal.trim(); 
+  // // create DOM element structure
+  // templateHelp.innerHTML = trimHelpModal;
+  // // get template content as DocumentFragment
+  // // with a DocumentFragment different elements can be accessed and modified
+  // const fragHelp = templateHelp.content;
+  // // get help modal
+  // const divHelpModal = fragHelp.querySelector('.modal-help');
+  // divHelpModal.classList.add('is-active');
+  
+  // // modal-background
+  // const modalBackground = divHelpModal.querySelector('.modal-background');
+  // modalBackground.addEventListener('click', (event) => {
+  //   divHelpModal.classList.remove('is-active');
+  // });
+
+  // // button close-x
+  // const btnCross = divHelpModal.querySelector('.btn-cross');
+  // btnCross.addEventListener('click', (event) => {
+  //   divHelpModal.classList.remove('is-active');
+  // });
+
+  // // button close
+  // const btnClose = divHelpModal.querySelector('.btn-close');
+  // btnClose.addEventListener('click', (event) => {
+  //   divHelpModal.classList.remove('is-active');
+  // });
+  
+  // // add DocumentFragment to body
+  // document.body.append(templateHelp.content);
+  // // --- --- --- ---
+
+  // // --- GAME RESULT MODAL ---
+  // // add game result modal to document body
+  // // document.body.insertAdjacentHTML('beforeend', gameResultModal);
+  // // create template element to convert string into DOM element structure
+  // const templateGameResult = document.createElement('template');
+  // // remove start and end whitespaces
+  // const trimGameResultModal = gameResultModal.trim();
+  // // create DOM element structure
+  // templateGameResult.innerHTML = trimGameResultModal;
+  // // get template content as DocumentFragment
+  // // with a DocumentFragment different elements can be accessed and modified
+  // const fragGameResult = templateGameResult.content;
+
+  // // get game result modal
+  // const divGameResultModal = fragGameResult.querySelector('.modal-game-result');
+
+  // // modal-background
+  // const modalBackgroundGR = divGameResultModal.querySelector('.modal-background');
+  // modalBackgroundGR.addEventListener('click', (event) => {
+  //   divGameResultModal.classList.remove('is-active');
+  // });
+
+  // // button close-x
+  // const btnCrossGR = divGameResultModal.querySelector('.btn-cross');
+  // btnCrossGR.addEventListener('click', (event) => {
+  //   divGameResultModal.classList.remove('is-active');
+  // });
+
+  // // button close
+  // const btnCloseGR = divGameResultModal.querySelector('.btn-close');
+  // btnCloseGR.addEventListener('click', (event) => {
+  //   divGameResultModal.classList.remove('is-active');
+  // });
+
+  // // button retry
+  // const btnRetry = divGameResultModal.querySelector('.btn-retry');
+  // btnRetry.addEventListener('click', (event) => {
+  //   divGameResultModal.classList.remove('is-active');
+  //   restartGame();
+  // });
+
+  // // button next game
+  // const btnNext = divGameResultModal.querySelector('.btn-next');
+  // btnNext.addEventListener('click', (event) => {
+  //   divGameResultModal.classList.remove('is-active');
+  //   nextGame();
+  // });
+  
+  // // add DocumentFragment to body
+  // document.body.append(fragGameResult);
+
+  // --- NAVBAR CLOSE --
+  // $nav.addEventListener('click', (event) => {
+  //   divHelpModal.classList.remove('is-active');
+  //   divGameResultModal.classList.remove('is-active');
+  // });
+
+}
+
+function addHelpModalFunctionality(): HTMLDivElement {
   // create template element to convert string into DOM element structure
   const templateHelp = document.createElement('template');
   // remove start and end whitespaces
   const trimHelpModal = helpModal.trim(); 
   // create DOM element structure
   templateHelp.innerHTML = trimHelpModal;
+  
   // get template content as DocumentFragment
   // with a DocumentFragment different elements can be accessed and modified
   const fragHelp = templateHelp.content;
   // get help modal
-  const divHelpModal = fragHelp.querySelector('.modal-help');
+  const divHelpModal = fragHelp.querySelector('.modal-help') as HTMLDivElement;
+  // make initial state of help modal active
   divHelpModal.classList.add('is-active');
   
+  // --- Functionality
   // modal-background
   const modalBackground = divHelpModal.querySelector('.modal-background');
   modalBackground.addEventListener('click', (event) => {
@@ -394,65 +504,71 @@ function addModalsAndFunctionality() {
   
   // add DocumentFragment to body
   document.body.append(templateHelp.content);
-  // --- --- --- ---
 
-  // --- HELP MODAL ---
-  // add game result modal to document body
-  // document.body.insertAdjacentHTML('beforeend', gameResultModal);
-  // create template element to convert string into DOM element structure
-  const templateGameResult = document.createElement('template');
-  // remove start and end whitespaces
-  const trimGameResultModal = gameResultModal.trim();
-  // create DOM element structure
-  templateGameResult.innerHTML = trimGameResultModal;
-  // get template content as DocumentFragment
-  // with a DocumentFragment different elements can be accessed and modified
-  const fragGameResult = templateGameResult.content;
 
-  // get game result modal
-  const divGameResultModal = fragGameResult.querySelector('.modal-game-result');
+  return divHelpModal;
+}
 
-  // modal-background
-  const modalBackgroundGR = divGameResultModal.querySelector('.modal-background');
-  modalBackgroundGR.addEventListener('click', (event) => {
-    divGameResultModal.classList.remove('is-active');
-  });
+function addGameWinModalFunctionality(): HTMLDivElement {
+  return addGameResultModalFunctionality(gameWinModal, 'modal-game-win');
+}
 
-  // button close-x
-  const btnCrossGR = divGameResultModal.querySelector('.btn-cross');
-  btnCrossGR.addEventListener('click', (event) => {
-    divGameResultModal.classList.remove('is-active');
-  });
+function addGameOverModalFunctionality(): HTMLDivElement {
+  return addGameResultModalFunctionality(gameOverModal, 'modal-game-over');
+}
 
-  // button close
-  const btnCloseGR = divGameResultModal.querySelector('.btn-close');
-  btnCloseGR.addEventListener('click', (event) => {
-    divGameResultModal.classList.remove('is-active');
-  });
+function addGameResultModalFunctionality(modalContent: string, modalClass: string): HTMLDivElement {
+   // create template element to convert string into DOM element structure
+   const templateGameResult = document.createElement('template');
+   // remove start and end whitespaces
+   const trimGameResultModal = modalContent.trim();
+   // create DOM element structure
+   templateGameResult.innerHTML = trimGameResultModal;
+ 
+   // get template content as DocumentFragment
+   // with a DocumentFragment different elements can be accessed and modified
+   const fragGameResult = templateGameResult.content;
+ 
+   // get game result modal
+   const divGameResultModal = fragGameResult.querySelector(`.${modalClass}`) as HTMLDivElement;
+ 
+   // --- Functionality
+   // modal-background
+   const modalBackgroundGR = divGameResultModal.querySelector('.modal-background');
+   modalBackgroundGR.addEventListener('click', (event) => {
+     divGameResultModal.classList.remove('is-active');
+   });
+ 
+   // button close-x
+   const btnCrossGR = divGameResultModal.querySelector('.btn-cross');
+   btnCrossGR.addEventListener('click', (event) => {
+     divGameResultModal.classList.remove('is-active');
+   });
+ 
+   // button close
+   const btnCloseGR = divGameResultModal.querySelector('.btn-close');
+   btnCloseGR.addEventListener('click', (event) => {
+     divGameResultModal.classList.remove('is-active');
+   });
+ 
+   // button retry
+   const btnRetry = divGameResultModal.querySelector('.btn-retry');
+   btnRetry.addEventListener('click', (event) => {
+     divGameResultModal.classList.remove('is-active');
+     restartGame();
+   });
+ 
+   // button next game
+   const btnNext = divGameResultModal.querySelector('.btn-next');
+   btnNext.addEventListener('click', (event) => {
+     divGameResultModal.classList.remove('is-active');
+     nextGame();
+   });
+   
+   // add DocumentFragment to body
+   document.body.append(fragGameResult);
 
-  // button retry
-  const btnRetry = divGameResultModal.querySelector('.btn-retry');
-  btnRetry.addEventListener('click', (event) => {
-    divGameResultModal.classList.remove('is-active');
-    restartGame();
-  });
-
-  // button next game
-  const btnNext = divGameResultModal.querySelector('.btn-next');
-  btnNext.addEventListener('click', (event) => {
-    divGameResultModal.classList.remove('is-active');
-    nextGame();
-  });
-  
-  // add DocumentFragment to body
-  document.body.append(fragGameResult);
-
-  // --- NAVBAR CLOSE --
-  $nav.addEventListener('click', (event) => {
-    divHelpModal.classList.remove('is-active');
-    divGameResultModal.classList.remove('is-active');
-  });
-
+   return divGameResultModal;
 }
 
 function restartGame() {

@@ -137,7 +137,7 @@ export class Scatterplot extends VisualizationBase {
     const aType = this.createAction(actionsScatter.ChangeMarkToRing,'Change mark type to ring', getRandomBoolean());
     this.actions.push(aType);
     // aggregation (mean)
-    const aAggregation = this.createAction(actionsScatter.AggregateDataPoints,'Aggregate data points (average)', getRandomBoolean());
+    const aAggregation = this.createAction(actionsScatter.AggregateDataPoints,'Aggregate data points (mean)', getRandomBoolean());
     this.actions.push(aAggregation);
     // add background color or image
     const aBackground = this.createAction(actionsScatter.AddBackgroundColor,'Add background color or image', getRandomBoolean());
@@ -361,7 +361,10 @@ export class Scatterplot extends VisualizationBase {
     // encodings 
     vegaSpecBuildUp.encoding = {};
     // x
-    const xTitle = writeAbbreviationsOutValue ? this.xEncoding : getAbbreviations(this.xEncoding);
+    let xTitle = writeAbbreviationsOutValue ? this.xEncoding : getAbbreviations(this.xEncoding);
+    if(aggregateValues) {
+      xTitle = `Mean of ${xTitle}`;
+    }
     if(this.xEncoding) {
       vegaSpecBuildUp.encoding.x = {
         field: this.xEncoding,
@@ -378,7 +381,10 @@ export class Scatterplot extends VisualizationBase {
       }
     }
     // y
-    const yTitle = writeAbbreviationsOutValue ? this.yEncoding : getAbbreviations(this.yEncoding);
+    let yTitle = writeAbbreviationsOutValue ? this.yEncoding : getAbbreviations(this.yEncoding);
+    if(aggregateValues) {
+      yTitle = `Mean of ${yTitle}`;
+    }
     if(this.yEncoding) {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,

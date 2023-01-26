@@ -1,5 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { deepCopy, getAbbreviations, getColumnTypesFromArqueroTable, getRandomBoolean, uniqueFilter } from "./util";
+import { deepCopy, getAbbreviations, getColumnTypesFromArqueroTable, getMaxDomainRoundedTens, getRandomBoolean, uniqueFilter } from "./util";
 import { IObjective, ObjectiveState, VisType, VisualizationBase } from "./visualizations";
 
 export enum actionsScatter {
@@ -35,6 +35,8 @@ export class Scatterplot extends VisualizationBase {
 
   private xEncoding: string;
   private yEncoding: string;
+  private xMax: number;
+  private yMax: number;
   private colorEncoding: string;
   private _hasColorEncoding: boolean;
   private _fullDatasetInfo: {
@@ -57,6 +59,9 @@ export class Scatterplot extends VisualizationBase {
     this.colorEncoding = this.convertNullEncoding(colorEncoding); 
 
     this._hasColorEncoding = this.colorEncoding !== '';
+
+    this.xMax = getMaxDomainRoundedTens(fullDataset.objects(), this.xEncoding);
+    this.yMax = getMaxDomainRoundedTens(fullDataset.objects(), this.yEncoding);
     
     // console.log('SP enocodings: ',{x: this.xEncoding, y: this.yEncoding, c: this.colorEncoding});
     this.createDatasetSizes();
@@ -120,7 +125,7 @@ export class Scatterplot extends VisualizationBase {
 
     // ACTIONS (general)
     // sample data
-    const aSample = this.createAction(actionsScatter.SampleData,'Sample data randomly(25%)', getRandomBoolean());
+    const aSample = this.createAction(actionsScatter.SampleData,'Sample data randomly (25%)', getRandomBoolean());
     this.actions.push(aSample);
     // decrease mark size
     const aSize = this.createAction(actionsScatter.DecreaseMarkSize,'Decreased mark size', getRandomBoolean());
@@ -273,7 +278,7 @@ export class Scatterplot extends VisualizationBase {
     // background color
     const backgroundColorAction = this.getAction(actionsScatter.AddBackgroundColor);
     const backgroundColorValue = backgroundColorAction !== null ? backgroundColorAction.value : false;
-    const backgorundColor = backgroundColorValue ? '#d4d4d4' : '#FFFFFF';
+    const backgorundColor = backgroundColorValue ? '#dfdfdf' : '#FFFFFF';
 
     // lighten grid color
     const lightenGridColorAction = this.getAction(actionsScatter.LightenGridLines);
@@ -362,6 +367,9 @@ export class Scatterplot extends VisualizationBase {
         field: this.xEncoding,
         title: xTitle,
         type: 'quantitative',
+        scale: {
+          domainMax: this.xMax
+        }
         // scale: { zero: zeroXAxis } // start x-axis with 0
       };
 
@@ -375,7 +383,10 @@ export class Scatterplot extends VisualizationBase {
       vegaSpecBuildUp.encoding.y = {
         field: this.yEncoding,
         type: 'quantitative',
-        title: yTitle
+        title: yTitle,
+        scale: {
+          domainMax: this.yMax
+        }
         // titel: `${niceName(this.yEncoding)}`,
         // scale: { zero: zeroYAxis } // start y-axis with 0
       };

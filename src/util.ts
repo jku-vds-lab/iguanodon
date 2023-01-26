@@ -392,3 +392,15 @@ export function createToggleButton(): HTMLDivElement {
 
   return toggleBtn;
 }
+
+export function getMaxDomainRoundedTens(data: any[], propName: string): number {
+  const maxDomain = Math.max(...data.map((elem) => elem[propName]));
+  const tenth = maxDomain / 10;
+  const roundedTenth = Math.round(tenth);
+  let maxDomainTens = roundedTenth * 10
+  if(maxDomain === maxDomainTens) {
+    maxDomainTens += 10;
+  }
+  
+  return maxDomainTens;
+}

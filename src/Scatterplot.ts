@@ -419,7 +419,8 @@ export class Scatterplot extends VisualizationBase {
       axis: {
         gridColor, // gird lines color
         titleFontSize: this._axisTitleFontSize
-      }
+      },
+      font: 'Roboto'
     };
 
     // console.log('vegaSpecBuildUp: ', vegaSpecBuildUp);

@@ -28,6 +28,11 @@ export interface IGameTrackData {
   allAttempts: IAttemptTrackData[]
 }
 
+export interface IUserTrackData {
+  userId: string;
+  games: IGameTrackData[]
+}
+
 export async function postJSONAttemptData(filename: string, data: IAttemptTrackData) {
 
   const postURL = "https://save-json.caleydoapp.org/";

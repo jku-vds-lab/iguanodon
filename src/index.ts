@@ -487,8 +487,10 @@ function addHelpModalFunctionality(): HTMLDivElement {
   const fragHelp = templateHelp.content;
   // get help modal
   const divHelpModal = fragHelp.querySelector('.modal-help') as HTMLDivElement;
+  const modalHelpContent: HTMLDivElement = divHelpModal.querySelector('.modal-content');
   // make initial state of help modal active
   divHelpModal.classList.add('is-active');
+  
   
   // --- Functionality
   // modal-background
@@ -511,6 +513,8 @@ function addHelpModalFunctionality(): HTMLDivElement {
   
   // add DocumentFragment to body
   document.body.append(templateHelp.content);
+  // scroll to the top
+  modalHelpContent.scrollTop = 0;
 
 
   return divHelpModal;

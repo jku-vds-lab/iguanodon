@@ -13,7 +13,11 @@ export interface IGameDescription {
   datasets: {
     fullDataset: ColumnTable,
     sampledDataset: ColumnTable
-  }
+  },
+  // datasets: {
+  //   fullDataset: IDataCar[],
+  //   sampledDataset: IDataCar[]
+  // },
   encodings: {
     x: string,
     y: string,
@@ -242,3 +246,10 @@ function getCarsDatasets(): {fullDataset: ColumnTable, sampledDataset: ColumnTab
     sampledDataset: aqSampledDataset
   }
 }
+
+// function getCarsDatasets(): {fullDataset: IDataCar[], sampledDataset: IDataCar[]} {
+//   return {
+//     fullDataset: allCars,
+//     sampledDataset: sampledCars
+//   }
+// }

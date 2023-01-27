@@ -11,7 +11,14 @@ import helpModal from './templates/helpModal.html';
 import gameOverModal from './templates/gameOverModal.html';
 import gameWinModal from './templates/gameWinModal.html';
 // import * as cars from './assets/cars.json';
-// import * as sampledCars from './assets/sampledCars.json';
+
+// import the different Font Awesome icons sets
+import '@fortawesome/fontawesome-free/js/brands.js'; // https://fontawesome.com/search?o=r&m=free&f=brands
+import '@fortawesome/fontawesome-free/js/solid.js'; // https://fontawesome.com/search?o=r&m=free&s=solid
+import '@fortawesome/fontawesome-free/js/regular.js'; // https://fontawesome.com/search?o=r&m=free&s=regular
+
+// import font awesome core to make the above sets work
+import '@fortawesome/fontawesome-free/js/fontawesome.js'; //
 
 
 var TITLE = 'Iguanodon'

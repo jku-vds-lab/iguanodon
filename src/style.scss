@@ -70,6 +70,7 @@ $color-bg-navbar-hover: lighten($color-bg-navbar,10%);
 $color-text-navbar-hover: $color-action;
 $color-text-navbar: white;
 $padding-navbar-item: 1rem;
+$margin-navbar-item: 1.5rem;
 $width-navbar-logo: 8rem;
 $height-navbar: 3rem;
 
@@ -172,6 +173,10 @@ $color-object-wrong: #F37683;
 .display-none {
   display: none !important;
 }
+
+.not-allowed {
+  cursor: not-allowed !important;
+}
 // --- End: App ----
 
 // --- Start: Modal ----
@@ -249,13 +254,13 @@ $color-object-wrong: #F37683;
     // z-index: 100;
   }
 
-  &.modal-game-result-card {
+  &.modal-game-over-card, &.modal-game-win-card {
     // flex-direction: column;
     // position: absolute;
-    top: 25%;
-    left: 41%;
-    width: 18%;
-    height: 40%;
+    top: 20%;
+    left: 25%;
+    width: 50%;
+    height: 60%;
     // background-color: $color-bg-modal;
     // border: 1px black solid;
     // z-index: 100;
@@ -495,25 +500,34 @@ $color-object-wrong: #F37683;
     height: 100%;
     align-items: center;
 
-    >.dropdown-btn-item {
-      height: 100%;
-    }
-
-    >.reward {
+    >.dropdown-btn-info {
       display: flex;
-      justify-content: center;
-      align-content: center;
-      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      align-items: center;
+      margin-right: 0.25rem;
+      flex-grow: 1;
 
-      >img {
-        max-height: 1rem;
+      >.dropdown-btn-item {
+        height: 100%;
       }
-    }
 
-    >.points {
-      font-size: 0.7rem;
-      font-weight: normal;
-      width: 3.5rem;
+      >.reward {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+
+        >img {
+          max-height: 1rem;
+        }
+      }
+
+      >.points {
+        font-size: 0.7rem;
+        font-weight: normal;
+        width: 3.5rem;
+      }
     }
   }
 
@@ -596,6 +610,7 @@ $color-object-wrong: #F37683;
   height: 100%;
   justify-content: flex-end;
   margin-left: auto;
+  align-items: center;
 }
 
 .navbar-brand {
@@ -620,7 +635,7 @@ $color-object-wrong: #F37683;
   padding: 0 $padding-navbar-item;
   height: $height-navbar;
   line-height: $height-navbar;
-  margin: 0 1.5rem;
+  margin: 0 $margin-navbar-item;
   cursor: pointer;
 
   >.label-icon {
@@ -636,6 +651,57 @@ $color-object-wrong: #F37683;
   &.has-hover:hover {
     // background-color: $color-bg-navbar-hover;
     color: $color-text-navbar-hover;
+  }
+}
+
+.nav-survey {
+  display: flex;
+  height: 80%;
+  color: $color-text-navbar;
+  justify-content: center;
+  align-items: center;
+  margin: 0 $margin-navbar-item;
+  padding: 0 $padding-navbar-item;
+  border-radius: $border-radius-button;
+  border-width: $width-border-button;
+  border-style: $style-button;
+  border-color: $color-action;
+  cursor: default ;
+
+  >.label {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  >.code {
+    cursor: text;
+    margin: 0 0.75rem;
+  }
+
+  >.copy {
+    cursor: pointer;
+    font-size: 0.75rem;
+  
+    &:hover {
+      color: $color-action;
+    }
+  }
+
+  &.inactive {
+    border-color: $color-text-navbar !important;
+
+    
+    >.code {
+      cursor: default !important;
+    }
+  
+    >.copy {
+      cursor: default !important;
+    
+      &:hover {
+        color: $color-text-navbar;
+      }
+    }
   }
 }
 // --- End: Nav ---

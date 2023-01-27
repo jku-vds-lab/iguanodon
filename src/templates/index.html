@@ -47,11 +47,13 @@
         <div class="navbar-item has-hover nav-game">
           <div class="dropdown">
             <div class="dropdown-btn">
-              <div class="dropdown-btn-item label"></div>
-              <div class="dropdown-btn-item reward">
-                <img class="img-reward">
+              <div class="dropdown-btn-info">
+                <div class="dropdown-btn-item label"></div>
+                <div class="dropdown-btn-item reward">
+                  <img class="img-reward">
+                </div>
+                <div class="dropdown-btn-item points"></div>
               </div>
-              <div class="dropdown-btn-item points"></div>
               <div class="dropdown-btn-item arrow display-none">
                 <i class="fa-solid fa-chevron-down"></i>
               </div>
@@ -66,7 +68,13 @@
       <div class="navbar-center">
       </div>
       <div class="navbar-end">
-        <div class="navbar-item nav-survey display-none">Code</div>
+        <div class="nav-survey inactive display-none">
+          <div class="label">Code</div>
+          <div class="code">-----------</div>
+          <div class="copy" title="Copy to clipboard">
+            <i class="fa-solid fa-copy"></i>
+          </div>
+        </div>
       </div>
     </div>
   </nav>

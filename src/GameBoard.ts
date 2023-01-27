@@ -682,7 +682,7 @@ export class GameBoard {
     toggle.classList.add('hide');
   
     toggle.addEventListener('click', (event) => {
-      console.log("🚀 ~ file: GameBoard.ts:692 ~ toggle.addEventListener ~ event", event);
+      // console.log("🚀 ~ file: GameBoard.ts:692 ~ toggle.addEventListener ~ event", event);
       event.stopPropagation();
 
       const eventTarget = event.target as HTMLDivElement;

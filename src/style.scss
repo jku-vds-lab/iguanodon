@@ -67,6 +67,7 @@ $color-action-opacity-75: rgba($color-action, 0.75);
 $color-bg-navbar: #2A2E32;
 // $color-bg-navbar: #1b1e20;
 $color-bg-navbar-hover: lighten($color-bg-navbar,10%);
+$color-text-navbar-hover: $color-action;
 $color-text-navbar: white;
 $padding-navbar-item: 1rem;
 $width-navbar-logo: 8rem;
@@ -275,8 +276,14 @@ $color-object-wrong: #F37683;
   >.modal-title {
     font-size: 1.75rem;
     font-weight: bold;
+    display: flex;
+    justify-content: flex-start;
     flex-grow: 1;
-    text-align: center;
+    // text-align: center;
+
+    >.modal-title-icon {
+      margin-right: 0.75rem;
+    }
   }
 }
 
@@ -286,28 +293,14 @@ $color-object-wrong: #F37683;
   line-height: 1.75rem;
   font-size: 1.5rem;
   font-weight: bold;
-  // margin-left: auto;
-  // margin-top: 0.5rem;
-  // margin-right: 0.5rem;
   text-align: center;
-  // background-color: $color-bg-modal;
-  // background-color: lightgray;
-  // color: white;
   background-color: $color-bg-modal-btn;
   color: $color-text-modal-btn;
-  // border-color: $color-border-modal-btn;
-  // border-width: $width-border-button;
-  // border-style: $style-button;
-  // border-radius: $border-radius-modal-btn;
   border: none;
   cursor: pointer;
 
   &:hover {
-    // background-color: $color-bg-modal;
-    // background-color: darken($color-bg-modal,10%);
-    // border-color: $color-border-modal-btn-hover;
     color: $color-border-modal-btn-hover;
-    // box-shadow: inset 0 0px 0.125rem $color-border-modal-btn-hover-opacity-75 , 0 0 0.5rem $color-border-modal-btn-hover-opacity-75 !important; 
   }
 }
 
@@ -321,9 +314,7 @@ $color-object-wrong: #F37683;
   &.flex {
     display: flex;
   }
-  // p {
-  //   // font-size: 0.875rem;
-  // }
+
   .modal-content-reference {
     display: flex;
     flex-direction: column;
@@ -345,9 +336,7 @@ $color-object-wrong: #F37683;
     }
   }
 
-  // .modal-content-text {
-  // }
-    
+
   .modal-content-header-wrapper {
     display: flex;
     align-items: center;
@@ -492,84 +481,6 @@ $color-object-wrong: #F37683;
 }
 // --- Start: Toggle End ---
 
-// // --- Start: Toggle Switch ---
-// .toggle-switch {
-//   position: relative;
-//   display: block;
-//   // width: 60px;
-//   width: 3rem;
-//   // height: 34px;
-//   // height: 20px;
-//   height: 1.125rem;
-//   margin: auto;
-// }
-
-// .toggle-switch input {
-//   opacity: 0;
-//   width: 0;
-//   height: 0;
-// }
-
-// .toggle-slider {
-//   // pill (background) when unchecked
-//   position: absolute;
-//   cursor: pointer;
-//   top: 0;
-//   left: 0;
-//   right: 0;
-//   bottom: 0;
-//   border-radius: 1rem;
-//   background-color: $color-toggle-off;
-//   transition: .3s;
-//   -webkit-transition: .3s;
-
-//   &[data-disabled="true"] {
-//     cursor: default;
-//   }
-// }
-
-// // New selector for the circle pseudo-element
-// .toggle-slider:before {
-//   position: absolute;
-//   content: "";
-//   // height: 26px;
-//   // width: 26px;
-//   // height: 12px;
-//   height: 0.75rem;
-//   // width: 12px;
-//   width: 0.75rem;
-//   // left: 4px;
-//   // bottom: 4px;
-//   left: 0.1875rem;
-//   bottom: 0.1875rem;
-//   border-radius: 50%;
-//   background-color: $color-toggle-slider;
-//   transition: .3s;
-//   -webkit-transition: .3s;
-// }
-
-// .toggle-switch input:checked + .toggle-slider {
-//   // pill (background) when checked
-//   background-color: $color-toggle-on;
-// }
-
-
-// .toggle-switch input:checked + .toggle-slider:before {
-//   // move circle pseudo-element from left to right 
-//   // and right to left when the input is checked
-//   // -webkit-transform: translateX(26px);
-//   // -ms-transform: translateX(26px);
-//   // transform: translateX(26px);
-//   -webkit-transform: translateX(1.875rem);
-//   -ms-transform: translateX(1.875rem);
-//   transform: translateX(1.875rem);
-// }
-
-// // not needed for now
-// // .toggle-switch input:focus + .toggle-slider {
-// //   box-shadow: 0 0 5px $color-default;
-// // }
-// // --- End: Toggle Switch ---
 
 // --- Start: Dropdown ---
 .dropdown {
@@ -583,20 +494,6 @@ $color-object-wrong: #F37683;
     justify-content: space-between;
     height: 100%;
     align-items: center;
-
-    >.arrow {
-      border: .25rem solid $color-text-navbar;
-      border-radius: 2px;
-      border-right: 0;
-      border-top: 0;
-      height: .625em !important;
-      width: .625em !important;
-      margin-bottom: 0.4375rem;
-      margin-left: 0.4375rem;
-      pointer-events: none;
-      transform: rotate(-45deg);
-      transform-origin: center;
-    }
 
     >.dropdown-btn-item {
       height: 100%;
@@ -656,7 +553,8 @@ $color-object-wrong: #F37683;
 
 
       &:hover {
-        background-color: $color-bg-navbar-hover;
+        // background-color: $color-bg-navbar-hover;
+        color: $color-text-navbar-hover;
       }
     }
   }
@@ -703,31 +601,8 @@ $color-object-wrong: #F37683;
 .navbar-brand {
   width: calc($width-navbar-logo + calc(2* $padding-navbar-item));
 
-  // >.navbar-item {
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  //   color: white;
-  //   font-weight: bold;
-  //   padding: 0 $navbar-item-side-padding;
-  //   margin-top: auto;
-  //   height: $height-navbar;
-  //   line-height: $height-navbar;
-  //   // margin: 0 0.5rem;
-  //   background-color: $color-background-dark;
-  //   cursor: pointer;
-  
-  //   &:hover {
-  //     background-color: lighten($color-background-dark,20%);
-  //   }
-  // }
-
   .logo {
     max-width: $width-navbar-logo;
-    // background: url('./images/jku-vds-lab-logo-dark-theme.svg');
-    // background-repeat: no-repeat;
-    // background-size: 7rem auto;
-    // background-color: $color-background-dark;
     cursor: pointer;
 
     // &:hover {
@@ -743,15 +618,24 @@ $color-object-wrong: #F37683;
   color: $color-text-navbar;
   font-weight: bold;
   padding: 0 $padding-navbar-item;
-  margin-top: auto;
   height: $height-navbar;
   line-height: $height-navbar;
-  // margin: 0 0.5rem;
-  // background-color: $color-bg-navbar;
+  margin: 0 1.5rem;
   cursor: pointer;
 
+  >.label-icon {
+
+    &.left {
+      margin-right: 0.5rem
+    }
+    &.right {
+      margin-left: 0.5rem
+    }
+  }
+
   &.has-hover:hover {
-    background-color: $color-bg-navbar-hover;
+    // background-color: $color-bg-navbar-hover;
+    color: $color-text-navbar-hover;
   }
 }
 // --- End: Nav ---
@@ -971,7 +855,6 @@ $color-object-wrong: #F37683;
         &:hover {
           // background-color: darken($color-bg-confirm-btn,10%);
           border-color: $color-border-confirm-btn-hover;
-          // box-shadow: inset 0 0px 0.125rem $color-border-confirm-btn-hover-opacity-75 , 0 0 0.5rem $color-border-confirm-btn-hover-opacity-75 !important; 
         }
 
         // &.disabled {

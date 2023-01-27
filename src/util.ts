@@ -364,23 +364,6 @@ export function calculateOverlapBetween2Points(pA: { x: number, y: number, r: nu
   return 0
 }
 
-export function createToggleSwitch(): HTMLLabelElement {
-  const htmlLabel = document.createElement('label');
-  htmlLabel.classList.add('toggle-switch');
-
-  const htmlInput = document.createElement('input');
-  htmlInput.type = 'checkbox';
-  htmlInput.classList.add('hide');
-  htmlLabel.appendChild(htmlInput);
-
-  const htmlSpan = document.createElement('span');
-  htmlSpan.classList.add('toggle-slider');
-  htmlLabel.appendChild(htmlSpan);
-
-
-  return htmlLabel;
-}
-
 export function createToggleButton(): HTMLDivElement {
   const toggleBtn = document.createElement('div');
   toggleBtn.classList.add('toggle-btn');

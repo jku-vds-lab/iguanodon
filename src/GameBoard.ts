@@ -2,7 +2,7 @@ import ColumnTable from "arquero/dist/types/table/column-table";
 import { $nav, userId } from ".";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
-import { createToggleButton, createToggleSwitch, deepCopy, getColumnTypesFromArqueroTable } from "./util";
+import { createToggleButton, deepCopy, getColumnTypesFromArqueroTable } from "./util";
 import {  IAction, ObjectiveState, VisualizationBase } from "./visualizations";
 import imgBadgeGold from "./images/badge_gold.svg";
 import imgBadgeSilver from "./images/badge_silver.svg";

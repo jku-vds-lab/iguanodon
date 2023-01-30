@@ -88,13 +88,13 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
   // console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
  
   if(isSurvey) {
-    // const response = await fetch(postURL, {
-    //   method: "POST",
-    //   body: JSON.stringify(payload),
-    //   headers: {
-    //     "Content-Type": "application/json"
-    //   }
-    // });
+    const response = await fetch(postURL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
     // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);
   }
 }

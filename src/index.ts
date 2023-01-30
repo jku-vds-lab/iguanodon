@@ -80,7 +80,7 @@ export function updateUserTrackData(gameData: IGameTrackData) {
   const month = startDate.getMonth() + 1;
   const year = startDate.getFullYear();
   const time = `${startDate.getHours()}-${startDate.getMinutes()}-${startDate.getSeconds()}`
-  const filename = `${userId}_userTrackData_${year}-${month}-${day}_${time}.json`;
+  const filename = `igu_${userId}_userData_${year}-${month}-${day}_${time}.json`;
 
   // TODO add check for isSurvey
   postJSONUserData(filename, userTrackDat);

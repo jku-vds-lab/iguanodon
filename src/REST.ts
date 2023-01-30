@@ -90,11 +90,13 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
   if(isSurvey) {
     const response = await fetch(postURL, {
       method: "POST",
-      body: JSON.stringify(payload),
-      credentials: 'omit',
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
       headers: {
         "Content-Type": "application/json"
-      }
+      },
+      body: JSON.stringify(payload)
     });
     // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);
   }

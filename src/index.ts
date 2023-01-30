@@ -3,7 +3,7 @@ import * as aq from 'arquero';
 import ColumnTable from 'arquero/dist/types/table/column-table';
 import { getDataCars, getSampledDataCars } from './dataCars';
 import { getGameBoardDescriptions } from './Game';
-import { GameBoard, IGameBoardDescription } from './GameBoard';
+import { GameBoard, gameEndReason, IGameBoardDescription } from './GameBoard';
 import { actionsScatter, Scatterplot } from './Scatterplot';
 import { getColumnTypesFromArqueroTable, getDateParts, niceName, writeToClipboard } from './util';
 import { VisType } from './visualizations';
@@ -20,7 +20,7 @@ import '@fortawesome/fontawesome-free/js/solid.js'; // https://fontawesome.com/s
 
 // import font awesome core to make the above sets work
 import '@fortawesome/fontawesome-free/js/fontawesome.js'; //
-import { IUserTrackData } from './REST';
+import { IGameTrackData, IUserTrackData, postJSONGameData, postJSONUserData } from './REST';
 
 
 var TITLE = 'Iguanodon'
@@ -30,6 +30,7 @@ document.title = TITLE;
 export let userId: string =  '';
 export let isSurvey: boolean = false;
 export let hasMiniSurveyReq: boolean = true;
+export let isGameFinished: boolean = false;
 // URL parameters
 const queryString = window.location.search;
 // console.log('queryString:', queryString);
@@ -68,6 +69,22 @@ export const userTrackDat: IUserTrackData = {
   games: []
 }
 
+export function updateUserTrackData(gameData: IGameTrackData) {
+  const allGameIds = userTrackDat.games.map((elem) => elem.gameId);
+  if(!(allGameIds.includes(gameData.gameId))) {
+    userTrackDat.games.push(gameData)
+  }
+  
+  const startDate = userTrackDat.games[0].startTimestamp;
+  const day = startDate.getDate();
+  const month = startDate.getMonth() + 1;
+  const year = startDate.getFullYear();
+  const time = `${startDate.getHours()}-${startDate.getMinutes()}-${startDate.getSeconds()}`
+  const filename = `${userId}_userTrackData_${year}-${month}-${day}_${time}.json`;
+
+  // TODO add check for isSurvey
+  postJSONUserData(filename, userTrackDat);
+}
 
 export const $nav = document.querySelector('nav.navbar') as HTMLDivElement;
 
@@ -101,30 +118,64 @@ navRetry.addEventListener('click', (event) => {
 
 // TODO for isSurvey = true
 // [ ] no linkt to VDS Lab HP 
-// [ ] retry is not allowed until 3 games are played
-// [ ] game selection not allowed until 3 games are played
+// [x] retry is not allowed until 3 games are played
+// [x] game selection not allowed until 3 games are played
 // [x] survey button not actionable until 3 games
-// [ ] WIN modal -> no retry until 3 games
-// [ ] GAME OVER modal -> no retry until 3 games
+// [x] WIN modal -> no retry until 3 games
+// [x] GAME OVER modal -> no retry until 3 games
 // [ ] add code and to survey button 
 
-// show survey button if needed
-const navSurvey = $nav.querySelector('.nav-survey') as HTMLDivElement;
-navSurvey.classList.remove('display-none');
-
 // actionListener for copy to clipboard button
+const navSurvey = $nav.querySelector('.nav-survey') as HTMLDivElement;
 const btnCopy = navSurvey.querySelector('.copy') as HTMLDivElement;
 btnCopy.addEventListener('click',(event) => {
-  if(hasMiniSurveyReq) {
+  if(isSurvey && hasMiniSurveyReq) {
     writeToClipboard(userId);
   }
 });
 
-// set allowed state of buttons 
-// win / game over -> no close (btn, x, bg, retry) / retry
-// navbar -> retry
-// navbar -> game selection items
-// 
+if(isSurvey) {
+  // show survey button if needed
+  navSurvey.classList.remove('display-none');
+}
+
+
+
+export function checkMinimalSurveyRequirement() {
+  // check if all games were played once
+  const allGameNrs = userTrackDat.games.map((elem) => elem.gameNumber);
+  const uniqueValues = Array.from(new Set(allGameNrs));
+  if(uniqueValues.length === 3) {
+    hasMiniSurveyReq = true;
+    setSurveyCode();
+  }
+
+  setNotAllowedForButtons();
+  setNotAllowedforDropDownButtons();
+}
+
+function setSurveyCode() {
+  // navbar -> survey code
+  navSurvey.classList.remove('inactive');
+  const divCode = navSurvey.querySelector('.code') as HTMLDivElement;
+  divCode.innerText = `${userId}`;
+
+  // game win modal -> code
+  const modalGameWin = document.querySelector(`.modal-game-win`) as HTMLDivElement;
+  const winCodeInfo = modalGameWin.querySelector('.code-info');
+  winCodeInfo.classList.remove('display-none');
+
+  const winCode = winCodeInfo.querySelector('.modal-code') as HTMLSpanElement;
+  winCode.innerText = `${userId}`;
+
+  // game over modal -> code
+  const modalGameOver = document.querySelector(`.modal-game-over`) as HTMLDivElement;
+  const overCodeInfo = modalGameOver.querySelector('.code-info');
+  overCodeInfo.classList.remove('display-none');
+
+  const overCode = overCodeInfo.querySelector('.modal-code') as HTMLSpanElement;
+  overCode.innerText = `${userId}`;
+}
 
 // main
 const $main = document.getElementById('main') as HTMLDivElement;
@@ -175,9 +226,70 @@ const startGame = gameBoardDescr.filter((elem => elem.gameId === 1))[0];
 addDropdownFunctionality($main, gameBoardDescr, startGame.gameId);
 // TODO add link to VDS Lab Logo if it isn't a survey
 
+// set allowed state of buttons 
+// win / game over -> no close (retry) / retry
+// navbar -> retry
+// navbar -> game selection items
+setNotAllowedForButtons();
+setNotAllowedforDropDownButtons();
+
+
+
+
 // create start Game
 let currentGame = new GameBoard($main, startGame);
 
+
+function setNotAllowedForButtons() {
+  if(isSurvey) {
+    const addNotAllowed = !hasMiniSurveyReq
+    // navbar -> retry
+    navRetry.classList.toggle('not-allowed', addNotAllowed);
+
+    // game win modal -> retry
+    const modalGameWin = document.querySelector(`.modal-game-win`) as HTMLDivElement;
+    const winRetry = modalGameWin.querySelector('.btn-retry');
+    winRetry.classList.toggle('not-allowed', addNotAllowed);
+    // game over modal -> retry
+    const modalGameOver = document.querySelector(`.modal-game-over`) as HTMLDivElement;
+    const overRetry = modalGameOver.querySelector('.btn-retry');
+    overRetry.classList.toggle('not-allowed', addNotAllowed);
+  }
+}
+
+function setNotAllowedforDropDownButtons() {
+  if(isSurvey) {
+    const currGameId = $main.dataset.gameId;
+    const dropdownMenu = $nav.querySelector('.dropdown-menu') as HTMLDivElement;
+    const ddMenuItems = Array.from(dropdownMenu.querySelectorAll('.dropdown-menu-item')) as HTMLDivElement[];
+    // ddItem.dataset.gameId = `${gbd.gameId}`; //data-game-id
+    if(hasMiniSurveyReq) {
+      // all games can be selected
+      for(const ddItem of ddMenuItems) {
+        ddItem.classList.remove('not-allowed');
+      }  
+    } else {
+      // only the next game if game is finished
+      if(isGameFinished) {
+        // allow to click on next game button
+        const nextGame = (Number(currGameId) % 3) +1 ;
+        for(const ddItem of ddMenuItems) {
+          if(Number(ddItem.dataset.gameId) === nextGame) {
+            ddItem.classList.remove('not-allowed');
+          } else {
+            ddItem.classList.add('not-allowed');
+          }
+        }
+
+      } else {
+        // all games can not be selected
+        for(const ddItem of ddMenuItems) {
+          ddItem.classList.add('not-allowed');
+        }
+      }
+    }
+  }
+}
 
 function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoardDescription[], startGame: number) {
   // get nav game div
@@ -222,17 +334,41 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
         const currGameId = divMain.dataset.gameId;
         $dropdownMenu.classList.add('display-none');
         // TODO only change game when not survey or all 3 games are played
-        if(hasMiniSurveyReq) {
+        if(isSurvey) {
+          // is survey
+          if(hasMiniSurveyReq) {
+            // has played all 3 games
+            if(elemGameId === currGameId) {
+              // $dropdownMenu.classList.add('display-none');
+              console.warn('same Game: ', {currGameId, elemGameId});
+            } else {
+              // $dropdownMenu.classList.add('display-none');
+              console.warn('change Game: ', {currGameId, elemGameId});
+              updateGameBoard(Number(elemGameId), gameEndReason.gameChange);
+            }
+          }else if (isGameFinished) {
+            // current game is finished
+            // only if new game is next game 
+            const selctedGame = Number(elemGameId);
+            const currGame = Number(currGameId);
+            const nextGame = (currGame % 3) +1 ;
+            if(nextGame === selctedGame) {
+              console.warn('change Game: ', {currGame, selctedGame});
+              updateGameBoard(Number(elemGameId), gameEndReason.gameChange);
+            }
+          }
+        } else {
+          // is not a survey
           if(elemGameId === currGameId) {
             // $dropdownMenu.classList.add('display-none');
             console.warn('same Game: ', {currGameId, elemGameId});
           } else {
             // $dropdownMenu.classList.add('display-none');
             console.warn('change Game: ', {currGameId, elemGameId});
-            updateGameBoard(Number(elemGameId));
+            updateGameBoard(Number(elemGameId), gameEndReason.gameChange);
           }
         }
-      })
+      });
 
       // create the elements for in menu item 
       const contentLabels = ['label', 'reward','points'];
@@ -261,8 +397,21 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
   }
 }
 
+function updateGameEndReasonAndSave(endReason: gameEndReason) {
+  let finalEndReason = endReason;
+  const gameTrackData = currentGame.gameTrackData;
+  if(gameTrackData.gameEndReason === gameEndReason.gameStart) {
+    gameTrackData.gameEndReason = endReason;
+  } else {
+    finalEndReason = gameTrackData.gameEndReason;
+  }
+  currentGame.saveGameTrackData(finalEndReason);
+}
 
-function updateGameBoard(gameId: number) {
+function updateGameBoard(gameId: number, endReason: gameEndReason) {
+  // save old game data
+  updateGameEndReasonAndSave(endReason);
+
   const newGameBoardDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
   if(newGameBoardDescr.length === 1) {
     // update navigation game dropwown button
@@ -292,8 +441,17 @@ function updateGameBoard(gameId: number) {
   }
 }
 
+export function setIsGameFinished(finished: boolean) {
+  isGameFinished = finished;
+  setNotAllowedforDropDownButtons();
+
+}
 
 
+
+// export function setHasMiniSurveyReq(status: boolean) {
+//   hasMiniSurveyReq = status;
+// }
 
 
 function addModalsAndFunctionality(isSurvey: boolean) {
@@ -447,33 +605,39 @@ function addGameResultModalFunctionality(modalContent: string, modalClass: strin
    // modal-background
    const modalBackgroundGR = divGameResultModal.querySelector('.modal-background');
    modalBackgroundGR.addEventListener('click', (event) => {
-     divGameResultModal.classList.remove('is-active');
+      divGameResultModal.classList.remove('is-active');
    });
  
    // button close-x
    const btnCrossGR = divGameResultModal.querySelector('.btn-cross');
    btnCrossGR.addEventListener('click', (event) => {
-     divGameResultModal.classList.remove('is-active');
+      divGameResultModal.classList.remove('is-active');
    });
  
    // button close
    const btnCloseGR = divGameResultModal.querySelector('.btn-close');
    btnCloseGR.addEventListener('click', (event) => {
-     divGameResultModal.classList.remove('is-active');
+      divGameResultModal.classList.remove('is-active');
    });
  
    // button retry
    const btnRetry = divGameResultModal.querySelector('.btn-retry');
    btnRetry.addEventListener('click', (event) => {
-     divGameResultModal.classList.remove('is-active');
-     restartGame();
+      if(isSurvey) {
+        if(hasMiniSurveyReq) {
+          divGameResultModal.classList.remove('is-active');
+        }
+      } else {
+        divGameResultModal.classList.remove('is-active');
+      }
+      restartGame();
    });
  
    // button next game
    const btnNext = divGameResultModal.querySelector('.btn-next');
    btnNext.addEventListener('click', (event) => {
-     divGameResultModal.classList.remove('is-active');
-     nextGame();
+      divGameResultModal.classList.remove('is-active');
+      nextGame();
    });
    
    // add DocumentFragment to body
@@ -485,15 +649,20 @@ function addGameResultModalFunctionality(modalContent: string, modalClass: strin
 function restartGame() {
   const gameId = Number($main.dataset.gameId);
   // get the right game board description
-  const gameBoardsDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
-  if(hasMiniSurveyReq) {
-    updateGameBoard(gameId);
+  // const gameBoardsDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
+  if(isSurvey) {
+    if(hasMiniSurveyReq) {
+      updateGameBoard(gameId, gameEndReason.gameRetry);
+    }
+  } else {
+    updateGameBoard(gameId, gameEndReason.gameRetry);
   }
 }
 
 function nextGame() {
   const gameId = Number($main.dataset.gameId);
   const nextGameId = (gameId % 3) + 1; 
+  updateGameBoard(nextGameId, gameEndReason.gameNext)
 }
 
 // ***** Datasets without arquero *****

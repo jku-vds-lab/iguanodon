@@ -91,9 +91,9 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
     const response = await fetch(postURL, {
       method: "POST",
       body: JSON.stringify(payload),
+      credentials: 'omit',
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "application/json"
       }
     });
     // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);

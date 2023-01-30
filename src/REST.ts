@@ -1,3 +1,6 @@
+import { isSurvey } from ".";
+import { gameEndReason } from "./GameBoard";
+
 export interface IAttemptTrackData {
   userId: string;
   gameId: number;
@@ -23,8 +26,10 @@ export interface IAttemptTrackData {
 
 export interface IGameTrackData {
   userId: string;
-  gameId: number;
+  gameId: string;
+  gameNumber: number;
   startTimestamp: Date;
+  gameEndReason: gameEndReason;
   allAttempts: IAttemptTrackData[]
 }
 
@@ -71,4 +76,25 @@ export async function postJSONGameData(filename: string, data: IGameTrackData) {
     // }
   // })
   // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);
+}
+
+export async function postJSONUserData(filename: string, data: IUserTrackData) {
+
+  const postURL = "https://save-json.caleydoapp.org/";
+  const payload = {
+    filename,
+    data
+  };
+  // console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
+ 
+  if(isSurvey) {
+    // const response = await fetch(postURL, {
+    //   method: "POST",
+    //   body: JSON.stringify(payload),
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   }
+    // });
+    // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);
+  }
 }

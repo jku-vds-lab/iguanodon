@@ -94,8 +94,7 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
       cache: 'no-cache',
       credentials: 'same-origin',
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });

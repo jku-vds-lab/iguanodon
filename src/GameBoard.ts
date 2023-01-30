@@ -1,8 +1,8 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { $nav, userId } from ".";
+import { $nav, checkMinimalSurveyRequirement, setIsGameFinished, updateUserTrackData, userId } from ".";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
-import { createToggleButton, deepCopy, getColumnTypesFromArqueroTable } from "./util";
+import { createToggleButton, deepCopy, getColumnTypesFromArqueroTable, getDateParts } from "./util";
 import {  IAction, ObjectiveState, VisualizationBase } from "./visualizations";
 import imgBadgeGold from "./images/badge_gold.svg";
 import imgBadgeSilver from "./images/badge_silver.svg";
@@ -20,6 +20,15 @@ export enum gameReward {
   silver = 'silver',
   bronze = 'bronze',
   noReward = 'noReward'
+};
+
+export enum gameEndReason {
+  gameStart = 'gameStart',
+  gameWin = 'gameWin',
+  gameOver = 'gameOver',
+  gameRetry = 'gameRetry',
+  gameNext = 'gameNext',
+  gameChange = 'gameChange'
 };
 
 export class GameBoard {
@@ -53,8 +62,14 @@ export class GameBoard {
   constructor(cntrMain: HTMLDivElement, game: IGameBoardDescription) {
     this.$container = cntrMain;
     this.$container.dataset.gameId = `${game.gameId}`;
-
     console.log('NEW GAMEBOARD: ', game);
+
+    // set isGameFinished state
+    setIsGameFinished(false);
+
+    // set score and reward
+    this.score = 0;
+    this.reward = gameReward.noReward;
 
     this._visHistory = [];
     // this.dataset = dataset;
@@ -416,10 +431,19 @@ export class GameBoard {
       // calculate score and reward
       this.calcScoreAndReward();
 
+      // set isGameFinished state
+      setIsGameFinished(true);
+
+      // save game track data
+      this.saveGameTrackData(gameEndReason.gameWin);
+
+      
       // show WIN modal
       // const modalGameEnd = document.body.querySelector('#modal-game-end');
       // modalGameEnd.classList.add('show-modal');
-      const modalGameWin = document.body.querySelector('.modal.modal-game-win');
+      const modalGameWin = document.body.querySelector('.modal.modal-game-win') as HTMLDivElement;
+      // TODO set points in modal
+      this.setWinModalInfo(modalGameWin);
       modalGameWin.classList.add('is-active');
 
       // const modalGameResult = document.body.querySelector('.modal.modal-game-result');
@@ -454,10 +478,18 @@ export class GameBoard {
         // calculate score and reward
         this.calcScoreAndReward();
 
+        // set isGameFinished state
+        setIsGameFinished(true);
+
+        // save game track data
+        this.saveGameTrackData(gameEndReason.gameOver);
+        
         // show LOSE modal
         // const modalGameEnd = document.body.querySelector('#modal-game-end');
         // modalGameEnd.classList.add('show-modal');
-        const modalGameOver = document.body.querySelector('.modal.modal-game-over');
+        const modalGameOver = document.body.querySelector('.modal.modal-game-over') as HTMLDivElement;
+        // TODO set points in modal
+        this.setGameOverModalInfo(modalGameOver);
         modalGameOver.classList.add('is-active');
         // const modalGameResult = document.body.querySelector('.modal.modal-game-result');
         
@@ -515,6 +547,42 @@ export class GameBoard {
     }
 
   }
+
+  setWinModalInfo(winModal: HTMLDivElement) {
+    // set points
+    const spanPoints = winModal.querySelector('.modal-game-points') as HTMLSpanElement;
+    spanPoints.innerText = `${this.score}`;
+    // check reward
+    const modalReward = winModal.querySelector('.modal-game-reward');
+    if(this.reward !== gameReward.noReward) {
+      const imgReward = winModal.querySelector('.modal-game-reward-img') as HTMLImageElement;
+      imgReward.src = this.getRewardImageLocation(this.reward);
+      modalReward.classList.remove('display-none');
+    } else {
+      modalReward.classList.add('display-none');
+    }
+    // TODO check new highscore
+    // const modalHighscore = winModal.querySelector('.modal-game-highscore');
+  }
+
+  getRewardImageLocation(reward: gameReward): string {
+    let rewardImgLocation = '';
+    if(reward === gameReward.gold) {
+      rewardImgLocation = imgBadgeGold;
+    } else if (reward === gameReward.silver) {
+      rewardImgLocation = imgBadgeSilver;
+    } else if (reward === gameReward.bronze) {
+      rewardImgLocation = imgBadgeBronze;
+    }
+    return rewardImgLocation;
+  }
+
+  setGameOverModalInfo(gameOverModal: HTMLDivElement) {
+    // set points
+    const spanPoints = gameOverModal.querySelector('.modal-game-points') as HTMLSpanElement;
+    spanPoints.innerText = `${this.score}`;
+  }
+
 
   calcScoreAndReward() {
     this.score = (this._numbAttempts - this._currAttempt) + 1;
@@ -795,9 +863,13 @@ export class GameBoard {
   }
 
   createGameTrackData(): IGameTrackData {
+    const dateParts = getDateParts(new Date());
+    const strDates = `${dateParts.labels.day}${dateParts.labels.month}${dateParts.labels.hour}${dateParts.labels.minutes}${dateParts.labels.seconds}`;
     const gameTrackDat: IGameTrackData = {
       userId: userId,
-      gameId: this._gameId,
+      gameId: `${this._gameId}-${strDates}`,
+      gameNumber: this._gameId,
+      gameEndReason: gameEndReason.gameStart,
       startTimestamp: new Date(),
       allAttempts: []
     }
@@ -824,11 +896,16 @@ export class GameBoard {
     const filename = `${year}-${month}-${day}_${time}_${data.userId}_${data.gameId}_${data.attempt}.json`;
 
 
-    postJSONAttemptData(filename, data);
+    // postJSONAttemptData(filename, data);
   }
 
-  saveGameTrackData() {
+  saveGameTrackData(endReason: gameEndReason) {
     const gameData = this.gameTrackData;
+    gameData.gameEndReason = endReason;
+
+    updateUserTrackData(this.gameTrackData);
+    checkMinimalSurveyRequirement();
+
     const userId = gameData.userId;
     const gameId = gameData.gameId;
     const startDate = gameData.startTimestamp;
@@ -839,7 +916,7 @@ export class GameBoard {
     const time = `${startDate.getHours()}-${startDate.getMinutes()}-${startDate.getSeconds()}`
     const filename = `${year}-${month}-${day}_${time}_${userId}_${gameId}_all_Attempts.json`;
   
-    postJSONGameData(filename, gameData);
+    // postJSONGameData(filename, gameData);
   }
 
 }

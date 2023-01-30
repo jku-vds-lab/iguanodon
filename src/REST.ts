@@ -90,9 +90,6 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
   if(isSurvey) {
     const response = await fetch(postURL, {
       method: "POST",
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
       headers: {
         "Content-Type": "application/json"
       },

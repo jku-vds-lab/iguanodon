@@ -92,7 +92,8 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
       method: "POST",
       body: JSON.stringify(payload),
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
       }
     });
     // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);

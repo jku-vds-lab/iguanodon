@@ -32,6 +32,11 @@ export const deepCopy = <T>(target: T): T => {
   return target;
 };
 
+// export const deepCopy = <T>(target: T): T => {
+//   return structuredClone(target);
+// }
+
+
 export function niceName(label: string): string {
   const niceLabel =  label
     .split('_')

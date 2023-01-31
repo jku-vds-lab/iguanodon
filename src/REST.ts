@@ -86,7 +86,7 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
     data
   };
   // console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
- 
+  console.log('window.lcoation: ', window.location);
   if(isSurvey) {
     const response = await fetch(postURL, {
       method: "POST",

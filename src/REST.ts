@@ -91,7 +91,9 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
     const response = await fetch(postURL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        // "Access-Control-Allow-Origin": "http://localhost"
+        "Access-Control-Allow-Origin": "https://jku-vds-lab.at/"
       },
       body: JSON.stringify(payload)
     });

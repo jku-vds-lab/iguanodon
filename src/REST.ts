@@ -93,7 +93,9 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
       headers: {
         "Content-Type": "application/json",
         // "Access-Control-Allow-Origin": "http://localhost"
-        "Access-Control-Allow-Origin": "https://jku-vds-lab.at/"
+        "Access-Control-Allow-Origin": "https://jku-vds-lab.at",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "Content-Type"
       },
       body: JSON.stringify(payload)
     });

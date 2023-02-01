@@ -258,12 +258,16 @@ $color-object-wrong: #F37683;
     // flex-direction: column;
     // position: absolute;
     top: 20%;
-    left: 25%;
-    width: 50%;
+    left: 35%;
+    width: 30%;
     height: 60%;
     // background-color: $color-bg-modal;
     // border: 1px black solid;
     // z-index: 100;
+
+    p {
+      text-align: center;
+    }
   }
 }
 
@@ -338,6 +342,55 @@ $color-object-wrong: #F37683;
 
     .reference:hover {
       text-decoration: underline;
+    }
+  }
+
+  .modal-game-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    >div {
+      align-self: center;
+    }
+
+    .modal-game-points-text {
+      font-weight: bold;
+    }
+
+    .modal-game-reward {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      >div,>img {
+        align-self: center;
+      }
+
+      >.modal-game-reward-img {
+        height: 5rem;
+      }
+    }
+  }
+
+  .code-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    >div{
+      align-self: center;
+    }
+
+    .modal-code {
+      height: 100%;
+      padding: .5rem;
+      margin: 0 0.5rem;
+      border-color: $color-action;
+      border-width: $width-border-button;
+      border-style: $style-button;
+      border-radius: $border-radius-modal-btn;
+      cursor: text;
     }
   }
 

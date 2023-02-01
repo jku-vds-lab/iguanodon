@@ -54,7 +54,7 @@ if(urlParams.has('type')) {
 
 const dateParts = getDateParts(new Date());
 // console.log("🚀 ~ file: index.ts ~ line 46 ~ dateParts", dateParts)
-const code =`537${dateParts.labels.day}${dateParts.labels.month}${dateParts.labels.hour}${dateParts.labels.minutes}`;
+const code =`537${dateParts.labels.day}${dateParts.labels.month}${dateParts.labels.hour}${dateParts.labels.minutes}${dateParts.labels.seconds}`;
 console.log("🚀 ~ file: index.ts ~ line 47 ~ code", code)
 
 if(isSurvey) {

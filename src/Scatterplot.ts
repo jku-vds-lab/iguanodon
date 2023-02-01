@@ -595,11 +595,70 @@ export class Scatterplot extends VisualizationBase {
      // get objective
     const objective = this.getObjective(objectivesScatter.ReduceOverplotting);
     const amount = objective.actions.length;
+    const actions = objective.actions;
+      
+    let aSampleValue = false;
+    let aMSizeValue  = false;
+    let aMOpacityValue  = false;
+    let aMRingValue  = false;
+    let aAggreateValue  = false;
+
+
+    // sample -> true
+    const aSample = actions.filter((elem) => elem.id === actionsScatter.SampleData);
+    if(aSample.length === 1) {
+      aSampleValue = aSample[0].value;
+    }
+
+    // mark size
+    const aMSize = actions.filter((elem) => elem.id === actionsScatter.DecreaseMarkSize);
+    if(aMSize.length === 1) {
+      aMSizeValue = aMSize[0].value;
+    }
+
+    // mark opccity 
+    const aMOpacity = actions.filter((elem) => elem.id === actionsScatter.DecreaseMarkOpacity);
+    if(aMOpacity.length === 1) {
+      aMOpacityValue = aMOpacity[0].value;
+    }
+
+    // mark ring 
+    const aMRing = actions.filter((elem) => elem.id === actionsScatter.ChangeMarkToRing);
+    if(aMRing.length === 1) {
+      aMRingValue = aMRing[0].value;
+    }
+
+    // aggregate 
+    const aAggreate = actions.filter((elem) => elem.id === actionsScatter.AggregateDataPoints);
+    if(aAggreate.length === 1) {
+      aAggreateValue = aAggreate[0].value;
+    }
+    
+
+
 
     const numbOfTrue = objective.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
     // const numbOfFalse = objective.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
     let correct = numbOfTrue === 1;
+    // let correct = false;
     let corrActions = correct ? objective.actions.length : 0;
+
+    // // data transformation
+    // let data 
+
+    // if(aSampleValue === true) {
+    //   // sample -> true
+    //   correct = true;
+    //   if(aAggreateValue === true || aMSizeValue === true || aMOpacityValue === true) {
+    //     correct = false;
+    //   }
+
+    // } else {
+    //   // sample -> false
+    //   correct = false;
+
+    // }
+
 
     // TODO // FIXME needed ?
     /*

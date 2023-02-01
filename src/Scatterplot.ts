@@ -596,6 +596,7 @@ export class Scatterplot extends VisualizationBase {
     const objective = this.getObjective(objectivesScatter.ReduceOverplotting);
     const amount = objective.actions.length;
     const actions = objective.actions;
+    let appliedActions = 0;
       
     let aSampleValue = false;
     let aMSizeValue  = false;
@@ -608,56 +609,76 @@ export class Scatterplot extends VisualizationBase {
     const aSample = actions.filter((elem) => elem.id === actionsScatter.SampleData);
     if(aSample.length === 1) {
       aSampleValue = aSample[0].value;
+      if(aSampleValue === true) {
+        appliedActions += 1;
+      }
     }
 
     // mark size
     const aMSize = actions.filter((elem) => elem.id === actionsScatter.DecreaseMarkSize);
     if(aMSize.length === 1) {
       aMSizeValue = aMSize[0].value;
+      if(aMSizeValue === true) {
+        appliedActions += 1;
+      }
     }
 
-    // mark opccity 
+    // mark opacity 
     const aMOpacity = actions.filter((elem) => elem.id === actionsScatter.DecreaseMarkOpacity);
     if(aMOpacity.length === 1) {
       aMOpacityValue = aMOpacity[0].value;
+      if(aMOpacityValue === true) {
+        appliedActions += 1;
+      }
     }
 
     // mark ring 
     const aMRing = actions.filter((elem) => elem.id === actionsScatter.ChangeMarkToRing);
     if(aMRing.length === 1) {
       aMRingValue = aMRing[0].value;
+      if(aMRingValue === true) {
+        appliedActions += 1;
+      }
     }
 
     // aggregate 
     const aAggreate = actions.filter((elem) => elem.id === actionsScatter.AggregateDataPoints);
     if(aAggreate.length === 1) {
       aAggreateValue = aAggreate[0].value;
+      if(aAggreateValue === true) {
+        appliedActions += 1;
+      }
     }
     
 
 
-
     const numbOfTrue = objective.actions.map((elem) => elem.value).filter((elem) => elem === true).length;
     // const numbOfFalse = objective.actions.map((elem) => elem.value).filter((elem) => { return ((elem === false) || (elem === null)); }).length;
-    let correct = numbOfTrue === 1;
-    // let correct = false;
-    let corrActions = correct ? objective.actions.length : 0;
+    // let correct = numbOfTrue === 1;
+    let correct = false;
+    // let corrActions = correct ? objective.actions.length : 0;
 
-    // // data transformation
-    // let data 
+    
+    if(appliedActions === 1) {
+      // one of the possible options was used to reduce overplotting
+      correct = true; 
+    } else if (appliedActions === 2) {
+      correct = false; 
+      // only correct if
+      // - ring and sampled
+      // - ring and aggregated
+      if(aSampleValue === true && aMRingValue === true) {
+        correct = true; 
+      }
+      if(aAggreateValue === true && aMRingValue === true) {
+        correct = true; 
+      }
 
-    // if(aSampleValue === true) {
-    //   // sample -> true
-    //   correct = true;
-    //   if(aAggreateValue === true || aMSizeValue === true || aMOpacityValue === true) {
-    //     correct = false;
-    //   }
+    } else {
+      correct = false; 
+    }
 
-    // } else {
-    //   // sample -> false
-    //   correct = false;
-
-    // }
+    const corrActions = correct ? appliedActions : 0;
 
 
     // TODO // FIXME needed ?

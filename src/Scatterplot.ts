@@ -140,7 +140,7 @@ export class Scatterplot extends VisualizationBase {
     const aAggregation = this.createAction(actionsScatter.AggregateDataPoints,'Aggregate data points (mean)', getRandomBoolean());
     this.actions.push(aAggregation);
     // add background color or image
-    const aBackground = this.createAction(actionsScatter.AddBackgroundColor,'Add background color or image', getRandomBoolean());
+    const aBackground = this.createAction(actionsScatter.AddBackgroundColor,'Add background', getRandomBoolean());
     this.actions.push(aBackground);
     // lighten grid lines
     const aGridLines = this.createAction(actionsScatter.LightenGridLines,'Lighten grid lines', getRandomBoolean());
@@ -278,6 +278,7 @@ export class Scatterplot extends VisualizationBase {
     // background color
     const backgroundColorAction = this.getAction(actionsScatter.AddBackgroundColor);
     const backgroundColorValue = backgroundColorAction !== null ? backgroundColorAction.value : false;
+    // const backgorundColor = backgroundColorValue ? '#DEE0E2' : '#FFFFFF';
     const backgorundColor = backgroundColorValue ? '#dfdfdf' : '#FFFFFF';
 
     // lighten grid color

@@ -373,6 +373,9 @@ export class Scatterplot extends VisualizationBase {
         type: 'quantitative',
         scale: {
           domainMax: this.xMax
+        },
+        axis: {
+          tickCount: 12
         }
         // scale: { zero: zeroXAxis } // start x-axis with 0
       };

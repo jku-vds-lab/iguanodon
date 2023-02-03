@@ -142,16 +142,18 @@ if(isSurvey) {
 
 
 export function checkMinimalSurveyRequirement() {
-  // check if all games were played once
-  const allGameNrs = userTrackDat.games.map((elem) => elem.gameNumber);
-  const uniqueValues = Array.from(new Set(allGameNrs));
-  if(uniqueValues.length === 3) {
-    hasMiniSurveyReq = true;
-    setSurveyCode();
-  }
+  if(isSurvey) {
+    // check if all games were played once
+    const allGameNrs = userTrackDat.games.map((elem) => elem.gameNumber);
+    const uniqueValues = Array.from(new Set(allGameNrs));
+    if(uniqueValues.length === 3) {
+      hasMiniSurveyReq = true;
+      setSurveyCode();
+    }
 
-  setNotAllowedForButtons();
-  setNotAllowedforDropDownButtons();
+    setNotAllowedForButtons();
+    setNotAllowedforDropDownButtons();
+  }
 }
 
 function setSurveyCode() {

@@ -563,6 +563,10 @@ export class GameBoard {
     }
     // TODO check new highscore
     // const modalHighscore = winModal.querySelector('.modal-game-highscore');
+    // set next game number
+    const spanNextGame = winModal.querySelector('.btn-next-number') as HTMLSpanElement;
+    const nextGameNr = (this._gameId % 3) +1;
+    spanNextGame.innerText = `${nextGameNr}`;
   }
 
   getRewardImageLocation(reward: gameReward): string {
@@ -581,6 +585,10 @@ export class GameBoard {
     // set points
     const spanPoints = gameOverModal.querySelector('.modal-game-points') as HTMLSpanElement;
     spanPoints.innerText = `${this.score}`;
+    // set next game number
+    const spanNextGame = gameOverModal.querySelector('.btn-next-number') as HTMLSpanElement;
+    const nextGameNr = (this._gameId % 3) +1;
+    spanNextGame.innerText = `${nextGameNr}`;
   }
 
 

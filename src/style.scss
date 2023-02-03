@@ -344,7 +344,19 @@ $color-object-wrong: #F37683;
       text-decoration: underline;
     }
   }
+  // help
+  .help-gameplay-steps {
+    
+    >li {
+      margin: 0.25rem 0;
 
+      &::marker {
+        font-weight: bold;
+      }
+    }
+  }
+
+  // game result 
   .modal-game-info {
     display: flex;
     flex-direction: column;

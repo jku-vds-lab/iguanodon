@@ -279,7 +279,8 @@ export class Scatterplot extends VisualizationBase {
     const backgroundColorAction = this.getAction(actionsScatter.AddBackgroundColor);
     const backgroundColorValue = backgroundColorAction !== null ? backgroundColorAction.value : false;
     // const backgorundColor = backgroundColorValue ? '#DEE0E2' : '#FFFFFF';
-    const backgorundColor = backgroundColorValue ? '#dfdfdf' : '#FFFFFF';
+    // const backgorundColor = backgroundColorValue ? '#DFDFDF' : '#FFFFFF';
+    const backgorundColor = backgroundColorValue ? '#C9C9C9' : '#FFFFFF';
 
     // lighten grid color
     const lightenGridColorAction = this.getAction(actionsScatter.LightenGridLines);

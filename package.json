@@ -8,7 +8,6 @@
     "compile": "tsc",
     "build": "webpack --config webpack.prod.js"
   },
-  "author": "Patrick Adelberger",
   "license": "MIT",
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",

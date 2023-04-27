@@ -72,6 +72,8 @@ $color-text-navbar: white;
 $padding-navbar-item: 1rem;
 $margin-navbar-item: 1.5rem;
 $width-navbar-logo: 8rem;
+$height-navbar-logo: 2.5rem;
+
 $height-navbar: 3rem;
 
 // BUTTON
@@ -554,7 +556,7 @@ $color-object-wrong: #F37683;
 
 // --- Start: Dropdown ---
 .dropdown {
-  $width-dropdown: 12rem;
+  $width-dropdown: 15rem;
   $width-padding-one-side: 1rem;
   position: relative;
   width: $width-dropdown;
@@ -606,7 +608,8 @@ $color-object-wrong: #F37683;
 
     .dropdown-menu-item {
       display: flex;
-      justify-content: space-between;
+      // justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
       font-weight: normal;
       font-size: 1rem;
@@ -615,11 +618,17 @@ $color-object-wrong: #F37683;
       padding: 0 1rem;
       color: $color-text-navbar;
 
+      >.label {
+        margin-left: 0;
+        margin-right: auto;
+      }
+
       >.reward {
         display: flex;
         justify-content: center;
         align-content: center;
         flex-direction: column;
+        margin-right: 1rem;
 
         >img {
           max-height: 0.7rem;
@@ -680,10 +689,18 @@ $color-object-wrong: #F37683;
 
 .navbar-brand {
   width: calc($width-navbar-logo + calc(2* $padding-navbar-item));
+  >.navbar-item{
+    align-items: center
+  }
+
+  a {
+    max-height: $height-navbar-logo;
+  }
 
   .logo {
     max-width: $width-navbar-logo;
     cursor: pointer;
+    max-height: $height-navbar-logo;
 
     // &:hover {
     //   background-color: $color-bg-navbar-hover;

@@ -219,7 +219,11 @@ addModalsAndFunctionality(isSurvey);
 
 
 // get game board descriptions (games + attempts) 
-const gameBoardDescr = getGameBoardDescriptions();
+const gameBoardDescr = getGameBoardDescriptions(isSurvey);
+
+export function getAllGameBoardDescr(): IGameBoardDescription[] {
+  return gameBoardDescr;
+}
 
 // Set start game -> Game 1
 const startGame = gameBoardDescr.filter((elem => elem.gameId === 1))[0];
@@ -303,7 +307,7 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
   const $dropdownBtn = $navGame.querySelector('.dropdown-btn') as HTMLDivElement;
   // label label to button-item
   const dropdownBtnLabel = $dropdownBtn.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
-  dropdownBtnLabel.innerHTML = `Game ${gameBoards[0].gameId}`;
+  dropdownBtnLabel.innerHTML = `${gameBoards[0].label}`;
 
   const dropdownBtnPoints = $dropdownBtn.querySelector('.dropdown-btn-item.points') as HTMLDivElement;
   dropdownBtnPoints.innerHTML = `Points: -`;
@@ -379,7 +383,7 @@ function addDropdownFunctionality(divMain: HTMLDivElement, gameBoards: IGameBoar
         ddItemContent.classList.add('item-content',cl);
         // label
         if(cl==='label') {
-          ddItemContent.innerHTML = `Game ${gbd.gameId}`;
+          ddItemContent.innerHTML = `${gbd.label}`;
         }
         // reward
         if(cl==='reward') {
@@ -423,11 +427,14 @@ function updateGameBoard(gameId: number, endReason: gameEndReason) {
     const imgMenuItemRewar = menuItemReward.querySelector('.img-reward') as HTMLImageElement;
     const menuItemPoints = menuItem.querySelector('.points');
 
+    // set new game board description
+    const selectGameBoardDescr = newGameBoardDescr[0];
+
     // dropdown button
     const dropdownBtn = $nav.querySelector('.dropdown-btn') as HTMLDivElement;
     // update button label
     const dropdownBtnLabel = dropdownBtn.querySelector('.dropdown-btn-item.label') as HTMLDivElement;
-    dropdownBtnLabel.innerHTML = `Game ${gameId}`;
+    dropdownBtnLabel.innerHTML = `${selectGameBoardDescr.label}`;
     // update button reward
     const dropdownBtnReward = dropdownBtn.querySelector('.dropdown-btn-item.reward') as HTMLDivElement;
     const imgBtn = dropdownBtnReward.querySelector('.img-reward') as HTMLImageElement;
@@ -437,7 +444,7 @@ function updateGameBoard(gameId: number, endReason: gameEndReason) {
     dropdownBtnPoints.innerHTML = menuItemPoints.innerHTML;
 
     // change game board
-    const selectGameBoardDescr = newGameBoardDescr[0];
+    // const selectGameBoardDescr = newGameBoardDescr[0];
     // console.info('change GameBoard to: ', selectGameBoardDescr);
     currentGame = new GameBoard($main, selectGameBoardDescr);
   }

@@ -9,6 +9,7 @@ import { IGameBoardDescription } from "./GameBoard"
 
 export interface IGameDescription {
   gameId: number,
+  label: string,
   visualizationType: VisType,
   datasets: {
     fullDataset: ColumnTable,
@@ -28,12 +29,12 @@ export interface IGameDescription {
   solutionConfig: IActionVisConfig[]
 }
 
-export function getGameBoardDescriptions(): IGameBoardDescription[] {
+export function getGameBoardDescriptions(isSurvey: boolean): IGameBoardDescription[] {
   const gameboards: IGameBoardDescription[] = [];
 
-  gameboards.push(craeteGameBoardDescription(createGame1Description(),10));
-  gameboards.push(craeteGameBoardDescription(createGame2Description(),10));
-  gameboards.push(craeteGameBoardDescription(createGame3Description(),10));
+  gameboards.push(craeteGameBoardDescription(createGame1Description(isSurvey),10));
+  gameboards.push(craeteGameBoardDescription(createGame2Description(isSurvey),10));
+  gameboards.push(craeteGameBoardDescription(createGame3Description(isSurvey),10));
 
   return gameboards;
 }
@@ -58,6 +59,7 @@ function craeteGameBoardDescription(gameDescr: IGameDescription, attempts: numbe
 
     gameBoardDescr =  {
       gameId: gameDescr.gameId,
+      label: gameDescr.label,
       attempts,
       startVisualization,
       solutionVisualization
@@ -69,8 +71,9 @@ function craeteGameBoardDescription(gameDescr: IGameDescription, attempts: numbe
   return gameBoardDescr;
 }
 
-function createGame1Description(): IGameDescription {
+function createGame1Description(isSurvey: boolean): IGameDescription {
   const gameId = 1;
+  const label = isSurvey ? 'Game 1' : 'Tufte Game';
   const visualizationType = VisType.Scatter;
 
   const carsDatasets = getCarsDatasets();
@@ -106,6 +109,7 @@ function createGame1Description(): IGameDescription {
 
   return {
     gameId,
+    label,
     visualizationType,
     datasets: carsDatasets,
     encodings,
@@ -115,8 +119,9 @@ function createGame1Description(): IGameDescription {
   }
 }
 
-function createGame2Description(): IGameDescription {
+function createGame2Description(isSurvey: boolean): IGameDescription {
   const gameId = 2;
+  const label = isSurvey? 'Game 2' : 'Few Game';
   const visualizationType = VisType.Scatter;
 
   const carsDatasets = getCarsDatasets();
@@ -161,6 +166,7 @@ function createGame2Description(): IGameDescription {
 
   return {
     gameId,
+    label,
     visualizationType,
     datasets: carsDatasets,
     encodings,
@@ -170,8 +176,9 @@ function createGame2Description(): IGameDescription {
   }
 }
 
-function createGame3Description(): IGameDescription {
+function createGame3Description(isSurvey: boolean): IGameDescription {
   const gameId = 3;
+  const label = isSurvey ? 'Game 3' : 'Mixed Game';
   const visualizationType = VisType.Scatter;
 
   const carsDatasets = getCarsDatasets();
@@ -231,6 +238,7 @@ function createGame3Description(): IGameDescription {
 
   return {
     gameId,
+    label,
     visualizationType,
     datasets: carsDatasets,
     encodings,

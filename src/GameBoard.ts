@@ -1,5 +1,5 @@
 import ColumnTable from "arquero/dist/types/table/column-table";
-import { $nav, checkMinimalSurveyRequirement, setIsGameFinished, updateUserTrackData, userId } from ".";
+import { $nav, checkMinimalSurveyRequirement, getAllGameBoardDescr, setIsGameFinished, updateUserTrackData, userId } from ".";
 import { IAttemptTrackData, IGameTrackData, postJSONAttemptData, postJSONGameData } from "./REST";
 import { actionsScatter } from "./Scatterplot";
 import { createToggleButton, deepCopy, getColumnTypesFromArqueroTable, getDateParts } from "./util";
@@ -10,6 +10,7 @@ import imgBadgeBronze from "./images/badge_bronze.svg";
 
 export interface IGameBoardDescription {
   gameId: number,
+  label: string,
   startVisualization: VisualizationBase,
   solutionVisualization: VisualizationBase,
   attempts: number
@@ -566,7 +567,9 @@ export class GameBoard {
     // set next game number
     const spanNextGame = winModal.querySelector('.btn-next-number') as HTMLSpanElement;
     const nextGameNr = (this._gameId % 3) +1;
-    spanNextGame.innerText = `${nextGameNr}`;
+    const nextGameLabel = this.getGameLabelWithId(nextGameNr);
+    spanNextGame.innerText = `${nextGameLabel}`;
+    // spanNextGame.innerText = `Game ${nextGameNr}`;
   }
 
   getRewardImageLocation(reward: gameReward): string {
@@ -588,9 +591,22 @@ export class GameBoard {
     // set next game number
     const spanNextGame = gameOverModal.querySelector('.btn-next-number') as HTMLSpanElement;
     const nextGameNr = (this._gameId % 3) +1;
-    spanNextGame.innerText = `${nextGameNr}`;
+    const nextGameLabel = this.getGameLabelWithId(nextGameNr);
+    spanNextGame.innerText = `${nextGameLabel}`;
   }
 
+  getGameLabelWithId(gameId: number): string {
+    let label = `Game ${gameId}`
+    const gameBoardDescr = getAllGameBoardDescr();
+
+    const checkGameBoardDescr = gameBoardDescr.filter((elem) => elem.gameId === gameId);
+    if(checkGameBoardDescr.length === 1) {
+      const currGameBoardDescr = checkGameBoardDescr[0];
+      label = currGameBoardDescr.label;
+    }
+
+    return label;
+  }
 
   calcScoreAndReward() {
     this.score = (this._numbAttempts - this._currAttempt) + 1;

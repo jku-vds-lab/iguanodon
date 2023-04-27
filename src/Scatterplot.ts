@@ -687,57 +687,58 @@ export class Scatterplot extends VisualizationBase {
 
 
     // TODO // FIXME needed ?
-    /*
     // no actions are applied
     // check overplotting if exists
-    if(numbOfTrue === 0) {
+    // if(numbOfTrue === 0) {
       // get svg element that has all points
-      const svgElement = this.visContainer.querySelector('svg');
+      // const svgElement = this.visContainer.querySelector('svg');
       
-      // 'g' element with the classes=.mark-symbol.role-mark.marks
-      const groupWithAllMarks = this.visContainer.querySelector('.mark-symbol.role-mark.marks') as SVGGElement;
+      // // 'g' element with the classes=.mark-symbol.role-mark.marks
+      // const groupWithAllMarks = this.visContainer.querySelector('.mark-symbol.role-mark.marks') as SVGGElement;
 
-      // get all the marks
-      const marks = groupWithAllMarks.querySelectorAll('path');
+      // // get all the marks
+      // const marks = groupWithAllMarks.querySelectorAll('path');
 
-      // get the all marks and their position for overlap calculation
-      let idx = 0;
-      const markObjects = Array.from(marks).map((elem) => {
-        const tempMarkInfo = elem.getBBox() as any;
-        const tmpXYCoord = elem.getAttribute('transform');
-        const tmpCoord = tmpXYCoord.substring(10, tmpXYCoord.length - 1).split(',');
-        tempMarkInfo.x = Number(tmpCoord[0]);
-        tempMarkInfo.y = Number(tmpCoord[1]);
-        tempMarkInfo.r = Number(tempMarkInfo.width / 2);
-        tempMarkInfo.mark = elem;
-        tempMarkInfo.idx = idx;
-        idx++;
-        return tempMarkInfo;
-      });
+      // // get the all marks and their position for overlap calculation
+      // let idx = 0;
+      // const markObjects = Array.from(marks).map((elem) => {
+      //   const tempMarkInfo = elem.getBBox() as any;
+      //   const tmpXYCoord = elem.getAttribute('transform');
+      //   const tmpCoord = tmpXYCoord.substring(10, tmpXYCoord.length - 1).split(',');
+      //   tempMarkInfo.x = Number(tmpCoord[0]);
+      //   tempMarkInfo.y = Number(tmpCoord[1]);
+      //   tempMarkInfo.r = Number(tempMarkInfo.width / 2);
+      //   tempMarkInfo.mark = elem;
+      //   tempMarkInfo.idx = idx;
+      //   idx++;
+      //   return tempMarkInfo;
+      // });
 
-      let areaAllMarks = 0;
-      // check if there are marks
-      if (marks.length > 0) {
-        const mark = marks[0];
-        const markInfo = mark.getBBox();
-        const markDiameter = markInfo.width;
-        // area of on mark
-        const areaOneMark = Math.PI * (Math.pow(markDiameter, 2) / 4)
-        // area of all marks
-        areaAllMarks = areaOneMark * marks.length;
-      }
+      // let areaAllMarks = 0;
+      // // check if there are marks
+      // if (marks.length > 0) {
+      //   const mark = marks[0];
+      //   const markInfo = mark.getBBox();
+      //   const markDiameter = markInfo.width;
+      //   // area of on mark
+      //   const areaOneMark = Math.PI * (Math.pow(markDiameter, 2) / 4)
+      //   // area of all marks
+      //   areaAllMarks = areaOneMark * marks.length;
+      // }
 
-      // calculate overlapping area of marks
-      const areaOverlap = calculatePointsOverlap(markObjects);
-      // realation of overlap area to area of all marks
-      const percentageOverlap = areaOverlap.overlapArea / areaAllMarks;
+      // // calculate overlapping area of marks
+      // const areaOverlap = calculatePointsOverlap(markObjects);
+      // // realation of overlap area to area of all marks
+      // const percentageOverlap = areaOverlap.overlapArea / areaAllMarks;
 
-      if(percentageOverlap > 0.3) {
-        correct = false;
-        corrActions = 0;
-      }
-    }
-    */
+      // console.log('Overplotting - overlap: ', {areaAllMarks, areaOverlap, percentageOverlap});
+
+      // if(percentageOverlap > 0.3) {
+      //   correct = false;
+      //   corrActions = 0;
+      // }
+    // }
+    
 
 
     return {

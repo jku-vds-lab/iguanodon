@@ -88,17 +88,13 @@ export async function postJSONUserData(filename: string, data: IUserTrackData) {
   // console.log("🚀 ~ file: REST.ts ~ line 54 ~ postJSONGameData ~ payload", payload)
   // console.log('window.lcoation: ', window.location);
   if(isSurvey) {
-    const response = await fetch(postURL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // "Access-Control-Allow-Origin": "http://localhost"
-        // "Access-Control-Allow-Origin": "https://jku-vds-lab.at",
-        // "Access-Control-Request-Method": "POST",
-        // "Access-Control-Request-Headers": "Content-Type"
-      },
-      body: JSON.stringify(payload)
-    });
+    // const response = await fetch(postURL, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(payload)
+    // });
     // console.log("🚀 ~ file: REST.ts ~ line 41 ~ postAttempt ~ response", response);
   }
 }
